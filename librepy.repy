@@ -1,0 +1,42 @@
+"""
+This is the "Libc" of Repy. This file provides convenient and functional
+wrappers around the Repy API to make programming more convenient.
+
+It can either be loaded as a Repy module, or it can be imported directly.
+
+"""
+# This array holds things to export if we loaded as a module
+_EXPORTS = []
+
+
+##### Imports
+#
+# To minimize the complexity of this file,
+# we import the sub-components of librepy using dylink rather
+# than defining everything here.
+#
+
+# Import the sub-library, librepyfile
+libfile = dy_import_module("librepyfile")
+_EXPORTS.append("libfile")
+
+
+##### Exports
+#
+# Here we export symbols from our sub-libraries
+
+# Exports from librepyfile
+open = libfile.open
+_EXPORTS.append("open")
+
+
+##### Run-time
+
+# If we are loaded as a module, we need to dispatch the next module
+if callfunc == "initialize":
+  # Export everything
+  for key in _EXPORTS:
+    CHILD_CONTEXT[key] = _context[key]
+  dy_dispatch_module()
+
+
