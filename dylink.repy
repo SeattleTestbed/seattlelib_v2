@@ -38,14 +38,18 @@ if callfunc == "initialize":
   COMMON_EXTENSIONS = ["", ".py", ".repy",".py.repy", ".pp"]
 
   # These are the functions in the "stock" repy API,
-  STOCK_API = set(["gethostname_ex","getmyip","recvmess","sendmess","openconn","waitforconn",
-             "stopcomm","open","listdir","removefile","exitall","getlock","getruntime",
-             "randomfloat","settimer","canceltimer","sleep","VirtualNamespace","get_thread_name",
-                   "getresources","dy_import_module","dy_import_module_symbols","dy_dispatch_module"])
+  STOCK_API = set(["gethostname","getmyip","sendmessage","listenformessage","openconnection","listenforconnection",
+             "openfile","listfiles","removefile","exitall","createlock","getruntime","randombytes","createthread",
+                   "sleep","createvirtualnamespace","getthreadname","getresources","dy_import_module","getlasterror",
+                   "dy_import_module_symbols","dy_dispatch_module"])
 
   # Controls if we run the code preprocessor
   # If True, we will replace the old "include" directive, but this will cause a speed penalty
   RUN_PRE_PROCESS = True
+
+  # This is the maximum number of bytes we will try to read in for a file.
+  # Anything larger and we abort
+  MAX_FILE_SIZE = 25000
 
 #### Code Pre-processor ####
 
@@ -137,7 +141,7 @@ def _dy_bind_code(module, context):
       mod_str += "m." + attr + " = c['" + attr + "']\n"
 
     # Create the namespace to do the binding
-    module_bind_space = VirtualNamespace(mod_str, module+" bind-space")
+    module_bind_space = createvirtualnamespace(mod_str, module+" bind-space")
 
     # Cache this
     MODULE_BIND_CACHE[module] = module_bind_space
@@ -159,18 +163,22 @@ def _dy_module_code(module):
     fileh = None
     for extension in COMMON_EXTENSIONS:
       try:
-        fileh = open(module + extension)
+        fileh = openfile(module + extension,False)
         break
-      except:
+      except FileNotFoundError:
         pass
+      except ResourceExhaustedError:
+        raise
 
     # Was the file found?
     if fileh is None:
       raise Exception, "Failed to locate the module! Module: '" + module + "'"
 
     # Read in the code
-    code = fileh.read()
+    code = fileh.readat(MAX_FILE_SIZE, 0)
     fileh.close()
+    if len(code) == MAX_FILE_SIZE:
+      print "Failed to read all of module ("+module+")! File size exceeds 25K characters!"
 
     # Pre-process the code
     if RUN_PRE_PROCESS:
@@ -267,7 +275,8 @@ def dylink_import_global(module, module_context,new_callfunc="import"):
   try:
     virt.evaluate(module_context)
   except Exception, e:
-    raise Exception, "Caught exception while initializing module! Exception: '" + str(e) + "'"
+    debug_str = getlasterror()
+    raise Exception, "Caught exception while initializing module ("+module+")! Debug String: "+debug_str
 
   # Restore the original callfunc
   if orig_callfunc[0]:
@@ -423,7 +432,7 @@ class DylinkNamespace(object):
   # Take any arguments, pass it down
   def __init__(self,*args,**kwargs):
     # Construct the underlying virtual namespace
-    self._virt = VirtualNamespace(*args,**kwargs)
+    self._virt = createvirtualnamespace(*args,**kwargs)
 
     # Set the last eval context to None
     self._eval_context = None
@@ -474,11 +483,8 @@ def get_DylinkNamespace(*args,**kwargs):
 #### Call into the next module ####
 
 # Update the child context
-if callfunc == "initialize":
-  CHILD_CONTEXT["VirtualNamespace"] = get_DylinkNamespace
+CHILD_CONTEXT["createvirtualnamespace"] = get_DylinkNamespace
 
-# DEPRECATING "exit" callfunc
-if callfunc != "exit":
-  # Evaluate the next module
-  dylink_dispatch(CHILD_CONTEXT, _context)
+# Evaluate the next module
+dylink_dispatch(CHILD_CONTEXT, _context)
 
