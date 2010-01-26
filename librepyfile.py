@@ -242,19 +242,36 @@ class RepyFile (object):
     raise FileClosedError, "File is closed!"
 
 
-  def seek(self, offset):
-    """Seeks to an aboslute offset."""
+  def tell(self):
+    """Returns the current position of the cursor."""
+    return self.cursor
+
+
+  def seek(self, offset, fromStart=True):
+    """
+    Seeks to an aboslute offset.
+    If fromStart is True, then offset is from the start of the file.
+    If fromStart is False, then offset if from the end of the file.
+    """
     if type(offset) is not int:
       raise TypeError, "Invalid type for offset! Must be int!"
+    if offset < 0:
+      raise ValueError, "Offset must be a non-negative value!"
 
     # Check the file size
     size = self.size()
     if offset > size:
       raise RepyArgumentError, "Offset exceeds the file size!"
 
+
     # Acquire the lock, update the cursor and release
     self.cursor_lock.acquire(True)
-    self.cursor = offset
+
+    if fromStart:
+      self.cursor = offset
+    else:
+      self.cursor = self.size() - offset
+
     self.cursor_lock.release()
 
 
@@ -272,6 +289,12 @@ class RepyFile (object):
     # Check the mode
     if "r" not in self.mode:
       raise RepyArgumentError, "File opened as write-only! Cannot read!"
+
+    # Check the bytes argument
+    if bytes is not None and type(bytes) is not int:
+      raise TypeError, "Bytes argument must be an integer or 'None'!"
+    if bytes is not None and bytes < 0:
+      raise ValueError, "Bytes must be a non-negative integer!"
 
     # Acquire the cursor lock
     self.cursor_lock.acquire(True)
@@ -327,6 +350,12 @@ class RepyFile (object):
     # Check the mode
     if "w" not in self.mode:
       raise RepyArgumentError, "File is opened as read-only! Cannot write!"
+
+    # Check the data argument
+    if type(data) is not str:
+      raise TypeError, "Data must be provided as a string type!"
+    if len(data) == 0:
+      return
 
     # Acquire the cursor lock
     self.cursor_lock.acquire(True)
@@ -410,6 +439,7 @@ class RepyFile (object):
     self.flush()
 
     # Switch all the functions to the closed function
+    self.tell = self._closed
     self.seek = self._closed
     self.size = self._closed
     self.read = self._closed
@@ -451,5 +481,12 @@ class RepyFile (object):
 
     # Return the duplicate
     return fileh_dup
+
+  # Handle GC for implicit cleanup
+  #def __del__(self):
+  ##  try:
+  #    self.close()
+  #except:
+  #  pass
 
 
