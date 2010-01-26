@@ -40,7 +40,7 @@ def _create_file_entry(filename, fobj):
   file_dict = {
                 "lock":createlock(),
                 "fobj":fobj,
-                "retain_count":1,
+                "retain_count":0,
                 "cache":{},
                 "size":None,
               }
