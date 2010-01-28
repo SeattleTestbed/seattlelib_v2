@@ -16,6 +16,10 @@ _EXPORTS = []
 # than defining everything here.
 #
 
+# Import the sub-library, librepyrunloop
+librunloop = dy_import_module("librepyrunloop")
+_EXPORTS.append("librunloop")
+
 # Import the sub-library, librepyfile
 libfile = dy_import_module("librepyfile")
 _EXPORTS.append("libfile")
@@ -24,6 +28,20 @@ _EXPORTS.append("libfile")
 ##### Exports
 #
 # Here we export symbols from our sub-libraries
+
+# Exports from librepyrunloop
+PriorityQueue = librunloop.PriorityQueue
+runAt = librunloop.runAt
+runIn = librunloop.runIn
+runEvery = librunloop.runEvery
+stopSchedule = librunloop.stopSchedule
+terminate_runloop = librunloop.terminate
+_EXPORTS.append("PriorityQueue")
+_EXPORTS.append("runAt")
+_EXPORTS.append("runIn")
+_EXPORTS.append("runEvery")
+_EXPORTS.append("stopSchedule")
+_EXPORTS.append("terminate_runloop")
 
 # Exports from librepyfile
 open = libfile.open
