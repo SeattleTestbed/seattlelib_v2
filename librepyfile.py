@@ -483,10 +483,10 @@ class RepyFile (object):
     return fileh_dup
 
   # Handle GC for implicit cleanup
-  #def __del__(self):
-  ##  try:
-  #    self.close()
-  #except:
-  #  pass
+  def __del__(self):
+    try:
+      self.close()
+    except:
+      pass
 
 
