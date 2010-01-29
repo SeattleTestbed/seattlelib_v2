@@ -24,6 +24,9 @@ _EXPORTS.append("librunloop")
 libfile = dy_import_module("librepyfile")
 _EXPORTS.append("libfile")
 
+# Import the sub-library, librepyrandom
+librandom = dy_import_module("librepyrandom")
+_EXPORTS.append("librandom")
 
 ##### Exports
 #
@@ -43,9 +46,21 @@ _EXPORTS.append("runEvery")
 _EXPORTS.append("stopSchedule")
 _EXPORTS.append("terminate_runloop")
 
+
 # Exports from librepyfile
 open = libfile.open
 _EXPORTS.append("open")
+
+
+# Exports from librandom
+randomint = librandom.randomint
+randomlong = librandom.randomlong
+randomfloat = librandom.randomfloat
+randomstring = librandom.randomstring
+_EXPORTS.append("randomint")
+_EXPORTS.append("randomlong")
+_EXPORTS.append("randomfloat")
+_EXPORTS.append("randomstring")
 
 
 ##### Run-time
