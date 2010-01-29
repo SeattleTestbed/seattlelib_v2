@@ -34,12 +34,14 @@ _EXPORTS.append("librandom")
 
 # Exports from librepyrunloop
 PriorityQueue = librunloop.PriorityQueue
+start_runloop = librunloop.start_runloop
 runAt = librunloop.runAt
 runIn = librunloop.runIn
 runEvery = librunloop.runEvery
 stopSchedule = librunloop.stopSchedule
 terminate_runloop = librunloop.terminate
 _EXPORTS.append("PriorityQueue")
+_EXPORTS.append("start_runloop")
 _EXPORTS.append("runAt")
 _EXPORTS.append("runIn")
 _EXPORTS.append("runEvery")

@@ -210,6 +210,16 @@ def _runloop_scheduled_task(handle):
 
 ##### Public Methods
 
+def start_runloop():
+  """
+  Starts the runloop. Raises ResourceExhaustedError if there are no free events.
+  This is performed implicitly by the run*() commands, but this can be used to
+  guarentee the launch of the run loop.
+  """
+  # Just use the private method
+  _init_runloop()
+
+
 def runAt(time, func):
   """Schedules a function to be executed at a certain time."""
   # Add this task to the queue
