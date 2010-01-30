@@ -8,6 +8,13 @@ It can either be loaded as a Repy module, or it can be imported directly.
 # This array holds things to export if we loaded as a module
 _EXPORTS = []
 
+#### Constants
+
+# How often we should check if the Run Loop should be shutdown
+# It is shutdown where there are no active threads and no
+# more scheduled tasks.
+CHECK_RL_SHUTDOWN = 1
+
 
 ##### Imports
 #
@@ -27,6 +34,14 @@ _EXPORTS.append("libfile")
 # Import the sub-library, librepyrandom
 librandom = dy_import_module("librepyrandom")
 _EXPORTS.append("librandom")
+
+# Import the sub-library, librepythread
+libthread = dy_import_module("librepythread")
+_EXPORTS.append("libthread")
+
+# Override the imported version of librunloop to use a unified run-loop
+libthread._context["librunloop"] = librunloop
+
 
 ##### Exports
 #
@@ -65,13 +80,45 @@ _EXPORTS.append("randomfloat")
 _EXPORTS.append("randomstring")
 
 
+# Exports from libthread
+Lock = libthread.Lock
+RLock = libthread.RLock
+Thread = libthread.Thread
+Timer = libthread.Timer
+_EXPORTS.append("Lock")
+_EXPORTS.append("RLock")
+_EXPORTS.append("Thread")
+_EXPORTS.append("Timer")
+
 ##### Run-time
 
 # If we are loaded as a module, we need to dispatch the next module
 if callfunc == "initialize":
+  # Get the idle thread count
+  idle_threads = libthread.active_threads()
+
+  # This function will be periodically scheduled to see if the
+  # run-loop should shutdown so the program can terminate
+  def check_terminate():
+    # Get the number of threads
+    active_threads = libthread.active_threads()
+
+    # If active equals idle, then check if there are
+    # any scheduled tasks. If there aren't, then terminate the runloop.
+    if active_threads == idle_threads:
+      num_scheduled = librunloop._context["_TASK_QUEUE"].count
+      if num_scheduled == 0:
+        librunloop.terminate() 
+
+
+  # Schedule this checker to run every once in a while
+  runEvery(CHECK_RL_SHUTDOWN, check_terminate)
+
   # Export everything
   for key in _EXPORTS:
     CHILD_CONTEXT[key] = _context[key]
+  
+  # Start the next module
   dy_dispatch_module()
 
 

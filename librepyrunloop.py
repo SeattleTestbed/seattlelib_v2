@@ -69,11 +69,9 @@ def _init_runloop():
   # Check the Run-Loop status
   _RL_STATUS_LOCK.acquire(True)
   try:
-    # Set "should-run" to True
-    _RL_STATUS[0] = True
-
     # Check if the thread is started and start it
     if not _RL_STATUS[1]:
+      _RL_STATUS[0] = True
       createthread(_runloop_main)
       _RL_STATUS[1] = True
 

@@ -1,0 +1,259 @@
+"""
+This is a sub-component os librepy, and provides
+thread, and locking related functionality. It must
+be imported, and cannot be used directly as a module.
+
+This module will import librepyrunloop, so if one unified
+run-loop is to be used, then the global variable
+"librunloop" should be overriden.
+
+"""
+##### Imports
+
+# Get a run loop
+librunloop = dy_import_module("librepyrunloop")
+
+
+##### Public methods
+
+def active_threads():
+  """Returns the active thread count."""
+  # Call getresources to get the usage and return the event count
+  lim, usage, stops = getresources()
+  return usage["events"]
+
+
+##### Class Definitions
+
+class Lock (object):
+  def __init__(self):
+    self.lock = createlock()
+
+  def acquire(self, blocking=True):
+    return self.lock.acquire(blocking)
+
+  def release(self):
+    self.lock.release()
+
+
+
+class RLock (object):
+  def __init__(self):
+    self.lock = createlock()
+    self.holding_lock = createlock()
+    self.holding_thread = None
+    self.acquire_count = 0
+
+  def acquire(self, blocking=True):
+    # Get the first lock
+    self.lock.acquire(True)
+    try:
+      # Check if we are the holding lock, or if it is none
+      thread_name = getthreadname()
+      if self.holding_thread is None and self.holding_lock.acquire(False):
+        self.holding_thread = thread_name
+        self.acquire_count = 1
+        return True
+
+      elif self.holding_thread == thread_name:
+        self.acquire_count += 1
+        return True
+
+      # If we are not willing to block, then we just return now
+      elif not blocking:
+        return False
+
+    finally:
+      self.lock.release()
+
+    # Otherwise, we wait to get the holding lock
+    self.holding_lock.acquire(True)
+    self.holding_thread = thread_name
+    self.acquire_count = 1
+    return True
+
+  
+  def release(self):
+    # Get the first lock
+    self.lock.acquire(True)
+    try:
+      # Check if the thread name matches
+      thread_name = getthreadname()
+      if thread_name == self.holding_thread:
+        # Reduce the acquire count
+        self.acquire_count = max(0, self.acquire_count - 1)
+        
+        # If this thread has no more acquire counts, we are no longer
+        # the holding thread
+        if self.acquire_count == 0:
+          self.holding_thread = None
+          self.holding_lock.release()
+
+      else:
+        raise RuntimeError, "Cannot release a lock held by another thread!"
+    finally:
+      self.lock.release()
+
+
+
+class Thread (object):
+  """
+  Provides an implementation of a thread like object.
+  A sub-class should override the run() method.
+
+  """
+  def __init__(self,target=None,args=None,kwargs=None):
+    """
+    Creates a new Thread object
+    target: The callable object to be invoked by the run() method.
+    args : The argumetn tuple for the target invocation
+    kwargs : A dictionary of keyword arguments for the target invokation
+    """
+    # Substitude default args
+    if args is None:
+      args = ()
+    if kwargs is None:
+      kwargs = {}
+
+    # Store the args
+    self.target = target
+    self.args = args
+    self.kwargs = kwargs
+
+    # Set alive to false
+    self.alive = False
+    self.alive_lock = createlock()
+
+    # This is a list of locks which are all trying to be acquired
+    # by threads which have "joined" this thread
+    self.join_locks = []
+
+
+  def start(self):
+    """Starts the thread."""
+    # Launch a thread on the _run() method
+    # That will invoke run()
+    self.alive_lock.acquire(True)
+    try:
+      if self.alive:
+        raise RuntimeError, "Thread already started!"
+
+      self.alive = True
+      createthread(self._run)
+    
+    finally:
+      self.alive_lock.release()
+
+
+  def _run(self):
+    """Private run method."""
+    try:
+      self.run()
+    finally:
+      self.alive_lock.acquire(True)
+      self.alive = False
+    
+      # Release all joined threads
+      for lock in self.join_locks:
+        lock.release()
+      self.join_locks = []
+
+      self.alive_lock.release()
+
+
+  def run(self):
+    """Default run method."""
+    # Invoke the target method
+    if self.target is not None:
+      func = self.target
+      func(*self.args, **self.kwargs)
+
+
+  def is_alive(self):
+    """Returns if a thread is alive. Live from start() until run() exits."""
+    self.alive_lock.acquire(True)
+    try:
+      return self.alive
+    finally:
+      self.alive_lock.release()
+
+
+  def join(self):
+    """Joins the thread."""
+    # Check if the thread is alive
+    if not self.is_alive():
+      raise RuntimeError, "Thread is not alive!"
+
+    # Create a lock
+    lock = createlock()
+    lock.acquire(True) # Acquire once
+    self.join_locks.append(lock) # Append this lock
+    lock.acquire(True) # This will block until the thread exits
+
+
+class Timer (Thread):
+  """
+  This class emulates a Timer thread.
+  """
+  def __init__(self, interval, target=None, args=None, kwargs=None):
+    if type(interval) not in [int, float]:
+      raise TypeError, "Interval must be an integer or floating point value!"
+    if interval < 0:
+      raise ValueError, "Interval cannot be negative!"
+    
+    # Initialize the super-class
+    Thread.__init__(self, target=target, args=args, kwargs=kwargs)
+
+    # Store the interval
+    self.intv = interval
+
+    # Store a lock to serialize cancel / start
+    self.cancel_lock = createlock()
+
+    # This is our runloop handle
+    self.rl_handle = None
+
+
+  def start(self):
+    # Acquire the canceled lock
+    self.cancel_lock.acquire(True)
+    try:
+      # Check if we are started
+      if self.is_alive():
+        raise RuntimeError, "Thread is already started!"
+      if self.rl_handle is not None:
+        raise RuntimeError, "Thread is already scheduled to start!"
+
+      # Create a wrapper function
+      def wrapper():
+        librunloop.stopSchedule(self.rl_handle)
+        Thread.start(self)
+        self.rl_handle = None
+
+      # Schedule us. The run loop will wait for the interval
+      # and then launch the thread
+      self.rl_handle = librunloop.runEvery(self.intv, wrapper)
+
+    finally:
+      self.cancel_lock.release()
+
+
+  def cancel(self):
+    # Get the cancel lock
+    self.cancel_lock.acquire(True)
+    try:
+      # Check if we are started
+      if self.is_alive():
+        raise RuntimeError, "Thread is already started!"
+      if self.rl_handle is None:
+        raise RuntimeError, "Thread is not scheduled to start!"
+
+      # Cancel the schedule
+      librunloop.stopSchedule(self.rl_handle)
+
+      # Set the handle to None
+      self.rl_handle = None
+
+    finally:
+      self.cancel_lock.release()
+  
