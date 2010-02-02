@@ -234,10 +234,11 @@ class RepyFile (object):
     self.cursor = 0
     self.cursor_lock = createlock()
 
-    # Calculate the size
-    self.size()
-
   
+  def __iter__(self):
+    return self
+
+
   def _closed(*args, **kwargs):
     raise FileClosedError, "File is closed!"
 
@@ -343,6 +344,45 @@ class RepyFile (object):
       self.cursor_lock.release()
 
 
+  def readline(self):
+    """
+    Reads a single line of input, until \n or EOF is reached.
+    """
+    data = ""
+    while True:
+      # Read 64 bytes at a time
+      extra_data = self.read(64)
+
+      # Stop if we are EOF
+      if extra_data == "":
+        break
+
+      # Find the new line
+      index = extra_data.find("\n")
+      if index >= 0:
+        data += extra_data[:index+1]
+        
+        # Seek backward
+        # Possible race condition here if there is a concurrent
+        # read / write
+        backward = len(extra_data) - (index+1)
+        self.seek(self.tell() - backward)
+        break
+
+      else:
+        data += extra_data
+
+    return data
+
+
+  # Read a line at a time for iteration
+  def next(self):
+    data = self.readline()
+    if data == "":
+      raise StopIteration
+    return data
+
+
   def write(self, data):
     """
     Writes the given data to the file. Not guarenteed to be written unless flush() is called.
@@ -443,6 +483,8 @@ class RepyFile (object):
     self.seek = self._closed
     self.size = self._closed
     self.read = self._closed
+    self.readline = self._closed
+    self.next = self._closed
     self.write = self._closed
     self.flush = self._closed
     self.close = self._closed
