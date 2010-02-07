@@ -278,7 +278,7 @@ class RepyFile (object):
       Raises RepyArgumentError if the RepyFile is initializes outside of open().
     """
     if filename not in _FILES:
-      raise RepyArgumentError, "Do not initialize the RepyFile object directly! Use open()"
+      raise RepyArgumentError("Do not initialize the RepyFile object directly! Use open()")
     
     # Increment the retain count
     _inc_file_refcount(filename) 
@@ -297,7 +297,7 @@ class RepyFile (object):
 
 
   def _closed(*args, **kwargs):
-    raise FileClosedError, "File is closed!"
+    raise FileClosedError("File is closed!")
 
 
   def tell(self):
@@ -325,14 +325,14 @@ class RepyFile (object):
       None      
     """
     if type(offset) is not int:
-      raise TypeError, "Invalid type for offset! Must be int!"
+      raise TypeError("Invalid type for offset! Must be int!")
     if offset < 0:
-      raise ValueError, "Offset must be a non-negative value!"
+      raise ValueError("Offset must be a non-negative value!")
 
     # Check the file size
     size = self.size()
     if offset > size:
-      raise RepyArgumentError, "Offset exceeds the file size!"
+      raise RepyArgumentError("Offset exceeds the file size!")
 
 
     # Acquire the lock, update the cursor and release
@@ -358,13 +358,13 @@ class RepyFile (object):
   def _read(self, bytes=None):
     # Check the mode
     if "r" not in self.mode:
-      raise RepyArgumentError, "File opened as write-only! Cannot read!"
+      raise RepyArgumentError("File opened as write-only! Cannot read!")
 
     # Check the bytes argument
     if bytes is not None and type(bytes) is not int:
-      raise TypeError, "Bytes argument must be an integer or 'None'!"
+      raise TypeError("Bytes argument must be an integer or 'None'!")
     if bytes is not None and bytes < 0:
-      raise ValueError, "Bytes must be a non-negative integer!"
+      raise ValueError("Bytes must be a non-negative integer!")
 
     # Store a copy of the cursor
     cursor = self.cursor
@@ -501,11 +501,11 @@ class RepyFile (object):
     """
     # Check the mode
     if "w" not in self.mode:
-      raise RepyArgumentError, "File is opened as read-only! Cannot write!"
+      raise RepyArgumentError("File is opened as read-only! Cannot write!")
 
     # Check the data argument
     if type(data) is not str:
-      raise TypeError, "Data must be provided as a string type!"
+      raise TypeError("Data must be provided as a string type!")
     if len(data) == 0:
       return
 

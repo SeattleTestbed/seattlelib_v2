@@ -86,9 +86,9 @@ def randomfloat():
 def randomstring(bytes=4):
   """Returns some number of random bytes as a string."""
   if type(bytes) is not int:
-    raise TypeError, "Bytes must be given as an integer!"
+    raise TypeError("Bytes must be given as an integer!")
   if bytes <= 0:
-    raise ValueError, "Bytes must be a positive integer!"
+    raise ValueError("Bytes must be a positive integer!")
 
   return _get_randombytes(bytes)
 

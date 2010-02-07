@@ -265,7 +265,7 @@ def runAt(time, func):
   """
   # Check the time argument
   if type(time) not in [int, float]:
-    raise TypeError, "Time must be numeric!"
+    raise TypeError("Time must be numeric!")
 
   # Add this task to the queue
   _TASK_QUEUE_LOCK.acquire(True)
@@ -294,9 +294,9 @@ def runIn(offset, func):
   """
   # Check that the offset is valid
   if type(offset) not in [int, float]:
-    raise TypeError, "Offset must be numeric!"
+    raise TypeError("Offset must be numeric!")
   if offset < 0:
-    raise ValueError, "Offset cannot be negative!"
+    raise ValueError("Offset cannot be negative!")
 
   # Schedule this
   runAt(getruntime() + offset, func)
@@ -321,9 +321,9 @@ def runEvery(interval, func):
   """
    # Check that the offset is valid
   if type(interval) not in [int, float]:
-    raise TypeError, "Interval must be numeric!"
+    raise TypeError("Interval must be numeric!")
   if interval <= 0:
-    raise ValueError, "Interval must be positive!"
+    raise ValueError("Interval must be positive!")
 
   # Make sure the RL is started
   _init_runloop()

@@ -138,7 +138,7 @@ class RLock (object):
           self.holding_lock.release()
 
       else:
-        raise RuntimeError, "Cannot release a lock held by another thread!"
+        raise RuntimeError("Cannot release a lock held by another thread!")
     finally:
       self.lock.release()
 
@@ -199,7 +199,7 @@ class Thread (object):
     self.alive_lock.acquire(True)
     try:
       if self.alive:
-        raise RuntimeError, "Thread already started!"
+        raise RuntimeError("Thread already started!")
 
       self.alive = True
       createthread(self._run)
@@ -257,7 +257,7 @@ class Thread (object):
     """
     # Check if the thread is alive
     if not self.is_alive():
-      raise RuntimeError, "Thread is not alive!"
+      raise RuntimeError("Thread is not alive!")
 
     # Create a lock
     lock = createlock()
@@ -289,9 +289,9 @@ class Timer (Thread):
       A new Timer object
     """
     if type(interval) not in [int, float]:
-      raise TypeError, "Interval must be an integer or floating point value!"
+      raise TypeError("Interval must be an integer or floating point value!")
     if interval < 0:
-      raise ValueError, "Interval cannot be negative!"
+      raise ValueError("Interval cannot be negative!")
     
     # Initialize the super-class
     Thread.__init__(self, target=target, args=args, kwargs=kwargs)
@@ -326,9 +326,9 @@ class Timer (Thread):
     try:
       # Check if we are started
       if self.is_alive():
-        raise RuntimeError, "Thread is already started!"
+        raise RuntimeError("Thread is already started!")
       if self.rl_handle is not None:
-        raise RuntimeError, "Thread is already scheduled to start!"
+        raise RuntimeError("Thread is already scheduled to start!")
 
       # Create a wrapper function
       def wrapper():
@@ -361,9 +361,9 @@ class Timer (Thread):
     try:
       # Check if we are started
       if self.is_alive():
-        raise RuntimeError, "Thread is already started!"
+        raise RuntimeError("Thread is already started!")
       if self.rl_handle is None:
-        raise RuntimeError, "Thread is not scheduled to start!"
+        raise RuntimeError("Thread is not scheduled to start!")
 
       # Cancel the schedule
       librunloop.stopSchedule(self.rl_handle)
