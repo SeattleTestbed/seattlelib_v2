@@ -66,7 +66,7 @@ def _get_randomint(bytes):
 
 def randomint():
   """Returns a random 4-byte unsigned integer"""
-  return _get_randomint(4)
+  return int(_get_randomint(4) % 2**31)
 
 
 def randomlong():
