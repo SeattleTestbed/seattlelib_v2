@@ -3,18 +3,29 @@ This library is a sub-component of librepy and provides
 random data related functionality. It must be imported,
 and cannot be used directly.
 
+This module acts as a simple wrapper around the randombytes()
+API call, and parcels the random data to be more usable and
+fast. Since the API call always returns 1024 bytes of random data,
+and rarely is more than 4-8 bytes needed, the random data is
+cached and replenished as necessary.
+
 """
 
 ##### Module Data
 
 # This array stores a single element, which is a string
-# of random data.
+# of random data. The _RANDOM_DATA_LOCK is used to serialize
+# access to _RANDOM_DATA to prevent race conditions.
 _RANDOM_DATA = [""]
 _RANDOM_DATA_LOCK = createlock()
 
 ##### Internal Methods
 
 # Gets some random bytes
+# Return bytes number of bytes of random data.
+# This method utilizes and replenishes the cached
+# random data, and should be used instead of directly
+# accessing the cache.
 def _get_randombytes(bytes):
   # Get the lock
   _RANDOM_DATA_LOCK.acquire(True)
@@ -37,6 +48,7 @@ def _get_randombytes(bytes):
 
 
 # Converts some number of random bytes into a number
+# Treats random data as an unsigned long.
 def _get_randomint(bytes):
   # Get enough random data
   data = _get_randombytes(bytes)

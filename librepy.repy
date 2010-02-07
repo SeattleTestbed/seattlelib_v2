@@ -3,6 +3,11 @@ This is the "Libc" of Repy. This file provides convenient and functional
 wrappers around the Repy API to make programming more convenient.
 
 It can either be loaded as a Repy module, or it can be imported directly.
+This module just imports all of its sub-components and exports their
+symbols.
+
+If it is loaded as a module, then a run-loop is initialized prior
+to dispatching the next module.
 
 """
 # This array holds things to export if we loaded as a module

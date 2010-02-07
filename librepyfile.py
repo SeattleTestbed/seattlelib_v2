@@ -3,9 +3,41 @@ This library is a sub-component of librepy and provides
 file related functionality. It must be imported, and
 cannot be used directly as a repy module.
 
-"""
-##### Imports
+The module uses a two tier design to allowing multiple handles
+to a single file while maintaining effiency in file operations.
 
+Each unique file has an entry in the _FILES dictionary.
+This entry tracks the repy file object, the number of 
+references to the file, the size of the file, and a cache
+of disk blocks. The cache is a LRU cache of the last 
+MAX_BLOCK_CACHE blocks used. Each block has a 'dirty' flag
+which is used to track if we've written to the block. 
+When the cache grows too large, we delete the oldest cached
+entries, flushing them to disk if they are dirty.
+
+On top of this, we implement the open() call, and
+the RepyFile object. Every time open is called, we return
+a RepyFile object, potentially to a file that is already open.
+The RepyFile object supports a dup() call, so it is possible to
+have many RepyFile objects which all refer to the same underlying
+file. Since each file has only one entry in the _FILES dict,
+this consumes only a single file handle. Consistency is provided
+since all the operations go though the cache.
+
+The main reason for this design is to minimize the impact
+of the resource consumption accounting. Since each read/write
+to a block is charged for a full 4096 bytes. So, if a user
+wants to read a single byte, it does not make sense to call
+readat(1,0) since the user will still be charged for 4096 bytes.
+Instead, we read the entire block into the cache, and read from
+our cache. With writes, we read the entire block and then
+modify our cached version of the data.
+
+Since the block based abstraction is tedious to use, the
+RepyFile object implements a traditional cursor based handle,
+so that reads and writes are done linearly though the file,
+as with a traditional file handle.
+"""
 
 ##### Constants
 
@@ -34,7 +66,8 @@ _FILES_LOCK = createlock()
 
 ##### Internal Methods
 
-# Creates an entry for a file
+# Creates an entry for a file given a repy file object
+# and a file name. The _FILES_LOCK should be held.
 def _create_file_entry(filename, fobj):
   # Create a dictionary for the file
   file_dict = {
@@ -61,7 +94,9 @@ def _inc_file_refcount(filename):
     file_dict["lock"].release()
 
 
-# Checks if we have over-cached
+# Checks if we have over-cached data.
+# If so, we delete the last accessed block,
+# flushing to disk if the block is dirty.
 def _check_file_cache_size(file_dict):
   cache = file_dict["cache"]
 
@@ -83,7 +118,8 @@ def _check_file_cache_size(file_dict):
     del cache[min_block[0]]
 
 
-# Reads a single block from a file
+# Reads a single block from a file.
+# block: The block number.
 def _read_file_block(filename, block):
   # Get the file dict
   file_dict = _FILES[filename]
@@ -113,7 +149,12 @@ def _read_file_block(filename, block):
 
 
 # Writes a single block to a file
+# block: The block number
+# data: A string of length <= 4096
 def _write_file_block(filename, block, data):
+  # Check the data length
+  assert(len(data) <= 4096)
+
   # Get the file dict
   file_dict = _FILES[filename]
   file_dict["lock"].acquire(True)
@@ -219,7 +260,23 @@ def open(filename, mode="rw", create=True):
 ##### Class definitions
 
 class RepyFile (object):
+  """
+  This object emulates a normal file object.
+  It has a cursor which starts at the beginning of the file,
+  and can be manipulated via seek().
+  """
   def __init__(self, filename, mode):
+    """
+    <Purpose>
+      Initializes the RepyFile object.
+
+    <Arguments>
+      filename: The filename
+      mode: A mode for the file object, should be "r","w", or "rw"
+
+    <Exceptions>
+      Raises RepyArgumentError if the RepyFile is initializes outside of open().
+    """
     if filename not in _FILES:
       raise RepyArgumentError, "Do not initialize the RepyFile object directly! Use open()"
     
@@ -250,9 +307,22 @@ class RepyFile (object):
 
   def seek(self, offset, fromStart=True):
     """
-    Seeks to an aboslute offset.
-    If fromStart is True, then offset is from the start of the file.
-    If fromStart is False, then offset if from the end of the file.
+    <Purpose>
+      Seeks to an aboslute offset.
+
+    <Arguments>
+      offset: The offset into the file
+
+      fromStart: If True, then offset is from the start of the file.
+                 If fromStart is False, then offset if from the end of the file.
+
+    <Exceptions>
+      Raises TypeError if the offset is not an int.
+      Raises ValueError if the Offset is negative.
+      Raises RepyArgumentError if the offset exceeds the file size. 
+
+    <Returns>
+      None      
     """
     if type(offset) is not int:
       raise TypeError, "Invalid type for offset! Must be int!"
@@ -283,10 +353,9 @@ class RepyFile (object):
     return file_dict["size"]
 
 
-  def read(self, bytes=None):
-    """
-    Reads a given number of bytes or until the EOF is reached.
-    """
+  # Private read method. The cursor_lock should be
+  # held prior to calling this method.
+  def _read(self, bytes=None):
     # Check the mode
     if "r" not in self.mode:
       raise RepyArgumentError, "File opened as write-only! Cannot read!"
@@ -297,48 +366,67 @@ class RepyFile (object):
     if bytes is not None and bytes < 0:
       raise ValueError, "Bytes must be a non-negative integer!"
 
+    # Store a copy of the cursor
+    cursor = self.cursor
+
+    # Get the boundary blocks, and the offsets into them
+    start_block = cursor / 4096
+    start_offset = cursor % 4096
+    
+    end_block = None
+    if bytes is not None:
+      end_block = (cursor + bytes) / 4096
+      end_offset = (cursor + bytes) % 4096
+
+    # Read the data in one block at a time
+    data = ""
+    current_block = start_block
+    while current_block <= end_block or end_block is None:
+      try:
+        block_data = _read_file_block(self.filename, current_block)
+      except SeekPastEndOfFileError:
+        break
+      if len(block_data) == 0:
+        break
+      
+      # If this is a boundary block, adjust the data we read
+      if current_block == end_block:
+        block_data = block_data[:end_offset]
+      if current_block == start_block:
+        block_data = block_data[start_offset:]
+
+      # Add this to the total data
+      data += block_data
+      current_block += 1
+
+    # Move the cursor
+    self.cursor = cursor + len(data)
+
+    return data
+
+
+  def read(self, bytes=None):
+    """
+    <Purpose>
+      Reads a given number of bytes or until the EOF is reached.
+
+    <Arguments>
+      bytes: The maximum number of bytes to read. None for unlimited.
+
+    <Exceptions>
+      Raises RepyArgumentError if the file is opened in write only mode.
+      Raises TypeError if bytes is not an int
+      Raises ValueError if the number of bytes is negative
+
+    <Returns>
+      The data read as a string.
+    """
     # Acquire the cursor lock
     self.cursor_lock.acquire(True)
 
     try:
-      # Store a copy of the cursor
-      cursor = self.cursor
-
-      # Get the block offset
-      start_block = cursor / 4096
-      start_offset = cursor % 4096
-      
-      end_block = None
-      if bytes is not None:
-        end_block = (cursor + bytes) / 4096
-        end_offset = (cursor + bytes) % 4096
-
-      # Read the data in 
-      data = ""
-      current_block = start_block
-      while current_block <= end_block or end_block is None:
-        try:
-          block_data = _read_file_block(self.filename, current_block)
-        except SeekPastEndOfFileError:
-          break
-        if len(block_data) == 0:
-          break
-        
-        # If this is a boundary block, adjust the data we read
-        if current_block == end_block:
-          block_data = block_data[:end_offset]
-        if current_block == start_block:
-          block_data = block_data[start_offset:]
-
-        # Add this to the total data
-        data += block_data
-        current_block += 1
-
-      # Move the cursor
-      self.cursor = cursor + len(data)
-
-      return data
-
+      return self._read(bytes)
+    
     finally:
       # Release the cursor lock
       self.cursor_lock.release()
@@ -346,33 +434,46 @@ class RepyFile (object):
 
   def readline(self):
     """
-    Reads a single line of input, until \n or EOF is reached.
+    <Purpose>
+      Reads a single line of input, until \n or EOF is reached.
+
+    <Exceptions>
+      Raises RepyArgumentError if the file is opened in write only mode. 
+
+    <Returns>
+      The data as a string.
     """
-    data = ""
-    while True:
-      # Read 64 bytes at a time
-      extra_data = self.read(64)
+    # Acquire the cursor lock
+    self.cursor_lock.acquire(True)
 
-      # Stop if we are EOF
-      if extra_data == "":
-        break
+    try:
+      data = ""
+      while True:
+        # Read 64 bytes at a time
+        extra_data = self._read(64)
 
-      # Find the new line
-      index = extra_data.find("\n")
-      if index >= 0:
-        data += extra_data[:index+1]
-        
-        # Seek backward
-        # Possible race condition here if there is a concurrent
-        # read / write
-        backward = len(extra_data) - (index+1)
-        self.seek(self.tell() - backward)
-        break
+        # Stop if we are EOF
+        if extra_data == "":
+          break
 
-      else:
-        data += extra_data
+        # Find the new line
+        index = extra_data.find("\n")
+        if index >= 0:
+          data += extra_data[:index+1]
+          
+          # Seek backward
+          backward = len(extra_data) - (index+1)
+          self.cursor = self.tell() - backward
+          break
 
-    return data
+        else:
+          data += extra_data
+
+      return data
+
+    finally:
+      # Release the cursor lock
+      self.cursor_lock.release()
 
 
   # Read a line at a time for iteration
@@ -385,7 +486,18 @@ class RepyFile (object):
 
   def write(self, data):
     """
-    Writes the given data to the file. Not guarenteed to be written unless flush() is called.
+    <Purpose>
+       Writes the given data to the file. Not guarenteed to be written unless flush() is called.
+
+    <Arguments>
+      data: The data to write.
+
+    <Exceptions>
+      Raises RepyArgumentError if the file is opened as read-only.
+      Raises TypeError if the data is not a string.
+
+    <Returns>
+      None
     """
     # Check the mode
     if "w" not in self.mode:
@@ -441,7 +553,11 @@ class RepyFile (object):
 
   def flush(self):
     """
-    Flushes the data to disk.
+    <Purpose>
+      Flushes the data that has been written to disk.
+
+    <Returns>
+      None
     """
     # Get the file dict
     file_dict = _FILES[self.filename]
@@ -474,6 +590,8 @@ class RepyFile (object):
   def close(self):
     """
     Closes the file handle and flushes the data to disk.
+    If this is the last reference to the file, the underlying
+    file handle is closed.
     """
     # Flush the dirty blocks
     self.flush()
@@ -482,6 +600,7 @@ class RepyFile (object):
     self.tell = self._closed
     self.seek = self._closed
     self.size = self._closed
+    self._read = self._closed
     self.read = self._closed
     self.readline = self._closed
     self.next = self._closed
@@ -490,7 +609,7 @@ class RepyFile (object):
     self.close = self._closed
     self.dup = self._closed
 
-    # AGet the dictionary for this file
+    # Get the dictionary for this file
     file_dict = _FILES[self.filename]
 
     _FILES_LOCK.acquire(True)

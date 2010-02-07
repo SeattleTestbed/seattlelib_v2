@@ -7,6 +7,29 @@ This module will import librepyrunloop, so if one unified
 run-loop is to be used, then the global variable
 "librunloop" should be overriden.
 
+This module provides the following objects:
+  - Lock()
+  - RLock()
+  - Thread()
+  - Timer()
+
+These objects are meant to emulate the python builtin
+versions. The Lock is a generic binary semaphore,
+RLock is a re-entrant lock (meaning the same thread can
+re-acquire the lock without deadlocking). The Thread
+is wrapper around the createthread() API, and can be
+sub-classed to implement a thread. The Timer is a sub-class
+of the Thread object, and is the same except that it
+supports a delay before the thread is initialized.
+
+When start() is called on a Timer object, the creation
+of the thread is scheduled in a runloop. In this manner,
+it is possible to schedule multiple threads simultaneously
+without wasting events. For example, if threads are set
+to start staggered, in (1,2,3) seconds, then it is possible
+for one event to be used rather than having three threads
+which are sleeping until their start time.
+
 """
 ##### Imports
 
@@ -26,6 +49,7 @@ def active_threads():
 ##### Class Definitions
 
 class Lock (object):
+  """Generic binary semaphore."""
   def __init__(self):
     self.lock = createlock()
 
@@ -38,6 +62,7 @@ class Lock (object):
 
 
 class RLock (object):
+  """Re-entrant lock object."""
   def __init__(self):
     self.lock = createlock()
     self.holding_lock = createlock()
@@ -45,6 +70,19 @@ class RLock (object):
     self.acquire_count = 0
 
   def acquire(self, blocking=True):
+    """
+    <Purpose>
+      Acquires the lock. If the current thread has already acquired
+      this lock, calling acquire() will NOT deadlock. The lock will be
+      re-acquired. Each time acquire() is successful, release() must be called.
+
+    <Arguments>
+      blocking: (Optional) If True, the thread will block until the lock is acquired.
+                Defaults to True.
+
+    <Returns>
+      True if the lock was acquired.
+    """
     # Get the first lock
     self.lock.acquire(True)
     try:
@@ -74,6 +112,16 @@ class RLock (object):
 
   
   def release(self):
+    """
+    <Purpose>
+      Releases the lock. This must be called once per successful acquire()
+
+    <Exceptions>
+      Raises RuntimeError if this thread does not hold the lock.
+
+    <Returns>
+      None
+    """
     # Get the first lock
     self.lock.acquire(True)
     try:
@@ -104,10 +152,16 @@ class Thread (object):
   """
   def __init__(self,target=None,args=None,kwargs=None):
     """
-    Creates a new Thread object
-    target: The callable object to be invoked by the run() method.
-    args : The argumetn tuple for the target invocation
-    kwargs : A dictionary of keyword arguments for the target invokation
+    <Purpose>
+      Creates a new Thread object
+    
+    <Arguments>
+       target: The callable object to be invoked by the run() method.
+       args : The argument tuple for the target invocation
+       kwargs : A dictionary of keyword arguments for the target invocation
+
+    <Returns>
+      A new thread object.
     """
     # Substitude default args
     if args is None:
@@ -130,7 +184,16 @@ class Thread (object):
 
 
   def start(self):
-    """Starts the thread."""
+    """
+    <Purpose>
+      Starts the thread.
+
+    <Exceptions>
+      Raises RuntimeError if the thread is already started.
+
+    <Returns>
+      None
+    """
     # Launch a thread on the _run() method
     # That will invoke run()
     self.alive_lock.acquire(True)
@@ -162,7 +225,10 @@ class Thread (object):
 
 
   def run(self):
-    """Default run method."""
+    """
+    This should be overridden by sub-classes.
+    Default run method invokes the target given at initialization time.
+    """
     # Invoke the target method
     if self.target is not None:
       func = self.target
@@ -179,7 +245,16 @@ class Thread (object):
 
 
   def join(self):
-    """Joins the thread."""
+    """
+    <Purpose>
+      Joins the thread. 
+    
+    <Exceptions>
+      Raises RuntimeError if the thread is not alive.
+
+    <Returns>
+      None
+    """
     # Check if the thread is alive
     if not self.is_alive():
       raise RuntimeError, "Thread is not alive!"
@@ -196,6 +271,23 @@ class Timer (Thread):
   This class emulates a Timer thread.
   """
   def __init__(self, interval, target=None, args=None, kwargs=None):
+    """
+    <Purpose>
+    Creates a new Timer object
+
+    <Arguments>
+      interval: How long to delay between calling start() and starting the thread.
+      target: The callable object to be invoked by the run() method.
+      args : The argument tuple for the target invocation
+      kwargs : A dictionary of keyword arguments for the target invocation
+
+    <Exceptions>
+      TypeError if the interval is not an int or float.
+      ValueError if the interval is negative.
+
+    <Returns>
+      A new Timer object
+    """
     if type(interval) not in [int, float]:
       raise TypeError, "Interval must be an integer or floating point value!"
     if interval < 0:
@@ -215,6 +307,20 @@ class Timer (Thread):
 
 
   def start(self):
+    """
+    <Purpose>
+      Schedules the thread to be started.
+
+    <Exceptions>
+      Raises RuntimeError if the thread is already started.
+      Raises RuntimeError if the thread is scheduled to start.
+
+    <Notes>
+      This calls runEvery() which is a method provided by the
+      runloop. If the run loop is not running, this will consume
+      an event to start the run loop. Once the 'interval' number
+      of seconds has elapsed, the run-loop will launch the thread.
+    """
     # Acquire the canceled lock
     self.cancel_lock.acquire(True)
     try:
@@ -239,6 +345,17 @@ class Timer (Thread):
 
 
   def cancel(self):
+    """
+    <Purpose>
+      Cancels starting the thread after start() has been called.
+
+    <Exceptions>
+      Raises RuntimeError if the thread is already started.
+      Raises RuntimeError if the thread is not scheduled to start.
+
+    <Returns>
+      None.
+    """
     # Get the cancel lock
     self.cancel_lock.acquire(True)
     try:

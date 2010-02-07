@@ -3,6 +3,35 @@ This library is a sub-component of librepy, and provides
 a run-loop implementation. It must be imported, and
 cannot be used directly as a repy module.
 
+The run-loop is essentially a thread and a PriorityQueue.
+Tasks are added to a priority queue, and the run-loop
+continuously polls and executes pending tasks. If the next
+task is more than RUN_LOOP_MIN_INTV seconds away, then the
+run-loop sleeps. Otherwise, the run-loop will enter an
+uninterruptable execution of the next task. In that case,
+the run-loop cannot be terminated or another task pre-empt
+the task being exected.
+
+There are some convenience methods provided which allow
+for scheduling events to occur on a re-curring interval,
+which is convenient for polling multiple things without
+wasting many events.
+
+Example uses:
+  - Implementing Timers without launching the threads early
+  - Implementing callbacks
+  - Polling sockets for connections
+  - Running periodic tasks
+  - Allowing a thread to terminate and letting the RL
+    execute some delayed finalization
+  - etc.
+
+It is important to not schedule a task that may take
+a substantial amount of time to execute. If this is something
+that is needed, schedule a task which launches a thread
+that performs the long running computation. If a scheduled
+task takes too long to return, other scheduled events will be
+delayed.
 """
 
 ##### Imports
@@ -219,7 +248,25 @@ def start_runloop():
 
 
 def runAt(time, func):
-  """Schedules a function to be executed at a certain time."""
+  """
+  <Purpose>
+    Schedules a function to be executed at a certain time.
+
+  <Arguments>
+    time: The time the function should be executed (given WRT getruntime())
+    func: The function to execute at the given time
+
+  <Exceptions>
+    If the runloop is not started, and there are no free events
+    a ResourceExhaustedError will be raised.
+
+    TypeError will be raised if the time given is not an
+    int or a float.
+  """
+  # Check the time argument
+  if type(time) not in [int, float]:
+    raise TypeError, "Time must be numeric!"
+
   # Add this task to the queue
   _TASK_QUEUE_LOCK.acquire(True)
   try:
@@ -232,7 +279,19 @@ def runAt(time, func):
 
 
 def runIn(offset, func):
-  """Schedules a function to be executed after a certain time."""
+  """
+  <Purpose>
+    Schedules a function to be executed after a certain time.
+  
+  <Arguments>
+    offset: Seconds from now to execute this function.
+    func: The function to executed.
+
+  <Exceptions>
+    Raises TypeError if the offset is not an int or float
+    Raises ValueError if the offset is negative.
+    See runAt().
+  """
   # Check that the offset is valid
   if type(offset) not in [int, float]:
     raise TypeError, "Offset must be numeric!"
@@ -245,8 +304,20 @@ def runIn(offset, func):
 
 def runEvery(interval, func):
   """
-  Schedules a function to be executed every interval seconds.
-  Returns a handle which can be used to cancel the scheduling of the function.
+  <Purpose>
+    Schedules a function to be executed every interval seconds.
+  
+  <Arguments>
+    interval: On what interval should this function be executed
+    func: The function to execute
+
+  <Exceptions>
+    Raises TypeError if the interval is not an int or flat
+    Raises ValueError if the interval is not positive
+    See runIn().
+
+  <Returns>
+    Returns a handle which can be used to cancel the scheduling of the function.
   """
    # Check that the offset is valid
   if type(interval) not in [int, float]:
@@ -282,7 +353,14 @@ def runEvery(interval, func):
 
 def stopSchedule(handle):
   """
-  Stops the scheduling of a function.
+  <Purpose>
+    Stops the scheduling of a function.
+
+  <Arguments>
+    handle: A handle returned by runEvery()
+
+  <Returns>
+    None.
   """
   # Set the canceled flag to true
   try:
@@ -294,7 +372,7 @@ def stopSchedule(handle):
 def terminate():
   """
   Terminates the Run-Loop.
-  This method may return before the RL has terminated.
+  This method will return before the RL has terminated.
   """
   # Set the "should run" flag to false
   _RL_STATUS_LOCK.acquire(True)
