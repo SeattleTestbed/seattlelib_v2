@@ -90,10 +90,12 @@ Lock = libthread.Lock
 RLock = libthread.RLock
 Thread = libthread.Thread
 Timer = libthread.Timer
+ThreadPool = libthread.ThreadPool
 _EXPORTS.append("Lock")
 _EXPORTS.append("RLock")
 _EXPORTS.append("Thread")
 _EXPORTS.append("Timer")
+_EXPORTS.append("ThreadPool")
 
 ##### Run-time
 
