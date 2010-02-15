@@ -417,21 +417,23 @@ class ThreadPool (object):
   #                  to acquire this lock
   #
 
-  def __init__(self,min_threads=1,max_threads=1, scaling_thres=10, print_tb=True):
+  def __init__(self,min_threads=1,max_threads=4, scaling_thres=5, print_tb=True):
     """
     <Purpose>
       Initializes the thread pool.
 
     <Arguments>
       min_threads: The minimum number of threads to maintain. Defaults to 1.
-      max_threads: The maximum number of threads allowed. Defaults to 1.
-      scaling_thres: The scaling constant. Defaults to 4.
+      max_threads: The maximum number of threads allowed. Defaults to 4.
+      scaling_thres: The scaling constant. Defaults to 5.
       print_tb: Should a traceback be printed if a function has an uncaught exception
 
     <Exceptions>
       Raises a TypeError if the arguments are not numeric.
       Raises a ValueError if the arguments are not positive.
-      Raisea a TypeERror if the print_tb argument is not a bool.
+      Raises a TypeERror if the print_tb argument is not a bool.
+      Raises a ValueError if the minimum threads is greater than
+      the maximum threads.
 
     <Returns>
       A ThreadPool object.
@@ -441,6 +443,8 @@ class ThreadPool (object):
       raise TypeError("Arguments must be an integer type!")
     if min_threads <= 0 or max_threads <= 0 or scaling_thres <= 0:
       raise ValueError("Arguments must be positive!")
+    if min_threads > max_threads:
+      raise ValueError("Minimum thread count cannot be greater than the maximum thread count!")
     if type(print_tb) is not bool:
       raise TypeError("Print Traceback argument must be a boolean!")
 
@@ -488,7 +492,7 @@ class ThreadPool (object):
     needed, launched = self._launch_threads()
 
     # See if we launched the minimum
-    if launched < self.min_threads:
+    if launched < self.min_threads and needed > 0:
       raise ResourceExhaustedError, "Not enough events to launch the minimum threads!"
 
 
@@ -536,7 +540,8 @@ class ThreadPool (object):
   def add_task(self,task):
     """
     <Purpose>
-      Queues a task for execution
+      Queues a task for execution. This will start the thread
+      pool if it is not yet started.
 
     <Arguments>
       task: A function to invoke. Must not take arguments.
@@ -595,50 +600,37 @@ class ThreadPool (object):
     if self.should_stop:
       return (0,0)
 
-    # Determine the thread count
     self.live_threads_lock.acquire(True)
-    thread_count = len(self.live_threads)
-    self.live_threads_lock.release()
+    try:
+      # Determine the thread count
+      thread_count = len(self.live_threads)
+      
+      # We are done if we are already at the max
+      if thread_count >= self.max_threads:
+        return (0,)
 
-    # Calculate the threads we need to launch
-    need_to_launch = 0
-
-    # Check if we are below the minimum
-    if thread_count <= self.min_threads:
       # Start enough to reach the minimum
-      need_to_launch = self.min_threads - thread_count
+      need_to_launch = max(0, self.min_threads - thread_count)
 
-    # Check if we are already at the maximum thread count
-    elif thread_count == self.max_threads:
-      return (0,0)
-
-    # Add enough threads that we meet the scaling factor
-    while True:
-      jobs_per_thread = self.num_tasks / (thread_count + need_to_launch + 1) 
-      if jobs_per_thread >= self.scaling_thres:
+      # Add enough threads that we meet the scaling factor
+      while self.num_tasks / (thread_count + need_to_launch + 1) >= self.scaling_thres and \
+            thread_count + need_to_launch < self.max_threads:
         need_to_launch += 1
-      else:
-        break
 
-    # Stop if we don't need to launch any
-    if need_to_launch <= 0:
-      return (0,0)
+      # Launch the threads
+      num_launched = 0
+      while need_to_launch > num_launched:
+        try:
+          createthread(self._thread_main)
+          num_launched += 1
+        except ResourceExhaustedError:
+          break # No more threads
 
-    # Check if this would exceed the maximum
-    if thread_count + need_to_launch > self.max_threads:
-      need_to_launch -= thread_count + need_to_launch - self.max_threads
+      # Return the threads needed and launched
+      return (need_to_launch, num_launched)
 
-    # Launch the threads
-    num_launched = 0
-    while need_to_launch > num_launched:
-      try:
-        createthread(self._thread_main)
-        num_launched += 1
-      except ResourceExhaustedError:
-        break # No more threads
-
-    # Return the threads needed and launched
-    return (need_to_launch, num_launched)
+    finally:
+      self.live_threads_lock.release()
 
  
   def _get_task(self):
@@ -695,20 +687,16 @@ class ThreadPool (object):
     """Registers a new worker thread on start."""
     # Add us as a live thread
     thread_name = getthreadname()
-    self.live_threads_lock.acquire(True)
     self.live_threads.add(thread_name)
-    self.live_threads_lock.release()
 
 
   def _deregister_worker(self):
     """De-Registers a worker thread on exit."""
     thread_name = getthreadname()
-    self.live_threads_lock.acquire(True)
     try:
       self.live_threads.remove(thread_name)
     except KeyError:
       pass
-    self.live_threads_lock.release()
 
 
   def _should_worker_quit(self):
