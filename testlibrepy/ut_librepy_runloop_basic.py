@@ -1,3 +1,4 @@
+#pragma repy restrictions.default dylink.repy librepy.repy
 """
 Performs a basic test of the runloop. We check that an event does get called.
 """

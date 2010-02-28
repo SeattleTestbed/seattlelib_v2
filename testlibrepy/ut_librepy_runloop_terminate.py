@@ -1,3 +1,4 @@
+#pragma repy restrictions.default dylink.repy librepy.repy
 """
 This checks the terminate_runloop call.
 """

@@ -1,3 +1,4 @@
+#pragma repy restrictions.default dylink.repy librepy.repy
 """
 This test the scheduling ability of the runloop.
 """

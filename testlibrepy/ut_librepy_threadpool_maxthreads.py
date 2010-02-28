@@ -1,3 +1,4 @@
+#pragma repy restrictions.default dylink.repy librepy.repy
 """
 This unit test checks that the maximum threads are started
 when there are enough tasks queued for the thread pool.

@@ -1,3 +1,4 @@
+#pragma repy restrictions.default dylink.repy librepy.repy
 """
 This unit test checks that the thread pool is properly
 scaling when new tasks are added. This checks the 

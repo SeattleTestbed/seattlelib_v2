@@ -1,3 +1,4 @@
+#pragma repy restrictions.default dylink.repy librepy.repy
 """
 This unit test checks the down-scaling behavior of the thread
 pool. It ensures we scale down properly.

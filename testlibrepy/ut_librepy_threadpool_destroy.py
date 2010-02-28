@@ -1,3 +1,4 @@
+#pragma repy restrictions.default dylink.repy librepy.repy
 """
 This method tries to destroy a thread pool.
 It checks that we can do this.

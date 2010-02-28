@@ -1,3 +1,4 @@
+#pragma repy restrictions.default dylink.repy librepy.repy
 """
 This unit test checks that the minimum threads are started
 when the ThreadPool is started.

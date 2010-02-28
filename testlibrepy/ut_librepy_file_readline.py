@@ -1,3 +1,4 @@
+#pragma repy restrictions.default dylink.repy librepy.repy
 """
 This test checks the behavior of the readline() function of the repy file object.
 """
