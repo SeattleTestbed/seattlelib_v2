@@ -157,6 +157,10 @@ def openconn(host, port, localip=None, localport=None, timeout=10):
     raise RepyArgumentError("Local IP must be a string or None!")
   if localport is not None and type(localport) is not int:
     raise RepyArgumentError("Local Port must be an int or None!")
+  if type(timeout) not in [int, float]:
+    raise RepyArgumentError("Timeout must be numeric!")
+  if timeout <= 0:
+    raise RepyArgumentError("Timeout must be positive!")
 
   # Check if the host is not an IP, and resolve to an IP
   if not _is_valid_ip_address(host):
@@ -175,17 +179,21 @@ def openconn(host, port, localip=None, localport=None, timeout=10):
 
   # If the socket is being cleaned up, then keep trying
   real_sock = None
+  cleanup_in_progress = False
   while getruntime() < stoptime:
     try:
       # Call down to openconnection now
       real_sock = openconnection(host, port, localip, localport, max(0,stoptime - getruntime()))
       break
     except CleanupInProgressError:
-      sleep(0.25)
+      cleanup_in_progress = True
+      sleep(0.2)
      
   # If we still don't have a socket, raise CleanupInProgressError
-  if real_sock is None:
+  if real_sock is None and cleanup_in_progress:
     raise CleanupInProgressError("The socket is being cleaned up by the operating system!")
+  elif real_sock is None:
+    raise TimeoutError("Timed out connecting to remote host!")
 
   # Wrap this, use defaults for timeout and poll_intv
   wrapped_sock = RepySocket(real_sock, localip, localport, host, port)
@@ -364,7 +372,7 @@ class RepySocket (object):
   # remoteip : Remote Host IP
   # remoteport : Remote Host Port
 
-  def __init__(self, underlying, localip, localport, remoteip, remoteport, timeout=None, poll_intv=0.2):
+  def __init__(self, underlying, localip, localport, remoteip, remoteport, timeout=None, poll_intv=0.1):
     """
     <Purpose>
       Initializes the RepySocket.

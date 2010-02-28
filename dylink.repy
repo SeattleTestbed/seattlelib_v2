@@ -38,7 +38,7 @@ if callfunc == "initialize":
   COMMON_EXTENSIONS = ["", ".py", ".repy",".py.repy", ".pp"]
 
   # These are the functions in the "stock" repy API,
-  STOCK_API = set(["gethostname","getmyip","sendmessage","listenformessage","openconnection","listenforconnection",
+  STOCK_API = set(["gethostbyname","getmyip","sendmessage","listenformessage","openconnection","listenforconnection",
              "openfile","listfiles","removefile","exitall","createlock","getruntime","randombytes","createthread",
                    "sleep","createvirtualnamespace","getthreadname","getresources","dy_import_module","getlasterror",
                    "dy_import_module_symbols","dy_dispatch_module"])
