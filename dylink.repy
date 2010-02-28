@@ -49,7 +49,7 @@ if callfunc == "initialize":
 
   # This is the maximum number of bytes we will try to read in for a file.
   # Anything larger and we abort
-  MAX_FILE_SIZE = 25000
+  MAX_FILE_SIZE = 100000
 
 #### Code Pre-processor ####
 
@@ -178,7 +178,7 @@ def _dy_module_code(module):
     code = fileh.readat(MAX_FILE_SIZE, 0)
     fileh.close()
     if len(code) == MAX_FILE_SIZE:
-      print "Failed to read all of module ("+module+")! File size exceeds 25K characters!"
+      print "Failed to read all of module ("+module+")! File size exceeds 100K characters!"
 
     # Pre-process the code
     if RUN_PRE_PROCESS:
