@@ -180,12 +180,12 @@ def openconn(host, port, localip=None, localport=None, timeout=10):
       # Call down to openconnection now
       real_sock = openconnection(host, port, localip, localport, max(0,stoptime - getruntime()))
       break
-    except CleanupInProgress:
+    except CleanupInProgressError:
       sleep(0.25)
      
-  # If we still don't have a socket, raise CleanupInProgress
+  # If we still don't have a socket, raise CleanupInProgressError
   if real_sock is None:
-    raise CleanupInProgress("The socket is being cleaned up by the operating system!")
+    raise CleanupInProgressError("The socket is being cleaned up by the operating system!")
 
   # Wrap this, use defaults for timeout and poll_intv
   wrapped_sock = RepySocket(real_sock, localip, localport, host, port)
