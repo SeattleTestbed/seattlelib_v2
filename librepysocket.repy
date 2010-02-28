@@ -78,20 +78,38 @@ def _is_valid_ip_address(ipaddr):
   return True
 
 
-def _get_outbound_connport(localip):
+def _get_free_events():
+  """
+  Returns the number of free events
+  """
+  lim, usage, stops = getresources()
+  max_events = lim["events"]
+  current_events = usage["events"]
+  avail = max_events - current_events
+  return avail
+
+
+##### Public Methods
+
+def get_outbound_connport(localip):
   """
   <Purpose>
     Returns a port that can be used for an outgoing connection.
 
   <Arguments>
-    localip: The local IP to bind to`
+    localip: The local IP to bind to
 
   <Exceptions>
     Raises ResourceExhaustedError if there are no available ports.
+    Raises RepyArgumentError if the localip is not valid
 
   <Returns>
     A valid connport for openconnection for localport
   """
+  # Check if the IP is valid
+  if not _is_ip_valid(localip):
+    raise RepyArgumentError("Invalid IP address specified!")
+
   # Get the available ports
   lim, usage, stops = getresources()
   ports = lim["connport"]
@@ -114,19 +132,6 @@ def _get_outbound_connport(localip):
   ip, port = avail.pop()
   return port
 
-
-def _get_free_events():
-  """
-  Returns the number of free events
-  """
-  lim, usage, stops = getresources()
-  max_events = lim["events"]
-  current_events = usage["events"]
-  avail = max_events - current_events
-  return avail
-
-
-##### Public Methods
 
 def openconn(host, port, localip=None, localport=None, timeout=10):
   """
@@ -172,7 +177,7 @@ def openconn(host, port, localip=None, localport=None, timeout=10):
 
   # Get an available local port if none is specified
   if localport is None:
-    localport = _get_outbound_connport(localip)
+    localport = get_outbound_connport(localip)
 
   # Get the stop time
   stoptime = getruntime() + timeout
