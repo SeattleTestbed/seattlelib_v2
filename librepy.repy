@@ -44,8 +44,13 @@ _EXPORTS.append("librandom")
 libthread = dy_import_module("librepythread")
 _EXPORTS.append("libthread")
 
+# Import the sub-library, librepysocket
+libsocket = dy_import_module("librepysocket")
+_EXPORTS.append("libsocket")
+
 # Override the imported version of librunloop to use a unified run-loop
 libthread._context["librunloop"] = librunloop
+libsocket._context["librunloop"] = librunloop
 
 
 ##### Exports
@@ -96,6 +101,13 @@ _EXPORTS.append("RLock")
 _EXPORTS.append("Thread")
 _EXPORTS.append("Timer")
 _EXPORTS.append("ThreadPool")
+
+# Exports from libsocket
+openconn = libsocket.openconn
+waitforconn = libsocket.waitforconn
+_EXPORTS.append("openconn")
+_EXPORTS.append("waitforconn")
+
 
 ##### Run-time
 
