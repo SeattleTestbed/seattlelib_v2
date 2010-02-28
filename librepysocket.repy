@@ -107,7 +107,7 @@ def get_outbound_connport(localip):
     A valid connport for openconnection for localport
   """
   # Check if the IP is valid
-  if not _is_ip_valid(localip):
+  if not _is_valid_ip_address(localip):
     raise RepyArgumentError("Invalid IP address specified!")
 
   # Get the available ports
