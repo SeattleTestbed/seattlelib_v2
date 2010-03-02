@@ -91,10 +91,10 @@ def _get_free_events():
 
 ##### Public Methods
 
-def get_connport(localip=None):
+def get_connports(localip=None):
   """
   <Purpose>
-    Returns a port that can be used for binding to create a socket.
+    Returns a list of ports that can be used for binding to create a socket.
 
   <Arguments>
     localip: Optional, The local IP to bind to. Defaults to getmyip().
@@ -104,7 +104,7 @@ def get_connport(localip=None):
     Raises RepyArgumentError if the localip is not valid.
 
   <Returns>
-    A valid connport for localport
+    A list of valid connports for localport
   """
   # Check if the IP is valid
   if localip is not None and not _is_valid_ip_address(localip):
@@ -132,9 +132,16 @@ def get_connport(localip=None):
   if len(avail) == 0:
     raise ResourceExhaustedError("No ports available for connections!")
 
-  # Returns the first element in the set
-  ip, port = avail.pop()
-  return port
+  # Convert the set to an array
+  avail_ports = []
+  for ip,port in avail:
+    avail_ports.append(port)
+    
+  # Sort the array
+  avail_ports.sort()
+
+  # Returns the array
+  return avail_ports
 
 
 def openconn(host, port, localip=None, localport=None, timeout=10):
@@ -155,7 +162,7 @@ def openconn(host, port, localip=None, localport=None, timeout=10):
     Raises RepyArgumentError if the port is not an int.
     Raises RepyArgumentError if the localip is not None or a string.
     Raises RepyArgumentError if the localport is not None or a int.
-	Raises ResourceExhaustedError if there are no available local ports to bind to.
+	  Raises ResourceExhaustedError if there are no available local ports to bind to.
 
   <Returns>
     A RepySocket object.
@@ -181,8 +188,12 @@ def openconn(host, port, localip=None, localport=None, timeout=10):
     localip = getmyip()
 
   # Get an available local port if none is specified
+  can_choose_localport = False
+  available_localports = None
   if localport is None:
-    localport = get_connport(localip)
+    can_choose_localport = True
+    available_localports = get_connports(localip)
+    localport = available_localports.pop(0) # Use the first
 
   # Get the stop time
   stoptime = getruntime() + timeout
@@ -195,6 +206,21 @@ def openconn(host, port, localip=None, localport=None, timeout=10):
       # Call down to openconnection now
       real_sock = openconnection(host, port, localip, localport, max(0,stoptime - getruntime()))
       break
+      
+    except DuplicateTupleError:
+      # If we are allowed to pick a local port, try something else
+      if can_choose_localport and len(available_localports) > 0:
+        localport = available_localports.pop(0)
+        
+      # If we are allowed to pick, but there are no available ports, raise
+      # an exception
+      elif can_choose_localport:
+        raise ResourceExhaustedError("No ports available for this connection! Would cause DuplicateTupleError.")
+        
+      # Otherwise, the open has failed
+      else:
+        raise
+      
     except CleanupInProgressError:
       cleanup_in_progress = True
       sleep(0.2)
@@ -277,8 +303,8 @@ def waitforconn(localport, func, localip=None, thread_pool=None, check_intv=0.1)
     ----
   """
   # Check the args
-  if localip is not None and type(localip) is not str:
-    raise RepyArgumentError("Local IP must be a string or None!")
+  if localip is not None and not _is_valid_ip_address(localip):
+    raise RepyArgumentError("Invalid Local IP address specified!")
   if thread_pool is not None and "ThreadPool" not in str(type(thread_pool)):
     raise RepyArgumentError("Invalid object provided for the thread pool!")
   if type(check_intv) not in [int, float]:
@@ -312,7 +338,19 @@ def waitforconn(localport, func, localip=None, thread_pool=None, check_intv=0.1)
 
         # Define a wrapper function to invoke
         def callback():
-          func(wrapped_sock)
+          try:
+            func(wrapped_sock)
+          except:
+            print "Uncaught exception invoking callback for TCP listener!"
+            print "Listening on IP: "+localip+ " Port: "+localport
+            print "Socket will be closed automatically. Debug Info:"
+            print getlasterror()
+
+            # Prevent socket leaks for them
+            try:
+              wrapped_sock.close()
+            except:
+              pass
 
         # If we have a thread pool, add this task
         if thread_pool is not None:

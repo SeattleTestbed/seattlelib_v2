@@ -8,7 +8,7 @@ socket cleanup.
 intel_IP = gethostbyname("intel.com")
 intel_port = 80
 localip = getmyip()
-localport = libsocket.get_connport(localip)
+localport = libsocket.get_connports(localip)[0]
 
 # Connect to intel
 sock = openconn(intel_IP, intel_port, localip, localport)
