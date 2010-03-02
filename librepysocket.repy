@@ -91,24 +91,28 @@ def _get_free_events():
 
 ##### Public Methods
 
-def get_outbound_connport(localip):
+def get_connport(localip=None):
   """
   <Purpose>
-    Returns a port that can be used for an outgoing connection.
+    Returns a port that can be used for binding to create a socket.
 
   <Arguments>
-    localip: The local IP to bind to
+    localip: Optional, The local IP to bind to. Defaults to getmyip().
 
   <Exceptions>
     Raises ResourceExhaustedError if there are no available ports.
-    Raises RepyArgumentError if the localip is not valid
+    Raises RepyArgumentError if the localip is not valid.
 
   <Returns>
-    A valid connport for openconnection for localport
+    A valid connport for localport
   """
   # Check if the IP is valid
-  if not _is_valid_ip_address(localip):
+  if localip is not None and not _is_valid_ip_address(localip):
     raise RepyArgumentError("Invalid IP address specified!")
+
+  # Resolve the IP
+  if localip is None:
+	localip = getmyip()
 
   # Get the available ports
   lim, usage, stops = getresources()
@@ -126,7 +130,7 @@ def get_outbound_connport(localip):
 
   # Check if there is anything available
   if len(avail) == 0:
-    raise ResourceExhaustedError("No ports available for outgoing connections!")
+    raise ResourceExhaustedError("No ports available for connections!")
 
   # Returns the first element in the set
   ip, port = avail.pop()
@@ -151,6 +155,7 @@ def openconn(host, port, localip=None, localport=None, timeout=10):
     Raises RepyArgumentError if the port is not an int.
     Raises RepyArgumentError if the localip is not None or a string.
     Raises RepyArgumentError if the localport is not None or a int.
+	Raises ResourceExhaustedError if there are no available local ports to bind to.
 
   <Returns>
     A RepySocket object.
@@ -177,7 +182,7 @@ def openconn(host, port, localip=None, localport=None, timeout=10):
 
   # Get an available local port if none is specified
   if localport is None:
-    localport = get_outbound_connport(localip)
+    localport = get_connport(localip)
 
   # Get the stop time
   stoptime = getruntime() + timeout
@@ -231,6 +236,9 @@ def waitforconn(localport, func, localip=None, thread_pool=None, check_intv=0.1)
 
   <Exceptions>
     As with listenforconnection(), getmyip().
+	Raises RepyArugmentError if the local ip is not a string or None
+	Raises RepyArgumentError if the thread_pool argument is not a thread pool
+	Raises RepyArgumentError if check_intv is not a positive numeric value
 
   <Returns>
     A function that can be invoked to stop listening for connections
