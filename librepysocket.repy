@@ -220,13 +220,17 @@ def openconn(host, port, localip=None, localport=None, timeout=30):
       
     except DuplicateTupleError:
       # If we are allowed to pick a local port, try something else
-      if can_choose_localport and len(available_localports) > 0:
-        localport = available_localports.pop(0)
-        
-      # If we are allowed to pick, but there are no available ports, raise
-      # an exception
-      elif can_choose_localport:
-        raise ResourceExhaustedError("No ports available for this connection! Would cause DuplicateTupleError.")
+      if can_choose_localport: 
+        try: 
+          # Get a new port 
+          localport = available_localports.pop(0) 
+                 
+          # Apply a sanity check which is to prevent us from 
+          # having the Local/Dest IP and Port match 
+          if localip == host and localport == port: 
+            localport = available_localports.pop(0)     
+        except IndexError: 
+          raise ResourceExhaustedError("No ports available for this connection! Would cause DuplicateTupleError.")
         
       # Otherwise, the open has failed
       else:
