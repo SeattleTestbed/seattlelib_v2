@@ -819,7 +819,7 @@ class RepySocket (object):
       return sent
 
     finally:
-      self.sent_lock.release()
+      self.send_lock.release()
 
 
   def close(self):
