@@ -357,7 +357,7 @@ def waitforconn(localport, func, localip=None, thread_pool=None, check_intv=0.1)
             func(wrapped_sock)
           except:
             print "Uncaught exception invoking callback for TCP listener!"
-            print "Listening on IP: "+localip+ " Port: "+localport
+            print "Listening on IP: "+localip+ " Port: "+str(localport)
             print "Socket will be closed automatically. Debug Info:"
             print getlasterror()
 
