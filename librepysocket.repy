@@ -218,7 +218,7 @@ def openconn(host, port, localip=None, localport=None, timeout=30):
       real_sock = openconnection(host, port, localip, localport, max(0,stoptime - getruntime()))
       break
       
-    except DuplicateTupleError:
+    except (DuplicateTupleError, CleanupInProgressError), e:
       # If we are allowed to pick a local port, try something else
       if can_choose_localport: 
         try: 
@@ -230,15 +230,23 @@ def openconn(host, port, localip=None, localport=None, timeout=30):
           if localip == host and localport == port: 
             localport = available_localports.pop(0)     
         except IndexError: 
-          raise ResourceExhaustedError("No ports available for this connection! Would cause DuplicateTupleError.")
+          # If this is DuplicateTupleError, then we give up.
+          # If this is CleanupInProgressError, we can try to wait
+          if type(e) == DuplicateTupleError:
+            raise ResourceExhaustedError("No ports available for this connection! Would cause DuplicateTupleError.")
+          elif type(e) == CleanupInProgressError:
+            cleanup_in_progress = True
+            sleep(0.2)
         
-      # Otherwise, the open has failed
+      # We can wait a little for cleanup to take place
+      elif type(e) == CleanupInProgressError:
+        cleanup_in_progress = True
+        sleep(0.2)
+      
+      # Otherwise, the open has failed (DuplicateTupleError)
       else:
         raise
       
-    except CleanupInProgressError:
-      cleanup_in_progress = True
-      sleep(0.2)
      
   # If we still don't have a socket, raise CleanupInProgressError
   if real_sock is None and cleanup_in_progress:
@@ -694,9 +702,9 @@ class RepySocket (object):
         # Check if we are in non-blocking mode
         if timeout == 0.0:
           raise
-
+        
         # Check if we have more time
-        if timeout is None or timeout > getruntime() - starttime:
+        elif timeout is None or timeout > getruntime() - starttime:
           sleep(self.poll_intv)
 
         # We've timed out
