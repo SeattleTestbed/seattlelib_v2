@@ -3,7 +3,7 @@ This unit test tries to test that waitforconn() works at a basic level
 by using a simple callback to connect 2 sockets. We connect 1 socket,
 and then stop listening and then start listening again.
 """
-#pragma repy restrictions.severalports dylink.repy librepy.repy
+#pragma repy restrictions.threeports dylink.repy librepy.repy
 
 # Count the number of incoming sockets
 COUNTER=[0]

@@ -2,7 +2,7 @@
 This test checks what happens if there are 2 duplicate
 calls to waitforconn.
 """
-#pragma repy restrictions.severalports dylink.repy librepy.repy
+#pragma repy restrictions.threeports dylink.repy librepy.repy
 
 # Count the number of incoming sockets
 COUNTER=[0]

@@ -2,7 +2,7 @@
 This unit test checks that stopping a waitforconn()
 actually works.
 """
-#pragma repy restrictions.severalports dylink.repy librepy.repy
+#pragma repy restrictions.threeports dylink.repy librepy.repy
 
 def incoming(sock):
   print "Should not get incoming connections!"

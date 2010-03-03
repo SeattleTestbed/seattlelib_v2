@@ -2,7 +2,7 @@
 This unit test tries to test that waitforconn() works at a basic level
 by using a thread pool to connect 2 sockets.
 """
-#pragma repy restrictions.severalports dylink.repy librepy.repy
+#pragma repy restrictions.threeports dylink.repy librepy.repy
 
 # How many times should we try to connect
 # We need TRY_COUNT + 1 connports for this to work
