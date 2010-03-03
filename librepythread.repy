@@ -623,6 +623,12 @@ class ThreadPool (object):
         try:
           createthread(self._thread_main)
           num_launched += 1
+
+          # Wait for the thread to start, we don't want to waste too
+          # much time here
+          while len(self.live_threads) < thread_count + num_launched:
+            sleep(0.01)
+
         except ResourceExhaustedError:
           break # No more threads
 

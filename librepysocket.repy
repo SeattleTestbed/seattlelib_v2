@@ -33,6 +33,14 @@ librunloop = dy_import_module("librepyrunloop")
 # not want is stored in an internal buffer.
 _MIN_SOCK_RECV = 4096
 
+# We don't want to mask a CleanupInProgressError
+# by retrying again and again, and then on the
+# last call to openconnection() specifying a timeout
+# of like 0.0001. If the remaining time is less than
+# this, and we are waiting for cleanup, then we
+# will just give CleanupInProgress
+_CLEANUP_THRESHOLD = 0.05
+
 # Store a set of listening IP/Ports
 # Entries are like (IP, Port)
 LISTENING_TUPLES = set([])
@@ -144,7 +152,7 @@ def get_connports(localip=None):
   return avail_ports
 
 
-def openconn(host, port, localip=None, localport=None, timeout=30):
+def openconn(host, port, localip=None, localport=None, timeout=60):
   """
   <Purpose>
     Opens a connection to a remote host
@@ -154,7 +162,7 @@ def openconn(host, port, localip=None, localport=None, timeout=30):
     port: The port to connect to
     localip: Optional, the IP to bind to. If None, getmyip() is used.
     localport: Optional, the port to bind to. If None, one will be provided.
-    timeout: Optional, defaults to 30 seconds.
+    timeout: Optional, defaults to 60 seconds.
 
   <Exceptions>
     As with openconnection(), and gethostbyname() if a host IP is not provided.
@@ -214,6 +222,11 @@ def openconn(host, port, localip=None, localport=None, timeout=30):
   cleanup_in_progress = False
   while getruntime() < stoptime:
     try:
+      # Determine the time remaining. If there is less than
+      remaining = stoptime - getruntime()
+      if remaining <= _CLEANUP_THRESHOLD and cleanup_in_progress:
+        break
+  
       # Call down to openconnection now
       real_sock = openconnection(host, port, localip, localport, max(0,stoptime - getruntime()))
       break
