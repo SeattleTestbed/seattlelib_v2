@@ -103,8 +103,12 @@ _EXPORTS.append("Timer")
 _EXPORTS.append("ThreadPool")
 
 # Exports from libsocket
+sendmess = libsocket.sendmess
+recvmess = libsocket.recvmess
 openconn = libsocket.openconn
 waitforconn = libsocket.waitforconn
+_EXPORTS.append("sendmess")
+_EXPORTS.append("recvmess")
 _EXPORTS.append("openconn")
 _EXPORTS.append("waitforconn")
 
