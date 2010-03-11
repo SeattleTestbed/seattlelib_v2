@@ -6,11 +6,12 @@ Description:
 """
 
 # These API functions do _not_ return an object, and can be handled uniformly.
-NON_OBJ_API_CALLS = ["gethostbyname_ex","getmyip","sendmess","stopcomm", "listdir","removefile",
-                     "exitall","getruntime","randomfloat","settimer","canceltimer","sleep","get_thread_name"]
+NON_OBJ_API_CALLS = ["gethostbyname","getmyip","sendmessage","listfiles","removefile",
+                     "exitall","getruntime","randombytes","createthread","sleep","getthreadname",
+                     "getresources","getlasterror"]
 
 # Global print lock
-PRINT_LOCK = getlock()
+PRINT_LOCK = createlock()
 
 # If this is True, then output will be serialized,
 # this avoids jumbling but is a performance hit
@@ -29,8 +30,7 @@ if not ENABLE_LOCKING:
 
 
 # Replace getruntime
-if "_orig_getruntime" not in _context:
-  _orig_getruntime = getruntime
+_orig_getruntime = getruntime
 def getruntime():
   return round(_orig_getruntime(), 5)
 
@@ -53,7 +53,7 @@ def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print
 
   # Print if there is no return
   if no_return:
-    PRINT_LOCK.acquire()
+    PRINT_LOCK.acquire(True)
     print call_string
     PRINT_LOCK.release()
 
@@ -63,8 +63,8 @@ def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print
 
   # On an exception, print the call at least
   except Exception, e:
-    PRINT_LOCK.acquire()
-    print call_string,"->",str(e)
+    PRINT_LOCK.acquire(True)
+    print call_string,"->",str(type(e))+" "+str(e)
     PRINT_LOCK.release()
     raise
 
@@ -79,7 +79,7 @@ def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print
       str_result = str_result[:MAX_PRINT_VALS] + "..."
     call_string += " = " + str_result
 
-  PRINT_LOCK.acquire()
+  PRINT_LOCK.acquire(True)
   print call_string
   PRINT_LOCK.release()
 
@@ -99,7 +99,6 @@ class NonObjAPICall():
     return traced_call(None,self.name,self.func,args,kwargs)
 
 
-
 # This class is used for socket objects
 class SocketObj():
   # Store the socket object
@@ -115,9 +114,6 @@ class SocketObj():
 
   def send(self,*args,**kwargs):
     return traced_call(self.sock,"socket.send",self.sock.send,args,kwargs)
-
-  def willblock(self,*args,**kwargs):
-    return traced_call(self.sock,"socket.willblock",self.sock.willblock,args,kwargs)
 
 
 # This class is used for lock objects
@@ -144,29 +140,11 @@ class FileObj():
   def close(self,*args,**kwargs):
     return traced_call(self.fileo,"file.close",self.fileo.close,args,kwargs,True)
 
-  def flush(self,*args,**kwargs):
-    return traced_call(self.fileo,"file.flush",self.fileo.flush,args,kwargs,True)
+  def readat(self,*args,**kwargs):
+    return traced_call(self.fileo,"file.readat",self.fileo.readat,args,kwargs)
 
-  def next(self,*args,**kwargs):
-    return traced_call(self.fileo,"file.next",self.fileo.next,args,kwargs)
-
-  def read(self,*args,**kwargs):
-    return traced_call(self.fileo,"file.read",self.fileo.read,args,kwargs)
-
-  def readline(self,*args,**kwargs):
-    return traced_call(self.fileo,"file.readline",self.fileo.readline,args,kwargs)
-
-  def readlines(self,*args,**kwargs):
-    return traced_call(self.fileo,"file.readlines",self.fileo.readlines,args,kwargs)
-
-  def seek(self,*args,**kwargs):
-    return traced_call(self.fileo,"file.seek",self.fileo.seek,args,kwargs,True)
-
-  def write(self,*args,**kwargs):
-    return traced_call(self.fileo,"file.write",self.fileo.write,args,kwargs,True)
-
-  def writelines(self,*args,**kwargs):
-    return traced_call(self.fileo,"file.writelines",self.fileo.writelines,args,kwargs,True)
+  def writeat(self,*args,**kwargs):
+    return traced_call(self.fileo,"file.writeat",self.fileo.writeat,args,kwargs,True)
 
 
 class VNObj():
@@ -179,79 +157,81 @@ class VNObj():
     return traced_call(self.virt,"VirtualNamespace.evaluate",self.virt.evaluate,args,kwargs,print_args=False,print_result=False)
 
 
-# Wrap the call to openconn
-def wrapped_openconn(*args, **kwargs):
+# This class is used for TCPServerObjects
+class TCPServerObj():
+  # Store the object
+  def __init__(self,sock):
+    self.sock = sock
+
+  # Emulate the functions
+  def getconnection(self, *args,**kwargs):
+    ip,port,conn = traced_call(self.sock,"TCPServerSocket.getconnection",self.sock.getconnection,args,kwargs)
+    return (ip,port, SocketObj(conn))
+
+  def close(self, *args, **kwargs):
+    return traced_call(self.sock,"TCPServerSocket.close",self.sock.close,args,kwargs,True)
+
+
+# This class is used for UDPServerObjects
+class UDPServerObj():
+  # Store the object
+  def __init__(self,sock):
+    self.sock = sock
+
+  # Emulate the functions
+  def getmessage(self, *args,**kwargs):
+    return traced_call(self.sock,"UDPServerSocket.getmessage",self.sock.getmessage,args,kwargs)
+
+  def close(self, *args, **kwargs):
+    return traced_call(self.sock,"UDPServerSocket.close",self.sock.close,args,kwargs,True)
+
+
+# Wrap the call to openconnection
+def wrapped_openconnection(*args, **kwargs):
   # Trace the call
-  sock = traced_call(None,"openconn",openconn,args,kwargs)
+  sock = traced_call(None,"openconnection",openconnection,args,kwargs)
 
   # Wrap the socket object
   return SocketObj(sock)
 
-# Wrap the call to waitforconn
-def wrapped_waitforconn(*args, **kwargs):
-  # Get the callback function
-  try:
-    callback = args[2]
+# Wrap the call to listenformessage
+def wrapped_listenformessage(*args, **kwargs):
+  # Trace the call
+  sock = traced_call(None, "listenformessage", listenformessage, args, kwargs)
 
-  # If the user input is bad, then waitforconn is going to get angry anyways...
-  except:
-    callback = None
+  # Return the socket object
+  return UDPServerObj(sock)
 
-  # Create a wrapper function
-  def _wrapped_callback(*args,**kwargs):
-    # Wrap the socket
-    socket = SocketObj(args[2])
+# Wrap the call to listenforconnection
+def wrapped_listenforconnection(*args, **kwargs):
+  # Trace the call
+  sock = traced_call(None, "listenforconnection", listenforconnection, args, kwargs)
 
-    # Use the new wrapped socket
-    args = args[0:2] + (socket,) + args[3:]
-    
-    # Call the user callback
-    traced_call(callback, "new incoming conn.",callback,args,kwargs,True)
-
-  # Call down
-  args = args[0:2] + (_wrapped_callback,)
-  return traced_call(None,"waitforconn",waitforconn,args,kwargs)
+  # Return the socket object
+  return TCPServerObj(sock)
 
 
-# Wrap the call to recvmess
-def wrapped_recvmess(*args,**kwargs):
-  # Get the callback function
-  try:
-    callback = args[2]
-  except:
-    callback = None
-
-  # Create a wrapper around this
-  def _wrapped_callback(*args,**kwargs):
-    # Trace the call
-    traced_call(callback, "new incoming mess.",callback,args,kwargs,True)
-
-  # Call down to recvmess
-  args = args[0:2] + (_wrapped_callback,)
-  return traced_call(None,"recvmess",recvmess,args,kwargs)
-
-
-# Wrap the call to getlock
-def wrapped_getlock(*args,**kwargs):
+# Wrap the call to createlock
+def wrapped_createlock(*args,**kwargs):
   # Trace the call to get the lock
-  lock = traced_call(None,"getlock",getlock,args,kwargs)
+  lock = traced_call(None,"createlock",createlock,args,kwargs)
 
   # Return the wrapped lock
   return LockObj(lock)
 
-# Wrap the call to open
-def wrapped_open(*args,**kwargs):
+# Wrap the call to openfile
+def wrapped_openfile(*args,**kwargs):
   # Trace the call to get the file object
-  fileo = traced_call(None,"open",open,args,kwargs)
+  fileo = traced_call(None,"openfile",openfile,args,kwargs)
 
   # Return the wrapped object
   return FileObj(fileo)
 
 
-# Wrap the call to VirtualNamespace
+# Wrap the call to createvirtualnamespace
 def wrapped_virtual_namespace(*args,**kwargs):
   # Trace the call to get the object
-  return VNObj(traced_call(None,"VirtualNamespace(...)",VirtualNamespace,args,kwargs,print_args=False))
+  return VNObj(traced_call(None,"VirtualNamespace(...)",createvirtualnamespace,args,kwargs,print_args=False))
 
 
 # Wrap all the API calls so they can be traced
@@ -260,35 +240,32 @@ def wrap_all():
   for call in NON_OBJ_API_CALLS:
     CHILD_CONTEXT[call] = NonObjAPICall(call).call
 
-  # Wrap openconn
-  CHILD_CONTEXT["openconn"] = wrapped_openconn
+  # Wrap openconnection
+  CHILD_CONTEXT["openconnection"] = wrapped_openconnection
 
-  # Wrap waitforconn
-  CHILD_CONTEXT["waitforconn"] = wrapped_waitforconn
+  # Wrap listenformessage
+  CHILD_CONTEXT["listenformessage"] = wrapped_listenformessage
 
-  # Wrap recvmess
-  CHILD_CONTEXT["recvmess"] = wrapped_recvmess
+  # Wrap listenforconnection
+  CHILD_CONTEXT["listenforconnection"] = wrapped_listenforconnection
 
-  # Wrap getlock
-  CHILD_CONTEXT["getlock"] = wrapped_getlock
+  # Wrap createlock
+  CHILD_CONTEXT["createlock"] = wrapped_createlock
 
-  # Wrap open
-  CHILD_CONTEXT["open"] = wrapped_open
+  # Wrap openfile
+  CHILD_CONTEXT["openfile"] = wrapped_openfile
 
-  # Wrap VirtualNamespace
-  CHILD_CONTEXT["VirtualNamespace"] = wrapped_virtual_namespace
-
-
-# If we are supposed to run, wrap all the functions
-if callfunc == "initialize":
-  wrap_all()
-
-  # Print the header
-  print "Call-time function [instance] [args] [ = result ]"
+  # Wrap createvirtualnamespace
+  CHILD_CONTEXT["createvirtualnamespace"] = wrapped_virtual_namespace
 
 
-# Dylink specific
-if "HAS_DYLINK" in _context and HAS_DYLINK:
-  dy_dispatch_module()
+# Wrap all the functions
+wrap_all()
+
+# Print the header
+print "Call-time function [instance] [args] [ = result ]"
+
+# Dispatch the next module
+dy_dispatch_module()
 
 
