@@ -14,5 +14,5 @@ assert(yahoo_sent == 4)
 
 # Sent to MSN, bind the IP
 msn_sent = sendmess("msn.com", 80, "Test", getmyip())
-assert(mesn_sent == 4)
+assert(msn_sent == 4)
 
