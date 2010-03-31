@@ -40,11 +40,12 @@ if callfunc == "initialize":
   # These are the functions in the "stock" repy API,
   STOCK_API = set(["gethostbyname","getmyip","sendmessage","listenformessage","openconnection","listenforconnection",
              "openfile","listfiles","removefile","exitall","createlock","getruntime","randombytes","createthread",
-                   "sleep","createvirtualnamespace","getthreadname","getresources","dy_import_module","getlasterror",
+                   "sleep","log","createvirtualnamespace","getthreadname","getresources","dy_import_module","getlasterror",
                    "dy_import_module_symbols","dy_dispatch_module"])
 
   # Controls if we run the code preprocessor
   # If True, we will replace the old "include" directive, but this will cause a speed penalty
+  # We also replace old style "print" statements with log()
   RUN_PRE_PROCESS = True
 
   # This is the maximum number of bytes we will try to read in for a file.
@@ -57,6 +58,9 @@ if callfunc == "initialize":
 def _preprocess_code(code):
   # Replace old include's
   code = _replace_include(code)
+
+  # Replace the print statements
+  code = _replace_print(code)
 
   # Return the modified code
   return code
@@ -87,6 +91,45 @@ def _replace_include(code):
   # Return the modified code
   return code
 
+
+# Replace's the old "print" statement with
+# the new log() for Repy V2
+def _replace_print(code):
+  # Find the initial include
+  index = code.find("print ")
+  
+  # While there are more print statements, we will continue to run
+  while index > -1:
+    # Find the next new line
+    new_line_index = code.find("\n",index+1)
+
+    # Get the argument to print
+    print_argument = code[index+6:new_line_index]
+    
+    # Check for ">>", this indicates they are trying to write
+    # to a pipe / file, this is not supported.
+    if print_argument.startswith(">>"):
+      raise Exception("Dylink cannot re-write print statements that use redirection! Unsupported statement: print "+print_argument)
+
+    # Check if we should add a new-line
+    if print_argument[-1] == ",":
+      log_arg = print_argument + ",'\n'"
+    else:
+      log_arg = print_argument
+
+    # Replace this occurrence with log
+    code = code[:index] + "log("+log_arg+")" + code[new_line_index:]
+
+    # Adjust the index since we just added more characters
+    # The number of characters we are now using is 5 for log() plus the arguments
+    # We user using 6 for 'print ' and the arguments for print
+    index += (5 + len(log_arg)) - (6 + len(print_argument))
+
+    # Find the next occurence of include
+    index = code.find("print ",index)
+
+  # Return the modified code
+  return code
 
 
 #### Helper functions ####
@@ -178,11 +221,14 @@ def _dy_module_code(module):
     code = fileh.readat(MAX_FILE_SIZE, 0)
     fileh.close()
     if len(code) == MAX_FILE_SIZE:
-      print "Failed to read all of module ("+module+")! File size exceeds 100K characters!"
+      log("Failed to read all of module ("+module+")! File size exceeds 100K characters!")
 
     # Pre-process the code
     if RUN_PRE_PROCESS:
-      code = _preprocess_code(code)
+      try:
+        code = _preprocess_code(code)
+      except Exception, e:
+        raise Exception, "Failed to pre-process the module ("+module+")! Got the following exception: '" + str(e) +"'"
 
     # Create a new virtual namespace
     try:
