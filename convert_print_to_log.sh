@@ -31,7 +31,6 @@ BACKUP_SUFFIX="bak"
 
 # Get the files
 FILES=`ls $FILE_GLOB`
-echo $FILES
 
 # Handle each file
 for FILE in $FILES
