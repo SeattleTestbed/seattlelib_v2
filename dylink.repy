@@ -112,8 +112,8 @@ def _replace_print(code):
       raise Exception("Dylink cannot re-write print statements that use redirection! Unsupported statement: print "+print_argument)
 
     # Check if we should add a new-line
-    if print_argument[-1] == ",":
-      log_arg = print_argument + ",'\n'"
+    if print_argument[-1] != ",":
+      log_arg = print_argument + ",'\\n'"
     else:
       log_arg = print_argument
 
