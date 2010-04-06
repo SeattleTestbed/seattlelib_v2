@@ -430,7 +430,7 @@ def _check_func_args(name, arg_definition, args):
   for index in xrange(num_args):
     # If we get into the var-args, then stop processing
     # the arguments, since they are all allowed.
-    if index >= defined_length and has_var_args:
+    if index >= defined_length-1 and has_var_args:
       break
 
     # Check the argument type's match
