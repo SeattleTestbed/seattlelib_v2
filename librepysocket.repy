@@ -296,7 +296,7 @@ def sendmess(host, port, mess, localip=None, localport=None):
       sent = sendmessage(host, port, mess, localip, localport)
       return sent
       
-    except DuplicateTupleError, e:
+    except (AlreadyListeningError,DuplicateTupleError), e:
       # If we are allowed to pick a local port, try something else
       if can_choose_localport: 
         try: 
@@ -310,7 +310,7 @@ def sendmess(host, port, mess, localip=None, localport=None):
 
         except IndexError: 
           # There are no ports available
-          raise ResourceExhaustedError("No ports available for this connection! Would cause DuplicateTupleError.")
+          raise ResourceExhaustedError("No ports available for this connection! Would cause AlreadyListeningError/DuplicateTupleError.")
         
       # Otherwise, the open has failed (DuplicateTupleError)
       else:
@@ -570,7 +570,7 @@ def openconn(host, port, localip=None, localport=None, timeout=60):
       real_sock = openconnection(host, port, localip, localport, max(0,stoptime - getruntime()))
       break
       
-    except (DuplicateTupleError, CleanupInProgressError), e:
+    except (AlreadyListeningError, DuplicateTupleError, CleanupInProgressError), e:
       # If we are allowed to pick a local port, try something else
       if can_choose_localport: 
         try: 
@@ -586,6 +586,8 @@ def openconn(host, port, localip=None, localport=None, timeout=60):
           # If this is CleanupInProgressError, we can try to wait
           if type(e) == DuplicateTupleError:
             raise ResourceExhaustedError("No ports available for this connection! Would cause DuplicateTupleError.")
+          if type(e) == AlreadyListeningError:
+             raise ResourceExhaustedError("No ports available for this connection! Would cause AlreadyListeningError.")
           elif type(e) == CleanupInProgressError:
             cleanup_in_progress = True
             sleep(0.2)
