@@ -53,12 +53,15 @@ NONE_TYPE = type(None)
 FUNC_TYPE = type(_func)
 METHOD_TYPE = type(_noop.noop)
 INSTANCE_TYPE = type(_junk)
+CLASS_TYPE = type(_noop)
+TYPE_TYPE = type(CLASS_TYPE)
 
 
 # These are the types that are not copied, but are just returned as the same
 # instance. These should all be immutable.
 NON_COPIED_TYPES = (str, unicode, int, long, float, complex, bool,
-                    frozenset, NONE_TYPE, FUNC_TYPE, METHOD_TYPE, INSTANCE_TYPE)
+                    frozenset, NONE_TYPE, FUNC_TYPE, METHOD_TYPE,
+                    INSTANCE_TYPE, CLASS_TYPE, TYPE_TYPE)
 
 
 # This store is used to hide the underlying instance
@@ -439,8 +442,6 @@ def _check_func_args(name, arg_definition, args):
 
     # Check if the expected_types is a single type, or a list.
     if type(expected_types) in [tuple, list, set]:
-      # Convert the expected type to a tuple
-      expected_types = arg_definition[index] = tuple(expected_types)
 
       # Check for "any" in the allowed types
       if "any" in expected_types:
@@ -450,7 +451,7 @@ def _check_func_args(name, arg_definition, args):
 
     # Only a single type
     else:
-      match = arg_type is expected_types
+      match = arg_type is expected_types or expected_types == "any"
 
     # If there is no match, raise an exception
     if not match:
@@ -609,11 +610,14 @@ def _copy(item, copymap):
     for key,value in item.items():
       copied_key = _copy(key, copymap)
       copied_val = _copy(value, copymap)
-      copied_dict[copied_key] = copied_value
+      copied_dict[copied_key] = copied_val
 
     return copied_dict
 
   else:
     # Unable to handle this object
-    raise Exception("Cannot copy item of type: "+item_type)
+    #raise Exception("Cannot copy item of type: "+str(item_type)+" Item: "+str(item))
+    log("WARN: Cannot copy item of type: "+str(item_type)+ "Item: "+str(item)+". Using reference.\n")
+    return item # Return reference
+
 
