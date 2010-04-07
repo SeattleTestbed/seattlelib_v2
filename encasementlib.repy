@@ -14,11 +14,12 @@ CLEAN_CONTEXT["mycontext"] = {}
 
 # These are the calls that are initially copied to form
 # INIT_DEFINITION
+#
 COPIED_API = ["gethostbyname", "getmyip", "sendmessage", "listenformessage",
              "openconnection", "listenforconnection", "openfile", "listfiles",
              "removefile", "exitall", "createlock", "getruntime", "randombytes",
              "createthread", "sleep", "log", "getthreadname", "createvirtualnamespace",
-             "getresources", "getlasterror"]
+             "getresources", "getlasterror",]
 
 # This is the definition of the first security layer
 # Copy all of the functions named by COPIED_API
@@ -41,6 +42,15 @@ def _build_INIT_DEFINITION():
   for API in COPIED_API:
     INIT_DEFINITION[API] = {TYPE:ANY,
                             TARGET:_context[API]}
+
+  # Expose wrap_references
+  INIT_DEFINITION["wrap_references"] = {
+      "type":"func",
+      "args":(dict,),
+      "return":dict,
+      "exceptions":RepyArgumentError,
+      "target":wrap_references
+      } 
 
 # Imports the wrapper module
 def _import_wrapper():
@@ -76,7 +86,7 @@ def _layer_code(layer):
   try:
     virt = createvirtualnamespace(code,layer)
   except CodeUnsafeError, e:
-    raise CodeUnsafeError, "Compiling security layer '"+module+"' failed! Got exception: '" + str(e) + "'"
+    raise CodeUnsafeError, "Compiling security layer '"+layer+"' failed! Got exception: '" + str(e) + "'"
   
   # Return the new namespace
   return virt
@@ -224,11 +234,11 @@ def secure_dispatch(caller_context, context_def):
 
 #### Dispatch the next module ####
 
-# Build INIT_DEFINITION
-_build_INIT_DEFINITION()
-
 # Import the wrapper module
 _import_wrapper()
+
+# Build INIT_DEFINITION
+_build_INIT_DEFINITION()
 
 # Dispatch now
 secure_dispatch(_context, INIT_DEFINITION)
