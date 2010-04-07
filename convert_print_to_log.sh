@@ -23,6 +23,9 @@ SED_ARG_NO_NEWL="s|print \(.*[^,]\),$|log(\1)|"
 # This argument handles the normal print with a newline
 SED_ARG_NEWL="s|print \(.*\)$|log(\1,'\\\n')|"
 
+# This argument handles a print to just add a newline
+SED_ARG_NOARG="s|print[ \t]*$|log('\\\n')|"
+
 # This is the temporary suffix used while fixing
 TMP_SUFFIX="tmp"
 
@@ -36,7 +39,7 @@ FILES=`ls $FILE_GLOB`
 for FILE in $FILES
 do
     echo "Fixing: $FILE"
-    cat $FILE | $SED_CMD "${SED_ARG_NO_NEWL}" | $SED_CMD "${SED_ARG_NEWL}" > "$FILE.$TMP_SUFFIX"
+    cat $FILE | $SED_CMD "${SED_ARG_NO_NEWL}" | $SED_CMD "${SED_ARG_NEWL}" | $SED_CMD "${SED_ARG_NOARG}" > "$FILE.$TMP_SUFFIX"
     mv $FILE "$FILE.$BACKUP_SUFFIX"
     mv "$FILE.$TMP_SUFFIX" $FILE
 done
