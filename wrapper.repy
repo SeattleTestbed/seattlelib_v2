@@ -191,7 +191,7 @@ def _wrap_function(name, func, definition, obj_attribute=False):
     copied_args = copy(args)
 
     # Check the args
-    _check_func_args(name, args_defin, args)
+    _check_func_args(name, args_defin, copied_args)
 
     # Inject self if we need to
     if obj_attribute:
