@@ -59,10 +59,13 @@ TYPE_TYPE = type(CLASS_TYPE)
 
 # These are the types that are not copied, but are just returned as the same
 # instance. These should all be immutable.
-NON_COPIED_TYPES = (str, unicode, int, long, float, complex, bool,
+NON_COPIED_TYPES = set((str, unicode, int, long, float, complex, bool,
                     frozenset, NONE_TYPE, FUNC_TYPE, METHOD_TYPE,
-                    INSTANCE_TYPE, CLASS_TYPE, TYPE_TYPE)
+                    INSTANCE_TYPE, CLASS_TYPE, TYPE_TYPE))
 
+# Optimization
+LIST_TUPLE_SET = set([list, tuple, set])
+LIST_TUPLE = set([list, tuple])
 
 # This store is used to hide the underlying instance
 # objects which are wrapped by WrappedObject class.
@@ -182,22 +185,19 @@ def _wrap_function(name, func, definition, obj_attribute=False):
 
   # Define a wrapper function to check args, return values, and exceptions
   def _wrapped_func(*args):
-    # Check if this is an object attribute, pull off the self value
-    if obj_attribute:
-      self = args[0]
-      args = args[1:]
-
     # Copy the arguments
     copied_args = copy(args)
 
-    # Check the args
-    _check_func_args(name, args_defin, copied_args)
-
-    # Inject self if we need to
+    # Check if this is an object attribute, pull off the self value
+    # Since that is not specified in the definition
     if obj_attribute:
-      copied_args = list(copied_args)
-      copied_args.insert(0, self)
-    
+      checked_args = copied_args[1:]
+    else:
+      checked_args = copied_args
+
+    # Check the args
+    _check_func_args(name, args_defin, checked_args)
+
     # Call the function
     try:
       retval = func(*copied_args)
@@ -248,15 +248,12 @@ def _wrap_obj_constructor(name, func, definition, obj_attribute=False):
 
   # Restore the return type
   definition["return"] = return_defin
+  definition_id = id(return_defin)
 
   def _wrapped_objc(*args):
-    # Call the initial wrapper function to get
-    # the return object
-    retobj = initial_wrapped_func(*args)
-
-    # Wrap the object now 
-    return _wrap_obj_instance(retobj, return_defin)
-
+    # Call the initial wrapper function to get the object
+    # and wrap the object before return
+    return _wrap_obj_instance(initial_wrapped_func(*args), definition_id)
 
   # Return a reference to the wrapper function
   return _wrapped_objc
@@ -269,19 +266,12 @@ def _wrap_obj_constructor(name, func, definition, obj_attribute=False):
 OBJECT_WRAPPER_CACHE = {}
 
 # Wraps an instance of an object
-def _wrap_obj_instance(instance, definition):
+def _wrap_obj_instance(instance, definition_id):
   # Get the cached wrapper class
-  bind_context, bind_vn = OBJECT_WRAPPER_CACHE[id(definition)]
-
-  # Update the context with the instance, and bind
-  bind_context = bind_context.copy()
-  bind_context["_inst"] = instance
-
-  # Bind now
-  bind_vn.evaluate(bind_context)
+  wrapper_class = OBJECT_WRAPPER_CACHE[definition_id]
 
   # Return the wrapper
-  return bind_context["bind_obj"]
+  return wrapper_class(instance)
 
 
 # Constructs an object wrapper from a definition
@@ -304,7 +294,16 @@ def _construct_object_wrapper(definition):
 
   # This dictionary is used as the context to execute
   # bind_str, and has the attributes to bind
-  bind_context = SafeDict({"WrappedObject":WrappedObject})
+  bind_context = SafeDict({"WrappedObject":WrappedObject, "INSTANCE_STORE":INSTANCE_STORE})
+
+  # Get the VN name if specified
+  if "name" in definition:
+    obj_name = definition["name"]
+    vn_name = str(obj_name) + " wrapper class"
+
+  else:
+    raise RepyArgumentError("'name' attribute not provided for object definition!")
+
 
   # Bind each attribute
   for attribute in definition:
@@ -312,39 +311,40 @@ def _construct_object_wrapper(definition):
     if attribute == "obj-type" or attribute == "name":
       continue
 
+    # Forbid defining the __init__ and __del__ attributes
+    if attribute in ("__init__", "__del__"):
+      raise RepyArgumentError("Cannot define attribute '"+attribute+"' for object!")
+
     # Get the attribute definition
     attr_definition = definition[attribute]
-    
+  
+    # Get a name for the wrapper function
+    if attribute[-1] == "_":
+      wrapper_name = attribute+"wrapper"
+    else:
+      wrapper_name = attribute+"_wrapper"
+ 
     # Add a string to define the attribute for the class.
     # the attribute will call to _attribute_wrapper
     bind_str += "  def "+attribute+"(self, *args):\n"
-    bind_str += "    return _"+attribute+"_wrapper(self, *args)\n\n"
+    bind_str += "    return "+wrapper_name+"(INSTANCE_STORE[id(self)], *args)\n\n"
 
     # Get the attribute wrapper
-    attr_wrapper = _wrap_attribute(attribute, attr_definition)
+    attr_wrapper = _wrap_attribute(obj_name+"."+attribute, attr_definition)
 
     # Add this to the context
-    bind_context["_"+attribute+"_wrapper"] = attr_wrapper
+    bind_context[wrapper_name] = attr_wrapper
 
   
-  # The last line of code creates a new instance of this
-  # wrapper class, and assigns it to "bind_obj"
-  bind_str += "bind_obj = WrappedObjectAnon(_inst)\n"
-
   # DEBUG: Dump the bind string
   # log(bind_str)
 
-  # Get the VN name if specified
-  if "name" in definition:
-    vn_name = str(definition["name"]) + " wrapper class"
-  else:
-    vn_name = "Object wrapper class"
-
   # Create a Virtual Namespace to perform the binding
   bind_vn = createvirtualnamespace(bind_str, vn_name)
+  bind_vn.evaluate(bind_context)
 
-  # Cache the context and VN
-  OBJECT_WRAPPER_CACHE[id(definition)] = (bind_context, bind_vn)
+  # Cache the object wrapper
+  OBJECT_WRAPPER_CACHE[id(definition)] = bind_context["WrappedObjectAnon"]
 
 
 
@@ -374,18 +374,13 @@ def _wrap_attribute(name, definition):
     # Provide a wrapper around an object constructor
     func = _wrap_obj_constructor(name, value, definition, True)
 
-  # Create an attribute wrapper which resolves the actual instance object
-  def _attribute_wrapper(self, *args):
-    # Get the instance variable
-    instance = INSTANCE_STORE[id(self)]
-
-    # Call the function, adding the instance
-    return func(instance, *args)
-
   # Return a reference to this wrapper
-  return _attribute_wrapper
+  return func
 
 
+# Caches certain properties about a function call
+# Maps id of definition -> tuple of info
+FUNCTION_PROP_CACHE = {}
 
 # Check the arguments to a function
 def _check_func_args(name, arg_definition, args):
@@ -404,31 +399,47 @@ def _check_func_args(name, arg_definition, args):
   <Returns>
     None
   """
-  # Get the length of the arguments and the definitions
-  if arg_definition is None:
-    defined_length = 0
-    has_var_args = False
-  elif type(arg_definition) in [tuple, list]:
-    defined_length = len(arg_definition)
-    has_var_args = arg_definition[-1] == "var"
+  # Check for cached properties
+  def_id = id(arg_definition)
+  if def_id in FUNCTION_PROP_CACHE:
+    defined_length, min_args, has_var_args = FUNCTION_PROP_CACHE[def_id]
+
   else:
-    fatal_error("Function '"+name+"' does not specify argument definition as tuple or list!")
+    # Generate the properties
+    defined_length = 0
+    num_default_args = 0
+    has_var_args = 0
+
+    # Get the length of the arguments and the definitions
+    if type(arg_definition) in LIST_TUPLE:
+      defined_length = len(arg_definition)
+     
+      # Check for variable length arguments 
+      has_var_args = arg_definition[-1] == "var"
+      if has_var_args:
+        num_default_args += 1
+
+      # Check if the function supports default arguments
+      for arg_type in arg_definition:
+        if type(arg_type) in LIST_TUPLE_SET and None in arg_type:
+          num_default_args += 1
+
+    elif arg_definition is not None:
+      fatal_error("Function '"+name+"' does not specify argument definition as tuple or list!")
+
+    # Mimimum arg count
+    min_args = defined_length - num_default_args
+
+    # Cache the important bits
+    FUNCTION_PROP_CACHE[def_id] = (defined_length, min_args, has_var_args)
+
 
   # Get the number of arguments
   num_args = len(args)
 
   # Check the length
-  if not has_var_args and num_args != defined_length:
-    # Check if the function supports default arguments
-    num_default_args = 0
-    if type(arg_definition) in [tuple, list]:
-      for arg_type in arg_definition:
-        if type(arg_type) in [tuple, list,set] and None in arg_type:
-          num_default_args += 1
-
-    # Check if this account for the difference
-    if defined_length - num_default_args > num_args:
-      raise RepyArgumentError("Function '"+name+"' expects at least "+str(defined_length-num_default_args)+" arguments, "+str(num_args)+" provided.")
+  if min_args > num_args or num_args > defined_length and not has_var_args:
+    raise RepyArgumentError("Function '"+name+"' expects at least "+str(min_args)+" arguments, "+str(num_args)+" provided.")
 
   for index in xrange(num_args):
     # If we get into the var-args, then stop processing
@@ -441,7 +452,7 @@ def _check_func_args(name, arg_definition, args):
     expected_types = arg_definition[index]
 
     # Check if the expected_types is a single type, or a list.
-    if type(expected_types) in [tuple, list, set]:
+    if type(expected_types) in LIST_TUPLE_SET:
 
       # Check for "any" in the allowed types
       if "any" in expected_types:
@@ -481,7 +492,7 @@ def _check_func_exception(name, exc_definition, excp):
   # If the exc_definition is a list/set then check for a matching element or "any"
   # If the exc_definition is a single value, check for "any" or a match
   if exc_definition is None or \
-     (type(exc_definition) in [list, tuple, set] and excp_type not in exc_definition and "any" not in exc_definition) or \
+     (type(exc_definition) in LIST_TUPLE_SET and excp_type not in exc_definition and "any" not in exc_definition) or \
      (exc_definition != "any" and excp_type is not exc_definition and not isinstance(excp, exc_definition)):
     fatal_error("Function '"+name+"' tried to raise exception of type: '"+str(excp_type)+"' which is forbidden.")
 
@@ -510,7 +521,7 @@ def _check_func_return(name, return_definition, retval):
     error = (retval is not None)
 
   # If the return_definition is a list/set then check for a matching element or "any"
-  elif type(return_definition) in [list, tuple, set]:
+  elif type(return_definition) in LIST_TUPLE_SET:
     error = ret_type not in return_definition and "any" not in return_definition
 
   # If the return_definition is a single value, check for "any" or a match
@@ -548,16 +559,16 @@ def copy(item):
 
 
 def _copy(item, copymap):
-  # Get the item's id, this should be unique
-  item_id = id(item)
+
+  # Check if we can ignore this item
   item_type = type(item)
+  if item_type in NON_COPIED_TYPES:
+    return item
 
   # Check if we've already copied this item
+  item_id = id(item)
   if item_id in copymap:
     return copymap[item_id]
-
-  elif item_type in NON_COPIED_TYPES:
-    return item
 
   elif item_type is list:
     # Create a temporary list
@@ -617,7 +628,7 @@ def _copy(item, copymap):
   else:
     # Unable to handle this object
     #raise Exception("Cannot copy item of type: "+str(item_type)+" Item: "+str(item))
-    log("WARN: Cannot copy item of type: "+str(item_type)+ "Item: "+str(item)+". Using reference.\n")
+    #log("WARN: Cannot copy item of type: "+str(item_type)+ "Item: "+str(item)+". Using reference.\n")
     return item # Return reference
 
 
