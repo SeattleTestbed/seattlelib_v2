@@ -985,10 +985,6 @@ class RepySocket (object):
     if len(self.recv_buffer) > 0:
       data = self.recv_buffer[:bytes]
       self.recv_buffer = self.recv_buffer[bytes:]
-      bytes -= len(data)
-
-    # Check if that satisfied the request
-    if bytes == 0:
       return data
 
     # Get the start time
