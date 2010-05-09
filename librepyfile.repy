@@ -190,31 +190,59 @@ def _write_file_block(filename, block, data):
 # Binary probe to find the file size
 def _probe_file_size(filename):
   """Returns the size of the file in bytes."""
-  low_block = 0
-  high_block = 1
-  max_hit = False
-
-  # Get a rough bounds on the size first
-  while low_block < high_block:
-    current_block = low_block + (high_block - low_block) / 2
+  current_block = 1
+  max_block = 0
+  while True:
     try:
-      block_data = _read_file_block(filename, current_block)
-      good_block = current_block # Store the last 'good' block
-      low_block = current_block
-      if not max_hit:
-        high_block = high_block * 2 
-      else:
-        low_block += 1
-
+      block_data = _read_file_block(filename, current_block-1)
+      current_block *= 2
     except SeekPastEndOfFileError:
-      high_block = current_block - 1
-      max_hit = True
+      max_block = current_block-1
+      current_block = current_block/2 - 1
+      break
 
-  return 4096*good_block + len(block_data)
+  while current_block < max_block-1:
+    check_block = current_block + (max_block - current_block) / 2
+    try:
+      block_data = _read_file_block(filename, check_block)
+      current_block = check_block
+    except SeekPastEndOfFileError:
+      max_block = check_block
+  
+  return 4096*current_block + len(block_data)
 
 
 
 ##### Public Methods
+
+# Sets the maximum number of cached blocks per
+# file. This setting should not be set below the
+# default value if there are open files.
+def set_max_cached_blocks(num_blocks):
+  """
+  <Purpose>
+    Sets the number of blocks to cache per file.
+
+  <Arguments>
+    num_blocks: The number of blocks to cache per file.
+                This cannot be reduced if there are open files.
+
+  <Exceptions>
+    Raises RepyArgumentError if the argument is not an integer,
+    or if it reduces the cache size with open files.
+
+  <Returns>
+    None
+  """
+  if type(num_blocks) not in (int, long):
+    raise RepyArgumentError("Argument must be an integer type!")
+
+  if len(_FILES) > 0 and num_blocks < MAX_BLOCK_CACHE:
+    raise RepyArgumentError("Cannot reduce the cache size with open files!")
+
+  # Update the value
+  _context["MAX_BLOCK_CACHE"] = num_blocks
+
 
 # Generic open file function
 def open(filename, mode="rw", create=True):
@@ -324,7 +352,7 @@ class RepyFile (object):
     <Returns>
       None      
     """
-    if type(offset) is not int:
+    if type(offset) not in (int, long):
       raise TypeError("Invalid type for offset! Must be int!")
     if offset < 0:
       raise ValueError("Offset must be a non-negative value!")

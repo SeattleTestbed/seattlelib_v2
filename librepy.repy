@@ -11,7 +11,7 @@ to dispatching the next module.
 
 """
 # This array holds things to export if we loaded as a module
-_EXPORTS = []
+LIBREPY_EXPORTS = ["LIBREPY_EXPORTS"]
 
 #### Constants
 
@@ -30,23 +30,23 @@ CHECK_RL_SHUTDOWN = 1
 
 # Import the sub-library, librepyrunloop
 librunloop = dy_import_module("librepyrunloop")
-_EXPORTS.append("librunloop")
+LIBREPY_EXPORTS.append("librunloop")
 
 # Import the sub-library, librepyfile
 libfile = dy_import_module("librepyfile")
-_EXPORTS.append("libfile")
+LIBREPY_EXPORTS.append("libfile")
 
 # Import the sub-library, librepyrandom
 librandom = dy_import_module("librepyrandom")
-_EXPORTS.append("librandom")
+LIBREPY_EXPORTS.append("librandom")
 
 # Import the sub-library, librepythread
 libthread = dy_import_module("librepythread")
-_EXPORTS.append("libthread")
+LIBREPY_EXPORTS.append("libthread")
 
 # Import the sub-library, librepysocket
 libsocket = dy_import_module("librepysocket")
-_EXPORTS.append("libsocket")
+LIBREPY_EXPORTS.append("libsocket")
 
 # Override the imported version of librunloop to use a unified run-loop
 libthread._context["librunloop"] = librunloop
@@ -65,18 +65,18 @@ runIn = librunloop.runIn
 runEvery = librunloop.runEvery
 stopSchedule = librunloop.stopSchedule
 terminate_runloop = librunloop.terminate
-_EXPORTS.append("PriorityQueue")
-_EXPORTS.append("start_runloop")
-_EXPORTS.append("runAt")
-_EXPORTS.append("runIn")
-_EXPORTS.append("runEvery")
-_EXPORTS.append("stopSchedule")
-_EXPORTS.append("terminate_runloop")
+LIBREPY_EXPORTS.append("PriorityQueue")
+LIBREPY_EXPORTS.append("start_runloop")
+LIBREPY_EXPORTS.append("runAt")
+LIBREPY_EXPORTS.append("runIn")
+LIBREPY_EXPORTS.append("runEvery")
+LIBREPY_EXPORTS.append("stopSchedule")
+LIBREPY_EXPORTS.append("terminate_runloop")
 
 
 # Exports from librepyfile
 open = libfile.open
-_EXPORTS.append("open")
+LIBREPY_EXPORTS.append("open")
 
 
 # Exports from librandom
@@ -84,10 +84,10 @@ randomint = librandom.randomint
 randomlong = librandom.randomlong
 randomfloat = librandom.randomfloat
 randomstring = librandom.randomstring
-_EXPORTS.append("randomint")
-_EXPORTS.append("randomlong")
-_EXPORTS.append("randomfloat")
-_EXPORTS.append("randomstring")
+LIBREPY_EXPORTS.append("randomint")
+LIBREPY_EXPORTS.append("randomlong")
+LIBREPY_EXPORTS.append("randomfloat")
+LIBREPY_EXPORTS.append("randomstring")
 
 
 # Exports from libthread
@@ -96,21 +96,21 @@ RLock = libthread.RLock
 Thread = libthread.Thread
 Timer = libthread.Timer
 ThreadPool = libthread.ThreadPool
-_EXPORTS.append("Lock")
-_EXPORTS.append("RLock")
-_EXPORTS.append("Thread")
-_EXPORTS.append("Timer")
-_EXPORTS.append("ThreadPool")
+LIBREPY_EXPORTS.append("Lock")
+LIBREPY_EXPORTS.append("RLock")
+LIBREPY_EXPORTS.append("Thread")
+LIBREPY_EXPORTS.append("Timer")
+LIBREPY_EXPORTS.append("ThreadPool")
 
 # Exports from libsocket
 sendmess = libsocket.sendmess
 recvmess = libsocket.recvmess
 openconn = libsocket.openconn
 waitforconn = libsocket.waitforconn
-_EXPORTS.append("sendmess")
-_EXPORTS.append("recvmess")
-_EXPORTS.append("openconn")
-_EXPORTS.append("waitforconn")
+LIBREPY_EXPORTS.append("sendmess")
+LIBREPY_EXPORTS.append("recvmess")
+LIBREPY_EXPORTS.append("openconn")
+LIBREPY_EXPORTS.append("waitforconn")
 
 
 ##### Run-time
@@ -138,7 +138,7 @@ if callfunc == "initialize":
   runEvery(CHECK_RL_SHUTDOWN, check_terminate)
 
   # Export everything
-  for key in _EXPORTS:
+  for key in LIBREPY_EXPORTS:
     CHILD_CONTEXT[key] = _context[key]
   
   # Start the next module
