@@ -64,6 +64,10 @@ _FILES = {}
 # Serializes access to the _FILES dictionary
 _FILES_LOCK = createlock()
 
+# Cache of the files in the directory
+# Prevents excessive calls to listfiles()
+_DIR_CONTENTS = None
+
 ##### Internal Methods
 
 # Creates an entry for a file given a repy file object
@@ -244,6 +248,27 @@ def set_max_cached_blocks(num_blocks):
   _context["MAX_BLOCK_CACHE"] = num_blocks
 
 
+# Refreshes cached directory contents
+def refresh_directory():
+  """
+  <Purpose>
+    Refreshes the cached directory contents. This may be necessary if the
+    underlying kernel API's are used instead of open and rmfile.
+
+  <Arguments>
+    None
+
+  <Exceptions>
+    None
+
+  <Returns>
+    None
+  """
+  _FILES_LOCK.acquire(True)
+  _context["_DIR_CONTENTS"] = set(listfiles())
+  _FILE_LOCK.release()
+
+
 # Generic open file function
 def open(filename, mode="rw", create=True):
   """
@@ -272,17 +297,91 @@ def open(filename, mode="rw", create=True):
   """
   # Acquire the lock
   _FILES_LOCK.acquire(True)
+
+  # Check if we have a directory cache
+  if _DIR_CONTENTS is None:
+    _context["_DIR_CONTENTS"] = set(listfiles())
+
   try:
+    # If the file does not exist, and we cannot create it,
+    # raise an exception without making the system call
+    exists = filename in _DIR_CONTENTS
+    if not exists and not create:
+      raise FileNotFoundError("File does not exist, and specified not to create!")
+
     # Check if this file is already open
     if filename not in _FILES:
       fobj = openfile(filename, create)
       _create_file_entry(filename, fobj)
+      
+      # Add to the file cache if we created it
+      if not exists:
+        _DIR_CONTENTS.add(filename)
       
     return RepyFile(filename, mode)
 
   finally:
     _FILES_LOCK.release()
 
+
+def rmfile(filename):
+  """
+  <Purpose>
+    Deletes a file.
+  
+  <Arguments>
+    filename:
+      The filename to delete
+
+  <Exceptions>
+    ResourceExhaustedError if there are no available file handles.
+    FileNotFoundError if the filename does not exist and create is False.
+
+  <Returns>
+    None
+  """
+  # Acquire the lock
+  _FILES_LOCK.acquire(True)
+
+  # Check if we have a directory cache
+  if _DIR_CONTENTS is None:
+    _context["_DIR_CONTENTS"] = set(listfiles())
+
+  try:
+    # Do an internel check if the file does not exist, or
+    # if it is in use
+    if filename not in _DIR_CONTENTS:
+      raise FileNotFoundError("Specified file does not exist!")
+
+    # Check if this file is already open
+    if filename in _FILES:
+      raise FileInUseError("Specified file is in use!")
+
+    # Call down
+    removefile(filename)
+  
+  finally:
+    _FILES_LOCK.release()
+
+
+def lsdir():
+  """
+  <Purpose>
+    Returns the contents of the working directory as a set
+
+  <Arguments>
+    None
+
+  <Returns>
+    A cached copy of the directory contents
+  """
+  # Check if we have a directory cache
+  if _DIR_CONTENTS is None:
+    _FILES_LOCK.acquire(True)
+    _context["_DIR_CONTENTS"] = set(listfiles())
+    _FILES_LOCK.release() 
+
+  return _DIR_CONTENTS.copy()
 
 
 ##### Class definitions

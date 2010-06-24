@@ -76,7 +76,13 @@ LIBREPY_EXPORTS.append("terminate_runloop")
 
 # Exports from librepyfile
 open = libfile.open
+rmfile = libfile.rmfile
+removefile = rmfile # Override removefile
+lsdir = libfile.lsdir
 LIBREPY_EXPORTS.append("open")
+LIBREPY_EXPORTS.append("rmfile")
+LIBREPY_EXPORTS.append("removefile")
+LIBREPY_EXPORTS.append("lsdir")
 
 
 # Exports from librandom
