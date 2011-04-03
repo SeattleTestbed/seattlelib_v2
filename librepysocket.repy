@@ -868,6 +868,8 @@ class RepySocket (object):
     self.settimeout(timeout)
     self.setpollinterval(poll_intv)
 
+  def willblock(self):
+    return False, False
 
   def settimeout(self, timeout):
     """
