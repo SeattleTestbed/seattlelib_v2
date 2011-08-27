@@ -41,7 +41,7 @@
       binascii_a2b_hex      
     Repy Library Used:
       base64_b64decode
-      pyDes
+      pydes
       md5py      
 
 """

@@ -10,8 +10,8 @@ Provides a method of transferring data to machines behind firewalls or Network A
 """
 
 
-include NAT_advertisement.repy
-include Multiplexer.repy
+include nat_advertisement.repy
+include multiplexer.repy
 
 
 

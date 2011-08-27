@@ -13,9 +13,9 @@ Raises an AdvertiseError exception if there is a problem advertising with either
 """
 
 include listops.repy
-include openDHTadvertise.repy
+include opendhtadvertise.repy
 include centralizedadvertise.repy
-include DORadvertise.repy
+include doradvertise.repy
 include parallelize.repy
 
 
@@ -49,9 +49,9 @@ def _try_advertise_announce(args):
     if which_service == "central":
       centralizedadvertise_announce(key, value, ttlval)
     elif which_service == "DOR":
-      DORadvertise_announce(key, value, ttlval)
+      doradvertise_announce(key, value, ttlval)
     else:
-      openDHTadvertise_announce(key, value, ttlval)
+      opendhtadvertise_announce(key, value, ttlval)
 
     finishedref[0] = True     # Signal that at least one service has finished.
     
@@ -169,9 +169,9 @@ def _try_advertise_lookup(args):
     if which_service == "central":
       results = centralizedadvertise_lookup(key, maxvals)
     elif which_service == "DOR":
-      results = DORadvertise_lookup(key, maxvals=maxvals)
+      results = doradvertise_lookup(key, maxvals=maxvals)
     else:
-      results = openDHTadvertise_lookup(key, maxvals)
+      results = opendhtadvertise_lookup(key, maxvals)
 
     finishedref[0] = True
     return results

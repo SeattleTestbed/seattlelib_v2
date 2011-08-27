@@ -22,7 +22,7 @@ include session.repy
 
 
 #allow nat layer
-include NATLayer_rpc.repy
+include natlayer_rpc.repy
 
 
 # makes connections time out

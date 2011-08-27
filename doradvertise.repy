@@ -18,12 +18,12 @@ include xmlparse.repy
 
 
 
-DORadvertise_FORM_LOCATION = "http://geni.doregistry.org/SeattleGENI/HashTable"
+doradvertise_FORM_LOCATION = "http://geni.doregistry.org/SeattleGENI/HashTable"
 
 
 
 
-class DORadvertise_XMLError(Exception):
+class doradvertise_XMLError(Exception):
   """
   Exception raised when the XML recieved from the Digital Object Registry
   server does not match the structure we expect.
@@ -33,7 +33,7 @@ class DORadvertise_XMLError(Exception):
 
 
 
-class DORadvertise_BadRequest(Exception):
+class doradvertise_BadRequest(Exception):
   """
   Exception raised when the Digital Object Registry interface indigates we
   have made an invalid request.
@@ -48,7 +48,7 @@ class DORadvertise_BadRequest(Exception):
 
 
 
-def DORadvertise_announce(key, value, ttlval, timeout=None):
+def doradvertise_announce(key, value, ttlval, timeout=None):
   """
   <Purpose>
     Announce a (key, value) pair to the Digital Object Registry.
@@ -70,9 +70,9 @@ def DORadvertise_announce(key, value, ttlval, timeout=None):
 
   <Exceptions>
     xmlparse_XMLParseError if the xml returned isn't parseable by xmlparse.
-    DORadvertise_XMLError if the xml response structure does not correspond
+    doradvertise_XMLError if the xml response structure does not correspond
       to what we expect.
-    DORadvertise_BadRequest if the response indicates an error.
+    doradvertise_BadRequest if the response indicates an error.
     Any exception httpretrieve_get_string() throws (including timeout errors).
 
   <Side Effects>
@@ -85,7 +85,7 @@ def DORadvertise_announce(key, value, ttlval, timeout=None):
   post_params = {'command': 'announce', 'key': key, 'value': value,
       'lifetime': str(int(ttlval))}
 
-  _DORadvertise_command(post_params, timeout=timeout)
+  _doradvertise_command(post_params, timeout=timeout)
 
   return None
 
@@ -93,7 +93,7 @@ def DORadvertise_announce(key, value, ttlval, timeout=None):
 
 
 
-def DORadvertise_lookup(key, maxvals=100, timeout=None):
+def doradvertise_lookup(key, maxvals=100, timeout=None):
   """
   <Purpose>
     Retrieve a stored value from the Digital Object Registry.
@@ -112,9 +112,9 @@ def DORadvertise_lookup(key, maxvals=100, timeout=None):
 
   <Exceptions>
     xmlparse_XMLParseError if the xml returned isn't parseable by xmlparse.
-    DORadvertise_XMLError if the xml response structure does not correspond
+    doradvertise_XMLError if the xml response structure does not correspond
       to what we expect.
-    DORadvertise_BadRequest if the response indicates an error.
+    doradvertise_BadRequest if the response indicates an error.
     Any exception httpretrieve_get_string() throws (including timeout errors).
 
   <Side Effects>
@@ -126,15 +126,15 @@ def DORadvertise_lookup(key, maxvals=100, timeout=None):
 
   post_params = {'command': 'lookup', 'key': key, 'maxvals': str(maxvals)}
 
-  return _DORadvertise_command(post_params, timeout=timeout)
+  return _doradvertise_command(post_params, timeout=timeout)
 
 
 
-def _DORadvertise_command(parameters, timeout=None):
+def _doradvertise_command(parameters, timeout=None):
   # Internal helper function; calls the remote command, and returns
   # the results we can glean from it.
 
-  post_result = httpretrieve_get_string(DORadvertise_FORM_LOCATION, \
+  post_result = httpretrieve_get_string(doradvertise_FORM_LOCATION, \
       postdata=parameters, timeout=timeout, \
       httpheaders={"Content-Type": "application/x-www-form-urlencoded"})
 
@@ -143,12 +143,12 @@ def _DORadvertise_command(parameters, timeout=None):
   xmltree = xmlparse_parse(post_result)
 
   if xmltree.tag_name != "HashTableService":
-    raise DORadvertise_XMLError(
+    raise doradvertise_XMLError(
         "Root node error. Expected: 'HashTableService', " +
         "got: '%s'" % xmltree.tag_name)
 
   if xmltree.children is None:
-    raise DORadvertise_XMLError("Root node contains no children nodes.")
+    raise doradvertise_XMLError("Root node contains no children nodes.")
 
   # We expect to get an error code, an error string, and possibly some
   # values from the server.
@@ -170,7 +170,7 @@ def _DORadvertise_command(parameters, timeout=None):
       values = []
       for valuenode in xmlchild.children:
         if valuenode.tag_name != "value":
-          raise DORadvertise_XMLError(
+          raise doradvertise_XMLError(
               "Child tag of <values>; expected: '<value>', got: '<%s>'" % \
                   valuenode.tag_name)
 
@@ -181,6 +181,6 @@ def _DORadvertise_command(parameters, timeout=None):
         values.append(content)
 
   if error is not 0:
-    raise DORadvertise_BadRequest(error, error_msg)
+    raise doradvertise_BadRequest(error, error_msg)
 
   return values
