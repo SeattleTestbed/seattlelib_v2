@@ -823,7 +823,7 @@ class RepySocket (object):
   # remoteip : Remote Host IP
   # remoteport : Remote Host Port
 
-  def __init__(self, underlying, localip, localport, remoteip, remoteport, timeout=None, poll_intv=0.1):
+  def __init__(self, underlying, localip, localport, remoteip, remoteport, timeout=None, poll_intv=0.005):
     """
     <Purpose>
       Initializes the RepySocket.

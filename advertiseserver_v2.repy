@@ -16,13 +16,15 @@
 
 
 
-include session.repy
-include serialize.repy
-include time.repy
+dy_import_module_symbols("session")
+dy_import_module_symbols("serialize")
+dy_import_module_symbols("time")
 
 
 
 # This is the dictionary which stores all advertise associations.
+# They will be stored as tuples with the following format:
+# (data, ttl)
 mycontext['data_table'] = {}
 
 # All debug output will be written here.
@@ -59,7 +61,7 @@ mycontext['connection_sleep'] = 0.004
 mycontext['handle_sleep'] = 0.004
 
 # Network interface to use.
-mycontext['local_ip'] = getmyip()
+mycontext['local_ip'] = '192.168.0.49'
 
 # Port to listen on for non-legacy connections.
 mycontext['connect_port'] = 10102
@@ -70,38 +72,6 @@ mycontext['received_connections'] = []
 
 # Most recent time log.
 mycontext['last_runtime'] = 0
-
-
-
-
-class Advertise_Entry:
-  """
-  <Purpose>
-    Encapsulates the entries we store in the data table. This is a pretty 
-    flagrant violation of the coding guidelines, but since we don't know 
-    how many properties each of these entries is going to have after 
-    write-protection is implemented, it's probably better to start out 
-    overbuilt than beat heads against keyboards over the eventual indexing 
-    of 5-tuples that is sure to ensue.
-  """
-  time_to_live = 0
-  data = None
-
-  def __init__(self, time_to_live, data):
-    self.time_to_live = time_to_live
-    self.data = data
-
-  def decrement_ttl(self, amount):
-    self.time_to_live -= amount
-    return
-
-  def is_expired(self):
-    if self.time_to_live <= 0:
-      return True
-    return False
-
-  def __repr__(self):
-    return "(DATA: " + str(self.data) + ", TTL: " + str(self.time_to_live) + ")"
 
 
 
@@ -130,6 +100,10 @@ def _purge_expired_items():
   # This is going to run REALLY FREQUENTLY, so we have to be pretty careful 
   # about resource consumption.
   keys = mycontext['data_table'].keys()
+  
+  if len(keys) < 1:
+    return
+
   keycount = len(keys)
   key_index = 0
   lock = createlock()
@@ -148,7 +122,8 @@ def _purge_expired_items():
   while key_index < keycount:
 
     # Iterate through all of the entries in the current key.
-    for entry in mycontext['data_table'][keys[key_index]]:
+    for i in range(len(mycontext['data_table'][keys[key_index]])):
+      entry = mycontext['data_table'][keys[key_index]][i]
       # If we've reached our quota for this lock, refresh to unblock
       # query operations and the like.
       if tally == mycontext['batch_size']:
@@ -157,15 +132,17 @@ def _purge_expired_items():
         tally = 0
 
       # Reduce the entry's time to live, possibly making it fall below zero.
-      entry.decrement_ttl(decrement)
+      mycontext['data_table'][keys[key_index]][i] = (entry[0], entry[1] - decrement)
+
       # If it HAS fallen to zero or lower, it'll show up as expired, so we 
       # delete it.
-      if entry.is_expired():
+      if mycontext['data_table'][keys[key_index]][i][1] <= 0:
         state_changed = True
-        if mycontext['verbose']:
-          log("::DEBUG:: ITEM EXPIRED: " + str(keys[key_index]) + " : " + str(entry) + "\n")
+        # if mycontext['verbose']:
+        #   log("::DEBUG:: ITEM EXPIRED: " + str(keys[key_index]) + " : " + str(entry) + "\n")
 
-        mycontext['data_table'][keys[key_index]].remove(entry)
+        del mycontext['data_table'][keys[key_index]][i]
+        # mycontext['data_table'][keys[key_index]].remove(entry)
 
       tally += 1
     
@@ -177,11 +154,12 @@ def _purge_expired_items():
 
     key_index += 1
 
-  if mycontext['verbose'] and state_changed:
+  if mycontext['verbose']: # and state_changed:
     log("::DEBUG:: NEW TABLE STATE: " + str(mycontext['data_table']) + "\n")
 
   # We're done with this pass, so release the lock.
   lock.release()
+
   return
 
 
@@ -236,15 +214,19 @@ def insert_item(key, value, time_to_live):
   if key not in mycontext['data_table'].keys():
     mycontext['data_table'][key] = []
 
-  new_entry = Advertise_Entry(time_to_live, value)
+  new_entry = (value, time_to_live)
 
   pair_exists = False
-  for entry in mycontext['data_table'][key]:
-    if entry.data == value:
+  # for entry in mycontext['data_table'][key]:
+  for i in range(len(mycontext['data_table'][key])):
+    entry = mycontext['data_table'][key][i]
+    data = entry[0]
+
+    if entry[0] == value:
       pair_exists = True
 
-      if entry.time_to_live < time_to_live:
-        entry.time_to_live = time_to_live
+      if entry[1] < time_to_live:
+        mycontext['data_table'][key][i] = (data, time_to_live)
 
   if pair_exists == False:
     mycontext['data_table'][key].append(new_entry)
@@ -259,6 +241,9 @@ def insert_item(key, value, time_to_live):
 
   if mycontext['verbose']:
     log(" > Add Entry took: " + str(total_time) + "s\n")
+
+  log("::NOTICE:: NEW DICTIONARY STATE:\n")
+  log("  " + str(mycontext['data_table']) + "\n")
 
   return
 
@@ -287,7 +272,7 @@ def read_item(key, maxvals):
     Not a locking process, so there shouldn't be any side effects.
 
   <Returns>
-    An array of Advertise_Entry objects.
+    An array of tuples.
   """
   retlist = []
 
@@ -377,8 +362,11 @@ def _handle_pending_connections():
       remote_ip, remote_port, sockobj = mycontext['received_connections'].pop()
       connection_lock.release()
 
+      log("BEGIN HANDLE REQUEST\n")
       handle_request(remote_ip, remote_port, sockobj)
+      log("HANDLE REQUEST DONE START CLOSING SOCKET\n")
       sockobj.close()
+      log("SOCKET CLOSED.\n")
 
       total_time = getruntime() - start_time
 
@@ -543,7 +531,7 @@ def handle_request(remote_ip, remote_port, sockobj):
       entries = read_item(key, maxvals)
 
       for entry in entries:
-        readlist.append(entry.data)
+        readlist.append(entry[0])
 
       if mycontext['verbose']:
         log(" > ITEM REQUESTED: " + str(key) + "\n")

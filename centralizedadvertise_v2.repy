@@ -1,6 +1,6 @@
 """
 <Program Name>
-  centralizedadvertise_v2.repy (repyv2 compliant)
+  centralizedadvertise.repy (repyv2 compliant)
 
 <Started>
   July 8, 2008
@@ -13,9 +13,9 @@
   PUT/GET advertisements to the central server.
 """
 
-include session.repy
-include sockettimeout.repy
-include serialize.repy
+include session
+include sockettimeout
+include serialize
 
 class CentralAdvertiseError(Exception):
   pass
@@ -24,7 +24,7 @@ class CentralAdvertiseError(Exception):
 servername = "satya.cs.washington.edu"
 serverport = 10101
 localip = getmyip()
-localport = 49030 # Arbitrary.
+# localport = 49030 # Arbitrary.
 
 
 
@@ -44,7 +44,7 @@ def centralizedadvertise_announce(key, value, ttlval):
       Time until the advertise server should expire this entry, in seconds.
 
   <Exceptions>
-    Several advertise exceptions of various types can occur.
+    [TODO : POPULATE]
 
   <Side Effects>
     If the connection fails or is slow, this will block code execution 
@@ -69,7 +69,7 @@ def centralizedadvertise_announce(key, value, ttlval):
   formatted_datastring = serialize_serializedata(data_to_send)
 
   # Open a connection with the server.
-  sockobj = timeout_openconn(servername,serverport, localip, localport, timeout=10)
+  sockobj = timeout_openconn(servername,serverport, localip, timeout=10)
 
   try:
     # Attempt to send the packet.
@@ -110,7 +110,7 @@ def centralizedadvertise_lookup(key, maxvals=100):
       The maximum number of values to return.
 
   <Exceptions>
-    Mostly same as advertise_announce
+    [TODO : POPULATE]
 
   <Side Effects>
     This will block in the calling thread until complete or timed out.
@@ -133,7 +133,7 @@ def centralizedadvertise_lookup(key, maxvals=100):
   formatted_datastring = serialize_serializedata(message_to_send)
 
   # Open a connection with the server.
-  sockobj = timeout_openconn(servername,serverport, localip, localport, timeout=10)
+  sockobj = timeout_openconn(servername,serverport, localip, timeout=10)
 
   try:
     # Send packet.
