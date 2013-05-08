@@ -615,7 +615,7 @@ def openconn(host, port, localip=None, localport=None, timeout=60):
   return wrapped_sock
 
 
-def waitforconn(localport, func, localip=None, thread_pool=None, check_intv=0.1, err_delegate=None):
+def waitforconn(localip, localport, func, thread_pool=None, check_intv=0.1, err_delegate=None):
   """
   <Purpose>
     Listens for incoming connections to the local machine and triggers
@@ -684,6 +684,7 @@ def waitforconn(localport, func, localip=None, thread_pool=None, check_intv=0.1,
 
     ----
   """
+
   # Check the args
   if localip is not None and not _is_valid_ip_address(localip):
     raise RepyArgumentError("Invalid Local IP address specified!")
@@ -724,7 +725,7 @@ def waitforconn(localport, func, localip=None, thread_pool=None, check_intv=0.1,
         # Define a wrapper function to invoke
         def callback():
           try:
-            func(wrapped_sock)
+            func(remoteip, remoteport, wrapped_sock, real_sock, listen_sock)
           except:
             # Generate an error string
             error_str = "Uncaught exception invoking callback for TCP listener!\n"
