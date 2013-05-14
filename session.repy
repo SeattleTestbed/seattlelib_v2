@@ -24,7 +24,12 @@ def session_recvmessage(socketobj):
   messagesizestring = ''
   # first, read the number of characters...
   for junkcount in range(sessionmaxdigits):
-    currentbyte = socketobj.recv(1)
+    while True:
+      try:
+        currentbyte = socketobj.recv(1)
+	break
+      except SocketWouldBlockError:
+        sleep(0.01)
 
     if currentbyte == '\n':
       break
@@ -57,10 +62,13 @@ def session_recvmessage(socketobj):
 
   data = ''
   while len(data) < messagesize:
-    chunk =  socketobj.recv(messagesize-len(data))
-    if chunk == '': 
-      raise SessionEOF, "Connection Closed"
-    data = data + chunk
+    try:
+      chunk =  socketobj.recv(messagesize-len(data))
+      if chunk == '': 
+        raise SessionEOF, "Connection Closed"
+      data = data + chunk
+    except SocketWouldBlockError:
+      sleep(0.01)
 
   return data
 
@@ -70,9 +78,11 @@ def session_sendhelper(socketobj,data):
   # if I'm still missing some, continue to send (I could have used sendall
   # instead but this isn't supported in repy currently)
   while sentlength < len(data):
-    thissent = socketobj.send(data[sentlength:])
-    sentlength = sentlength + thissent
-
+    try:
+      thissent = socketobj.send(data[sentlength:])
+      sentlength = sentlength + thissent
+    except SocketWouldBlockError:
+      sleep(0.01)
 
 
 # send the message 
