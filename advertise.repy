@@ -21,7 +21,7 @@ include udpcentralizedadvertise.repy
 
 # All the names of services we can support.
 # As of January 2012, openDHT is no longer a default service.
-_advertise_all_services = ("central", "central_v2")
+_advertise_all_services = ("central", "central_v2", "UDP")
 
 
 nodemanager_announce_context = {}
