@@ -54,7 +54,7 @@ class LookupCache():
     self.refresh_time = refresh_time
 
   
-  def lookup(self,key, maxvals=100, lookuptype=['central','opendht','DOR'], \
+  def lookup(self,key, maxvals=100, lookuptype=['central','central_v2','UDP'], \
                             concurrentevents=2, graceperiod=10, timeout=60):    
     """
     <Purpose>
