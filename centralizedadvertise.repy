@@ -17,11 +17,47 @@ include serialize.repy
 
 # Hmm, perhaps I should make an initialization call instead of hardcoding this?
 # I suppose it doesn't matter since one can always override these values
-servername = "satya.cs.washington.edu"
+# In Repy V2, openconnection() doesn't understand host names, we should only
+# pass IP addresses.
+serverip = gethostbyname("advertiseserver.poly.edu")
 # This port is updated to use the new port (legacy port is 10101)
 serverport = 10102
 
+def _getusableport():
+  """
+  <Purpose>
+    Discover which port the server can use for announcements.
 
+  <Arguments>
+    None
+
+  <Exceptions>
+    None
+
+  <Side Effects>
+    None
+
+  <Returns>
+    An integer port
+  """
+  port_found = False
+  port_min = 63100
+  port_max = 63180
+  port_iter = port_min
+  local_addr = getmyip()
+
+  while not port_found:
+    if port_iter > port_max:
+      raise Exception("Network restriction error! Unable to find a free port!")
+    try:
+      tcp_test_socket = listenforconnection(local_addr, port_iter)
+      tcp_test_socket.close()
+      port_found = True
+    except Exception, e:
+      log(str(e) + "\n")
+      port_iter += 1
+
+  return port_iter
 
 
 class CentralAdvertiseError(Exception):
@@ -74,7 +110,8 @@ def centralizedadvertise_announce(key, value, ttlval):
   
   # send the data over a timeout socket using the session library, then
   # get a response from the server.
-  sockobj = timeout_openconn(servername,serverport, timeout=10)
+  sockobj = timeout_openconnection(serverip, serverport, getmyip(),\
+    _getusableport(), timeout=10)
   try:
     session_sendmessage(sockobj, datastringtosend)
     rawresponse = session_recvmessage(sockobj)
@@ -135,8 +172,10 @@ def centralizedadvertise_lookup(key, maxvals=100):
   messagetosend = ('GET',key,maxvals)
   messagestringtosend = serialize_serializedata(messagetosend)
 
-
-  sockobj = timeout_openconn(servername,serverport, timeout=10)
+  # send the data over a timeout socket using the session library, then
+  # get a response from the server.
+  sockobj = timeout_openconnection(serverip, serverport, getmyip(),\
+    _getusableport(), timeout=10)
   try:
     session_sendmessage(sockobj, messagestringtosend)
     rawreceiveddata = session_recvmessage(sockobj)
