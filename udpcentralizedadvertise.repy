@@ -16,9 +16,7 @@ include uniqueid.repy
 
 # Hmm, perhaps I should make an initialization call instead of hardcoding this?
 # I suppose it doesn't matter since one can always override these values
-# In Repy V2, sendmessage() doesn't understand host names, we should only
-# pass IP addresses.
-udpserverip = gethostbyname("udpadvertiseserver.poly.edu")
+udpservername = "udpadvertiseserver.poly.edu"
 udpserverport = 10102
 
 # how long to wait for timeouts...
@@ -89,8 +87,8 @@ def _udpcentralizedadvertise_communicate(datastringtosend, timeout, queryid):
   # but always close the response socket...
   try:
     # send the request over UDP...
-    sendmessage(udpserverip, udpserverport, datastringtosend,\
-      getmyip(), udprequestport)
+    sendmessage(gethostbyname(udpservername), udpserverport, 
+      datastringtosend, getmyip(), udprequestport)
 
     # Don't go into infinite waiting time, if there is no response from
     # server, wait till timeout and raise an error...
@@ -166,7 +164,8 @@ def udpcentralizedadvertise_announce(key, value, ttlval):
 
     try:
     # send the request over UDP...
-      rawresponse = _udpcentralizedadvertise_communicate(datastringtosend, thistimeout, unique_request_id)
+      rawresponse = _udpcentralizedadvertise_communicate(datastringtosend, 
+        thistimeout, unique_request_id)
 
     except UDPNoResponseError:
       # let's increase the timeout...

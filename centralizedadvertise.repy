@@ -17,9 +17,7 @@ include serialize.repy
 
 # Hmm, perhaps I should make an initialization call instead of hardcoding this?
 # I suppose it doesn't matter since one can always override these values
-# In Repy V2, openconnection() doesn't understand host names, we should only
-# pass IP addresses.
-serverip = gethostbyname("advertiseserver.poly.edu")
+servername = "advertiseserver.poly.edu"
 # This port is updated to use the new port (legacy port is 10101)
 serverport = 10102
 
@@ -75,7 +73,8 @@ def centralizedadvertise_announce(key, value, ttlval):
   
   # send the data over a timeout socket using the session library, then
   # get a response from the server.
-  sockobj = timeout_openconnection(serverip, serverport, timeout=10)
+  sockobj = timeout_openconnection(gethostbyname(servername), serverport, 
+    timeout=10)
   try:
     session_sendmessage(sockobj, datastringtosend)
     rawresponse = session_recvmessage(sockobj)
@@ -138,7 +137,8 @@ def centralizedadvertise_lookup(key, maxvals=100):
 
   # send the data over a timeout socket using the session library, then
   # get a response from the server.
-  sockobj = timeout_openconnection(serverip, serverport, timeout=10)
+  sockobj = timeout_openconnection(gethostbyname(servername), serverport, 
+    timeout=10)
   try:
     session_sendmessage(sockobj, messagestringtosend)
     rawreceiveddata = session_recvmessage(sockobj)
