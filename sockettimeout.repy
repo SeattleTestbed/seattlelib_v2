@@ -292,7 +292,8 @@ def timeout_openconnection(desthost, destport, localip=None, localport=None, tim
       realsocketlikeobject = openconnection(desthost, destport, localip, myport, timeout)
       # Heureka, we found a usable port. Continue outside of the for loop.
       break
-    except (DuplicateTupleError, CleanupInProgressError, AlreadyListeningError):
+    except (DuplicateTupleError, CleanupInProgressError, 
+      AlreadyListeningError, AddressBindingError):
       # These are "legitimate" in the sense that there is something 
       # in our very program already using the port we just tried.
       pass
