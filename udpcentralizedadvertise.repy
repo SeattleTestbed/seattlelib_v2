@@ -164,7 +164,9 @@ def udpcentralizedadvertise_announce(key, value, ttlval):
         raise UDPCentralAdvertiseError("UDP Centralized announce received response with invalid first parameter '"+str(response)+"'")
   
       if response[1] != unique_request_id:
-        raise UDPCentralAdvertiseError("UDP Centralized announce sent request id " + str(unique_request_id) + ", received different request id. Full response: '" + str(response) + "'")
+      # This can happen if multiple announces are performed in quick 
+      # succession, see #1294. Workaround: sleep() a bit between requests.
+        raise UDPCentralAdvertiseError("udpcentralized_announce sent request id " + str(unique_request_id) + ", received different request id. Full response: '" + str(response) + "'")
 
       if response[0] != 'OK':
         raise UDPCentralAdvertiseError("UDP Centralized announce failed with '"+response[0]+"'")
@@ -186,7 +188,7 @@ def udpcentralizedadvertise_lookup(key, maxvals=100):
      Returns a list of valid values stored under a key
 
    <Arguments>
-     key: the key to put the value under. This will be converted to a string.
+     key: the key to look up. This will be converted to a string.
 
      maxvals: the maximum number of values to return.   Must be an integer
 
@@ -254,7 +256,9 @@ def udpcentralizedadvertise_lookup(key, maxvals=100):
       raise UDPCentralAdvertiseError("Response tuple did not have exactly three elements '"+str(responsetuple)+"'")
 
     if responsetuple[2] != unique_request_id:
-      raise UDPCentralAdvertiseError("UDP Centralized announce received different request id '"+str(responsetuple)+"'")
+      # This can happen if multiple lookups are performed in quick 
+      # succession, see #1294. Workaround: sleep() a bit between requests.
+      raise UDPCentralAdvertiseError("udpcentralized_lookup sent request id " + str(unique_request_id) + ", received different request id. Full response: '" + str(response) + "'")
 
     if responsetuple[0] != 'OK':
       raise UDPCentralAdvertiseError("Central server returns error '"+str(responsetuple[:-1])+"'")
