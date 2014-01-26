@@ -66,7 +66,8 @@ def _udpcentralizedadvertise_communicate(datastringtosend, timeout, queryid):
   # but always close the response socket...
   try:
     # send the request over UDP...
-    sendmessage(gethostbyname(udpservername), udpserverport, 
+    udpserverip = gethostbyname(udpservername)
+    sendmessage(udpserverip, udpserverport,
       datastringtosend, localip, udprequestport)
 
     # Don't go into infinite waiting time, if there is no response from
@@ -75,10 +76,10 @@ def _udpcentralizedadvertise_communicate(datastringtosend, timeout, queryid):
       try:
         # XXX Check if that's the server we contacted! See #1268.
         (remoteip, remoteport, mess) = udpresponsesocket.getmessage()
+        if (remoteip, remoteport) == (udpserverip, udpserverport):
+          return serialize_deserializedata(mess)
       except SocketWouldBlockError:
         pass
-      else:
-        return serialize_deserializedata(mess)
 
       # Already done? Let's play nice with the other threads.
       sleep(0.01) # Strongly recommend NOT to set this any higher.
