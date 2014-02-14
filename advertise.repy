@@ -12,11 +12,11 @@
   Module which allows clients to send advertise queries to various servers.
 """
 
-include listops.repy
-include centralizedadvertise.repy
-include centralizedadvertise_v2.repy
-include parallelize.repy
-include udpcentralizedadvertise.repy
+dy_import_module_symbols("listops.repy")
+dy_import_module_symbols("centralizedadvertise.repy")
+dy_import_module_symbols("centralizedadvertise_v2.repy")
+dy_import_module_symbols("parallelize.repy")
+dy_import_module_symbols("udpcentralizedadvertise.repy")
 
 
 # All the names of services we can support.
