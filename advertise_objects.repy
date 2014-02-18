@@ -72,8 +72,9 @@ class LookupCache():
     <Returns>
       a list of unique values advertised at the key
 
-    <Excpetions>
+    <Exceptions>
       see advertise_lookup from advertise.repy
+      These will result in the values not being changed
     """ 
     
     if key not in self.cache:
@@ -90,7 +91,7 @@ class LookupCache():
       # if the key is in the cache see how old it is
       time_expired = getruntime() - self.cache[key]['time']
       if time_expired > self.refresh_time or time_expired < 0:
-        # refresh the cache value if its old or the time doesnt make since
+        # refresh the cache value if it is old or the time does not make sense
         results = advertise_lookup(key, maxvals, lookuptype,concurrentevents,
                                             graceperiod, timeout)
         if len(results) > 0:

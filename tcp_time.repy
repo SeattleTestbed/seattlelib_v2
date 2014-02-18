@@ -102,9 +102,9 @@ def tcp_time_updatetime(localport):
   while attemptretrieval < 2:
     try:
       serveraddresses = advertise_lookup("time_server")
-    except Exception:
+    except TimeoutError:
       attemptretrieval = attemptretrieval + 1
-      sleep(2)                 # Look up the value again in 10 seconds
+      sleep(2)                 # Look up the value again later
     else:
       if serveraddresses != [] and serveraddresses[0] != '':
         gotval = True	        # Successfully obtained the value
