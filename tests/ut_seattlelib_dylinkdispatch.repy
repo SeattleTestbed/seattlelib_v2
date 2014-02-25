@@ -1,0 +1,20 @@
+#pragma repy restrictions.test dylink.repy
+#pragma out Complete!
+
+"""
+Testing to see whether dispatch works correctly...
+
+"""
+
+callargs = ['dytestmodule1.repy']
+
+# this should have worked correctly...
+assert( dy_dispatch_module() == True )
+
+callargs = []
+
+# should have had nothing to dispatch...
+assert( dy_dispatch_module() == False )
+
+log("Complete!\n")
+

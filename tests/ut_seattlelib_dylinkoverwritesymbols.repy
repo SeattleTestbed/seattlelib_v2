@@ -1,0 +1,22 @@
+#pragma repy restrictions.test dylink.repy
+
+"""
+Testing to see whether symbols are overwritten
+
+"""
+
+x = 8
+
+dy_import_module_symbols('dytestmodule1.repy')
+
+assert(x == 1)
+
+dy_import_module_symbols('dytestmodule2.repy')
+
+assert(x == 2)
+
+# This one indirectly does from X import * on dytestmodule1.repy
+dy_import_module_symbols('dytestmodule3.repy')
+  
+assert(x == 1)
+
