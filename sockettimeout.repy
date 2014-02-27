@@ -297,6 +297,9 @@ def timeout_openconnection(desthost, destport, localip=None, localport=None, tim
       # These are "legitimate" in the sense that there is something 
       # in our very program already using the port we just tried.
       pass
+    except ResourceForbiddenError:
+      # The port is not in the restrictions file. Try another.
+      pass
     except Exception:
       # E.g. RepyArgumentError due to using a FQDN instead of an 
       # IP address argument -- the user's fault, really.
