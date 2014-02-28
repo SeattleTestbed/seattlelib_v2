@@ -36,18 +36,18 @@ def session_recvmessage(socketobj):
     
     # not a valid digit
     if currentbyte not in '0123456789' and messagesizestring != '' and currentbyte != '-':
-      raise ValueError, "Bad message size"
+      raise ValueError, "Incorrect value in message size header. Found character '%s' in the header." % str(currentbyte)
      
     messagesizestring = messagesizestring + currentbyte
 
   else:
     # too large
-    raise ValueError, "Bad message size"
+    raise ValueError, "The header message size exceeds the maximum limit of %d." % sessionmaxdigits
 
   try:
     messagesize = int(messagesizestring)
   except ValueError:
-    raise ValueError, "Bad message size"
+    raise ValueError, "Unable to convert the message size '%s' to int." % messagesizestring
   
   # nothing to read...
   if messagesize == 0:
@@ -55,17 +55,17 @@ def session_recvmessage(socketobj):
 
   # end of messages
   if messagesize == -1:
-    raise SessionEOF, "Connection Closed"
+    raise SessionEOF, "Connection Closed. Received a messagesize of -1"
 
   if messagesize < 0:
-    raise ValueError, "Bad message size"
+    raise ValueError, "Received a negative message size '%d'" % messagesize
 
   data = ''
   while len(data) < messagesize:
     try:
       chunk =  socketobj.recv(messagesize-len(data))
       if chunk == '': 
-        raise SessionEOF, "Connection Closed"
+        raise SessionEOF, "Received an empty string when performing socketobj.recv(). Socket possibly closed."
       data = data + chunk
     except SocketWouldBlockError:
       sleep(0.01)

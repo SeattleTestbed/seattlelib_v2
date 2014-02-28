@@ -1,0 +1,41 @@
+#pragma repy restrictions.session_test dylink.repy
+
+dy_import_module_symbols("session.repy")
+
+# The message we want to send across the network.
+msg_to_send = "Hello World"
+server_port = <connport1>
+client_port = <connport2>
+myip = getmyip()
+
+# Create a server that receives and verifies the message
+# sent from the client.
+
+def server():
+  # If we get any exception, then the test fails, so we
+  # don't bother catching them.
+  server_sock = listenforconnection(myip, server_port)
+
+  while True:
+    try:
+      rip, rport, mysock = server_sock.getconnection()
+      break
+    except SocketWouldBlockError:
+      sleep(0.01)
+
+  # Receive the message using the session library then
+  # confirm that the message matches what was sent.
+  msg_received = session_recvmessage(mysock)
+
+  assert(msg_received == msg_to_send)
+  exitall()
+
+
+# Launch the server and wait a few seconds for it to start.
+createthread(server)
+sleep(2)
+
+# Create a client socket, and send a message using the 
+# session library.
+client_sock = openconnection(myip, server_port, myip, client_port, 10)
+session_sendmessage(client_sock, msg_to_send)
