@@ -11,6 +11,7 @@
   block for more than an allotted amount of time.
 
 """
+include random.repy
 
 class SocketTimeoutError(Exception):
   """The socket timed out before receiving a response"""
@@ -284,6 +285,7 @@ def timeout_openconnection(desthost, destport, localip=None, localport=None, tim
   portmax = 63200
   if localport is None:
     portrange = range(portmin, portmax + 1)
+    portrange = random_sample(portrange, len(portrange))
   else:
     portrange = [localport]
 
