@@ -1,4 +1,4 @@
-include urllib.repy
+dy_import_module_symbols('urllib.repy')
 
 if callfunc == 'initialize':
 

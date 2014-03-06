@@ -5,9 +5,9 @@
 # test pass's the test
 
 
-include httpretrieve.repy
-include registerhttpcallback.repy
-include urllib.repy
+dy_import_module_symbols('httpretrieve.repy')
+dy_import_module_symbols('registerhttpcallback.repy')
+dy_import_module_symbols('urllib.repy')
 
 
 

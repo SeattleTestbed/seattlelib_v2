@@ -17,9 +17,9 @@
 
 
 
-include urlparse.repy
-include sockettimeout.repy
-include urllib.repy
+dy_import_module_symbols('urlparse.repy')
+dy_import_module_symbols('sockettimeout.repy')
+dy_import_module_symbols('urllib.repy')
 
 
 

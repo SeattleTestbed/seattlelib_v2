@@ -15,7 +15,7 @@
   Where server_address is the ip address of a remote GeoIP XMl-RPC server.
 """
 
-include xmlrpc_client.repy
+dy_import_module_symbols('xmlrpc_client.repy')
 
 
 """

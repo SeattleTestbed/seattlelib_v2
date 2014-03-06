@@ -14,8 +14,8 @@
 
 """
 
-include sshkey.repy
-include rsa.repy
+dy_import_module_symbols('sshkey.repy')
+dy_import_module_symbols('rsa.repy')
 
 
 

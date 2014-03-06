@@ -6,7 +6,7 @@
   Description: Basic tests for the semaphore library...
 """
 
-include semaphore.repy
+dy_import_module_symbols('semaphore.repy')
 
 
 # This test has the main thread start three others in order and then

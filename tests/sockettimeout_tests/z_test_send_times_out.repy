@@ -8,7 +8,7 @@
   Sun Mar  1 10:27:35 PST 2009
 """
 # hello world
-include sockettimeout.repy
+dy_import_module_symbols('sockettimeout.repy')
 
 
 MESSAGE = 1000000 * "a" # 1 MB of data to fill buffer and block

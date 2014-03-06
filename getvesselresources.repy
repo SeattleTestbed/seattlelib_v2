@@ -6,8 +6,8 @@ Description:
 Given a vessel name the functions finds the correct vessel and print out all the resources available.
 """
 
-include nmclient.repy
-include rsa.repy
+dy_import_module_symbols('nmclient.repy')
+dy_import_module_symbols('rsa.repy')
 
 def getvesselresources_portnum(portnum, ipaddr=getmyip(), portval=1224):
   """

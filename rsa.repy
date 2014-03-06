@@ -22,8 +22,8 @@
     
 """
 
-include random.repy
-include pycryptorsa.repy
+dy_import_module_symbols('random.repy')
+dy_import_module_symbols('pycryptorsa.repy')
     
      
         

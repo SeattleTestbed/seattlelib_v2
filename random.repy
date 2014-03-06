@@ -38,7 +38,7 @@
       
 """
 
-include math.repy
+dy_import_module_symbols('math.repy')
 
 CACHE = {'bytes': ''}
 

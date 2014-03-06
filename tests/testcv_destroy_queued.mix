@@ -6,7 +6,7 @@
   Purpose: Test cases for the condition variable primitive implementation.
 """
 
-include cv.repy
+dy_import_module_symbols('cv.repy')
 
 
 

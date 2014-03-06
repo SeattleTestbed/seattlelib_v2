@@ -19,7 +19,7 @@ is a last call for that conditional variable -- otherwise you will
 receive an exception about invalid handle. 
 """
 
-include semaphore.repy
+dy_import_module_symbols('semaphore.repy')
 
 
 

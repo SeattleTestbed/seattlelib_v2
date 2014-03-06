@@ -21,7 +21,7 @@
 """
 
 
-include repyunit.repy
+dy_import_module_symbols('repyunit.repy')
 
 
 class test_repyunit_GoodTestCase(repyunit_TestCase):

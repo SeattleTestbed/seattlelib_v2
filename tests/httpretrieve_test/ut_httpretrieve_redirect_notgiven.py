@@ -6,7 +6,7 @@
 
 
 
-include httpretrieve.repy
+dy_import_module_symbols('httpretrieve.repy')
 
 
 

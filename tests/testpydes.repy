@@ -16,8 +16,8 @@
 
 """
 
-include pydes.repy
-include binascii.repy
+dy_import_module_symbols('pydes.repy')
+dy_import_module_symbols('binascii.repy')
 
 def _fulltest_():
   # This should not produce any unexpected errors or exceptions

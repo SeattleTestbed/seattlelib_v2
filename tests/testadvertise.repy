@@ -1,4 +1,4 @@
-include advertise.repy
+dy_import_module_symbols('advertise.repy')
 
 if callfunc == "initialize":
 

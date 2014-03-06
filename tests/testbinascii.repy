@@ -38,7 +38,7 @@
 
 """
 
-include binascii.repy
+dy_import_module_symbols('binascii.repy')
 
 
 

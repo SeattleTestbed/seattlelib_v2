@@ -48,11 +48,11 @@
 
 """
 
-include sshkey.repy
-include base64.repy
-include md5py.repy
-include pydes.repy
-include binascii.repy
+dy_import_module_symbols('sshkey.repy')
+dy_import_module_symbols('base64.repy')
+dy_import_module_symbols('md5py.repy')
+dy_import_module_symbols('pydes.repy')
+dy_import_module_symbols('binascii.repy')
 
 
 class sshkey_paramiko_BERException (Exception):

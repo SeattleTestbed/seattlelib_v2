@@ -1,4 +1,4 @@
-include xmlparse.repy
+dy_import_module_symbols('xmlparse.repy')
 
 if callfunc == 'initialize':
 

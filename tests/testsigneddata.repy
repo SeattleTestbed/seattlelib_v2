@@ -1,6 +1,6 @@
-include rsa.repy
-include time.repy
-include signeddata.repy
+dy_import_module_symbols('rsa.repy')
+dy_import_module_symbols('time.repy')
+dy_import_module_symbols('signeddata.repy')
 
 if callfunc == 'initialize':
 

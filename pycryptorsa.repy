@@ -24,7 +24,7 @@
 
 """
 
-include random.repy
+dy_import_module_symbols('random.repy')
 
 #
 #   pubkey.py : Internal functions for public key operations

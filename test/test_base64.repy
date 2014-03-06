@@ -28,8 +28,8 @@
 
 """
 
-include repyunit.repy
-include base64.repy
+dy_import_module_symbols('repyunit.repy')
+dy_import_module_symbols('base64.repy')
 
 
 class test_base64_TestHelloWorld(repyunit_TestCase):

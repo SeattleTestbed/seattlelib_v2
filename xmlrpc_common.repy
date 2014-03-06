@@ -28,8 +28,8 @@
 """
 
 
-include base64.repy
-include xmlparse.repy
+dy_import_module_symbols('base64.repy')
+dy_import_module_symbols('xmlparse.repy')
 
 
 

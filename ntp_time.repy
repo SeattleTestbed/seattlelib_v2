@@ -30,10 +30,10 @@
 """
 
 
-include time_interface.repy
+dy_import_module_symbols('time_interface.repy')
 
 # Use for random sampling...
-include random.repy
+dy_import_module_symbols('random.repy')
 
 
 

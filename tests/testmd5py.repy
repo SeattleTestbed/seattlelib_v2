@@ -26,8 +26,8 @@
 
 """
 
-include md5py.repy
-include binascii.repy
+dy_import_module_symbols('md5py.repy')
+dy_import_module_symbols('binascii.repy')
 
 
 

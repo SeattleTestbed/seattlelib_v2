@@ -25,8 +25,8 @@
 """
 
 
-include repyunit.repy
-include urlparse.repy
+dy_import_module_symbols('repyunit.repy')
+dy_import_module_symbols('urlparse.repy')
 
 
 class test_urlparse_TestValidAbsoluteUrl(repyunit_TestCase):

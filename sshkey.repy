@@ -46,7 +46,7 @@
 
 """
 
-include sshkey_paramiko.repy
+dy_import_module_symbols('sshkey_paramiko.repy')
 
 
 class sshkey_SSHException(Exception):

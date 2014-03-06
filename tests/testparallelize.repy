@@ -1,4 +1,4 @@
-include parallelize.repy
+dy_import_module_symbols('parallelize.repy')
 
 
 def sleep_function(foo):

@@ -20,8 +20,8 @@
 
 
 """
-include random.repy
-include math.repy
+dy_import_module_symbols('random.repy')
+dy_import_module_symbols('math.repy')
 
 # Randomfloat is provided repy.
 def test_53_bits_per_float():

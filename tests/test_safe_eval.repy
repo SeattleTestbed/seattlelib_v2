@@ -4,7 +4,7 @@ Description:
     Tests the basic functionality of safe_eval()
 """
 
-include safe_eval.repy
+dy_import_module_symbols('safe_eval.repy')
 
 if callfunc == "initialize":
   # Test some basic math

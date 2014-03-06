@@ -1,4 +1,4 @@
-include textops.repy
+dy_import_module_symbols('textops.repy')
 
 # Tests for seattlelib/textops.repy.
 

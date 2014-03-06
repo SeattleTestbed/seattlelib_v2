@@ -4,8 +4,8 @@
 # if the test pass's
 
 
-include httpretrieve.repy
-include registerhttpcallback.repy
+dy_import_module_symbols('httpretrieve.repy')
+dy_import_module_symbols('registerhttpcallback.repy')
 
 
 

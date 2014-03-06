@@ -5,8 +5,8 @@
 # or httpretrieve raises an exception and just excutes if the test passes
 
 
-include registerhttpcallback.repy
-include httpretrieve.repy
+dy_import_module_symbols('registerhttpcallback.repy')
+dy_import_module_symbols('httpretrieve.repy')
 
 
 def test_redirect(httprequest_dictionary, http_query, http_post):

@@ -19,13 +19,13 @@
 
 """
 
-include time_interface.repy
+dy_import_module_symbols('time_interface.repy')
 
-include advertise.repy
+dy_import_module_symbols('advertise.repy')
 
-include random.repy
+dy_import_module_symbols('random.repy')
 
-include sockettimeout.repy
+dy_import_module_symbols('sockettimeout.repy')
 
 
 

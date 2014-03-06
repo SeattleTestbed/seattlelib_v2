@@ -1,4 +1,4 @@
-include serialize.repy
+dy_import_module_symbols('serialize.repy')
 
 if callfunc == 'initialize':
   for stuff in [frozenset((1,)), frozenset(), frozenset(('asdf',True, None, 234)), frozenset(((1,2),3,None)), frozenset(frozenset(frozenset(frozenset(frozenset()))))]:

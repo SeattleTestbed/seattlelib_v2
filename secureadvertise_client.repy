@@ -14,10 +14,10 @@
   advertisements are now signed with the user's private key and encrypted.
 """
 
-include session.repy
-include sockettimeout.repy
-include serialize.repy
-include rsa.repy
+dy_import_module_symbols('session.repy')
+dy_import_module_symbols('sockettimeout.repy')
+dy_import_module_symbols('serialize.repy')
+dy_import_module_symbols('rsa.repy')
 
 class CentralAdvertiseError(Exception):
   pass

@@ -17,6 +17,6 @@
 """
 
 
-include ntp_time.repy
-include tcp_time.repy
+dy_import_module_symbols('ntp_time.repy')
+dy_import_module_symbols('tcp_time.repy')
 

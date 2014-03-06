@@ -8,7 +8,7 @@ Description:
 """
 
 # Import the sockettimeout library
-include sockettimeout
+dy_import_module_symbols('sockettimeout')
 
 def new_conn(ip,port,sock,ch1,ch2):
   # Wait 3 seconds, then send data

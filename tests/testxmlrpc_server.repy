@@ -1,5 +1,5 @@
-include xmlrpc_server.repy
-include xmlrpc_client.repy
+dy_import_module_symbols('xmlrpc_server.repy')
+dy_import_module_symbols('xmlrpc_client.repy')
 
 if callfunc == 'initialize':
   def foo(i):

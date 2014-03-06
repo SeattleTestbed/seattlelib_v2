@@ -1,4 +1,4 @@
-include uniqueid.repy
+dy_import_module_symbols('uniqueid.repy')
 
 # Okay, let's test the ops...
 

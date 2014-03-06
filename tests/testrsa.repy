@@ -51,8 +51,8 @@
     
 """  
 
-include rsa.repy
-include math.repy
+dy_import_module_symbols('rsa.repy')
+dy_import_module_symbols('math.repy')
 
 def test_number_bytes_to_long():
   """ Tests long to bytes for small boundry cases. """

@@ -9,10 +9,10 @@ Advertisements to a central server (similar to openDHT)
 
 """
 
-include session.repy
+dy_import_module_symbols('session.repy')
 # I'll use socket timeout to prevent hanging when it takes a long time...
-include sockettimeout.repy
-include serialize.repy
+dy_import_module_symbols('sockettimeout.repy')
+dy_import_module_symbols('serialize.repy')
 
 
 # Hmm, perhaps I should make an initialization call instead of hardcoding this?
