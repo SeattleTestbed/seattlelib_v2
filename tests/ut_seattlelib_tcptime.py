@@ -6,8 +6,10 @@
     tcp_time_updatetime() in ntp_time.repy
 """
     
-import repyhelper
-repyhelper.translate_and_import("tcp_time.repy")
+from repyportability import *
+add_dy_support(locals())
+
+dy_import_module_symbols("tcp_time.repy")
 
 try:
   time_updatetime(12345)

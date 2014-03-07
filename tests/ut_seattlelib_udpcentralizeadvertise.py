@@ -7,9 +7,10 @@
 """
 
 
-import repyhelper
+from repyportability import *
+add_dy_support(locals())
 
-repyhelper.translate_and_import("udpcentralizedadvertise.repy")
+dy_import_module_symbols("udpcentralizedadvertise.repy")
 
 # advertise some random key with arbitrary value...
 udpcentralizedadvertise_announce("test", "234389459", 10)

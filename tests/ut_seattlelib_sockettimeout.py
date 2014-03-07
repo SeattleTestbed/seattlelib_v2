@@ -7,9 +7,10 @@
 """
 
 
-import repyhelper
+from repyportability import *
+add_dy_support(locals())
 
-repyhelper.translate_and_import("sockettimeout.repy")
+dy_import_module_symbols("sockettimeout.repy")
 
 # Create a listening socket that would timeout in 2 seconds.
 servsocket = timeout_listenforconnection("127.0.0.1", 12345, 2)
