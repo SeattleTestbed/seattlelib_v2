@@ -1,11 +1,11 @@
-#pragma repy restrictions.session_test dylink.repy
+#pragma repy restrictions.twoports dylink.repy
 
 dy_import_module_symbols("session.repy")
 
 # The message we want to send across the network.
 msg_to_send = "Hello World"
-server_port = <connport1>
-client_port = <connport2>
+server_port = <connport>
+client_port = <connport1>
 myip = getmyip()
 
 # Create a server that receives and verifies the message
