@@ -281,10 +281,13 @@ def timeout_openconnection(desthost, destport, localip=None, localport=None, tim
   if localip is None:
     localip = getmyip()
 
-  portmin = 63100
-  portmax = 63200
   if localport is None:
-    portrange = range(portmin, portmax + 1)
+    # Get the ports available to our vessel (#1375)
+    # (I'll try all of the nominally available ports, not only 
+    # the ones that are currently unused, because port usage might 
+    # change while we still set up things here.)
+    available_resources, ignore, ignore = getresources()
+    portrange = list(available_resources['connport'])
     # Shuffle the portrange to make it unlikely we ever reuse the 
     # same quintuple twice in a row (#1362)
     portrange = random.random_sample(portrange, len(portrange))
@@ -302,8 +305,9 @@ def timeout_openconnection(desthost, destport, localip=None, localport=None, tim
       # in our very program already using the port we just tried.
       pass
     except ResourceForbiddenError:
-      # The port is not in the restrictions file. Try another.
-      pass
+      # The port is not in the restrictions file. This can only 
+      # happen if the user supplied us with the ``localport'' argument.
+      raise
     except Exception:
       # E.g. RepyArgumentError due to using a FQDN instead of an 
       # IP address argument -- the user's fault, really.
