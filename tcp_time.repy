@@ -72,7 +72,7 @@ def tcp_time_updatetime(localport):
       serveraddresses = advertise_lookup("time_server")
     except Exception, e:
       # Log and retry
-      exceptionslist.append(type(e), str(e))
+      exceptionslist.append((type(e), str(e)))
       sleep(2)
     else:
       if serveraddresses != [] and serveraddresses[0] != '':
