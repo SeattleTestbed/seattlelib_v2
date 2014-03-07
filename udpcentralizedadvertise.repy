@@ -11,6 +11,7 @@ service
 """
 dy_import_module_symbols('serialize.repy')
 dy_import_module_symbols('uniqueid.repy')
+random = dy_import_module('random.repy')
 
 
 # Hmm, perhaps I should make an initialization call instead of hardcoding this?
@@ -43,12 +44,18 @@ def _udpcentralizedadvertise_communicate(datastringtosend, timeout, queryid):
   # Let's get ready to receive a response...
   localip = getmyip()
   portrange = range(63100, 63200 + 1)
+  # Shuffle the portrange to make it unlikely we reuse the 
+  # same quintuple twice in a row (#1249)
+  portrange = random.random_sample(portrange, len(portrange))
 
   for udprequestport in portrange:
     try:
       udpresponsesocket = listenformessage(localip, udprequestport)
       # We've found a port, continue outside of the loop
       break
+    except ResourceForbiddenError:
+      # This port is not in the restrictions file. Keep searching.
+      pass
     except (DuplicateTupleError, CleanupInProgressError,
       AlreadyListeningError, AddressBindingError), e:
       # These are "legitimate" in the sense that there is something 
