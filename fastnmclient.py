@@ -16,19 +16,23 @@ that order).
 # JAC: This is the only change to the file over the nmclient.repy version...
 # for signing the data we send to the node manager
 import fastsigneddata
-import repyhelper
+
+from repyportability import *
+add_dy_support(locals())
+
+
 # session wrapper (breaks the stream into messages)
 # an abstracted "itemized data communication" in a separate API
-repyhelper.translate_and_import("session.repy")
+dy_import_module_symbols("session.repy")
 
 
 # makes connections time out
-repyhelper.translate_and_import("sockettimeout.repy")
+dy_import_module_symbols("sockettimeout.repy")
 
 # For rsa key conversion.
-repyhelper.translate_and_import("rsa.repy")
+dy_import_module_symbols("rsa.repy")
 
-repyhelper.translate_and_import("time.repy")
+dy_import_module_symbols("time.repy")
 # The idea is that this module returns "node manager handles".   A handle
 # may be used to communicate with a node manager and issue commands.   If the
 # caller wants to have a set of node managers with the same state, this can

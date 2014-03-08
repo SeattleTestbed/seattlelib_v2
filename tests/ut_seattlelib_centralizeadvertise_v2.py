@@ -6,11 +6,14 @@
     v2centralizedadvertise_announce() and v2centralizedadvertise_lookup()
 """
 
+from repyportability import *
+add_dy_support(locals())
 
 from repyportability import *
 add_dy_support(locals())
 
 dy_import_module_symbols("centralizedadvertise_v2.repy")
+
 
 # advertise some random key with arbitrary value...
 v2centralizedadvertise_announce("test", "234389459", 10)

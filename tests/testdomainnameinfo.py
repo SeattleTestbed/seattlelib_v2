@@ -1,5 +1,8 @@
-import repyhelper
-repyhelper.translate_and_import('domainnameinfo.repy')
+from repyportability import *
+add_dy_support(locals())
+
+dy_import_module_symbols("domainnameinfo.repy")
+
 
 if __name__ == '__main__':
 

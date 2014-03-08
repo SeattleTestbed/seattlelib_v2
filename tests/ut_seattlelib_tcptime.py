@@ -5,6 +5,11 @@
   Function Tested:
     tcp_time_updatetime() in ntp_time.repy
 """
+from repyportability import *
+add_dy_support(locals())
+
+dy_import_module_symbols("tcp_time.repy")
+
     
 from repyportability import *
 add_dy_support(locals())

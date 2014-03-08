@@ -6,11 +6,14 @@
     tcpserversocket.getconnection() in sockettimeout.repy
 """
 
+from repyportability import *
+add_dy_support(locals())
 
 from repyportability import *
 add_dy_support(locals())
 
 dy_import_module_symbols("sockettimeout.repy")
+
 
 # Create a listening socket that would timeout in 2 seconds.
 servsocket = timeout_listenforconnection("127.0.0.1", 12345, 2)
