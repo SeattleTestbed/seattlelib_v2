@@ -1,0 +1,6 @@
+#pragma repy restrictions.test dylink.repy
+"""
+Try to import (via dylink) this very file. Should NOT cause infinite recursion.
+"""
+
+dy_import_module("ut_seattlelib_dylinkselfimport.repy") 
