@@ -23,8 +23,6 @@ dy_import_module_symbols("session.repy")
 # makes connections time out
 dy_import_module_symbols("sockettimeout.repy")
 
-time_updatetime(32456)	
-
 # The idea is that this module returns "node manager handles".   A handle
 # may be used to communicate with a node manager and issue commands.   If the
 # caller wants to have a set of node managers with the same state, this can
