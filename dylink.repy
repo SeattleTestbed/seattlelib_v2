@@ -349,6 +349,9 @@ def dylink_import_global(module, module_context,new_callfunc="import"):
 
 
 
+# This is a list of modules that are currently being imported.   It is used
+# to prevent circular imports from causing an infinite loop (#1379).  
+imports_in_progress = []
 
 # Packages the module being imported into a module like object
 def dylink_import_module(module,import_context, new_callfunc="import", additional_globals=[]):
@@ -387,41 +390,55 @@ def dylink_import_module(module,import_context, new_callfunc="import", additiona
   # Get the actual module name
   module_name = _dy_module_name(module)
 
+  # Need to prevent circular imports from causing an infinite loop (#1379).  
+  # To do this, Python associates an empty namespace with any module that is
+  # being imported.   We will do the same.
+  if module_name in imports_in_progress:
+    return ImportedModule(module_name, {})
 
-  # I need to remap the context's items like readat, etc. correctly...
-  # The rationale is that a security layer may use a module, like time.   If
-  # untrusted code imports time, it should not get the security layer's 
-  # call for sendmessage, writeat, etc.
-  # I will clear the IMPORTED_MODULE_CACHE upon dispatch
+  imports_in_progress.append(module_name)
+  # always clean up this entry from imports_in_progress...
+  try:
 
-  # We will keep a cache of imported modules so that we only import each
-  # module once (see #1320).   This mimics Python's behavior
-  if module_name in IMPORTED_MODULE_CACHE:
+    # I need to remap the context's items like readat, etc. correctly...
+    # The rationale is that a security layer may use a module, like time.   If
+    # untrusted code imports time, it should not get the security layer's 
+    # call for sendmessage, writeat, etc.
+    # I will clear the IMPORTED_MODULE_CACHE upon dispatch
+
+    # We will keep a cache of imported modules so that we only import each
+    # module once (see #1320).   This mimics Python's behavior
+    if module_name in IMPORTED_MODULE_CACHE:
+      return IMPORTED_MODULE_CACHE[module_name]
+
+    # Okay, we'll need to load it in.  Construct a new context.   By testing
+    # python this is what it seems to do in all cases (even "from X import *")
+    new_context = _default_context(import_context, additional_globals)
+
+    # Get the code for the module
+    virt = _dy_module_code(module_name)
+
+    # Set callfunc
+    new_context["callfunc"] = new_callfunc
+
+    # Try to evaluate the module.   This is where things like code safety checks
+    # and syntax errors will fail.
+    try:
+      virt.evaluate(new_context)
+    except Exception, e:
+      debug_str = getlasterror()
+      # JAC: BUG?   Not sure why we are not just raising the true error...
+      raise Exception, "Caught exception while initializing module ("+module+")! Debug String: "+debug_str
+
+    # Place the item in the cache so we do not import it more than once (#1320)
+    IMPORTED_MODULE_CACHE[module_name] = ImportedModule(module_name, new_context)
+
     return IMPORTED_MODULE_CACHE[module_name]
 
-  # Okay, we'll need to load it in.  Construct a new context.   By testing
-  # python this is what it seems to do in all cases (even "from X import *")
-  new_context = _default_context(import_context, additional_globals)
-
-  # Get the code for the module
-  virt = _dy_module_code(module_name)
-
-  # Set callfunc
-  new_context["callfunc"] = new_callfunc
-
-  # Try to evaluate the module.   This is where things like code safety checks
-  # and syntax errors will fail.
-  try:
-    virt.evaluate(new_context)
-  except Exception, e:
-    debug_str = getlasterror()
-    # JAC: BUG?   Not sure why we are not just raising the true error...
-    raise Exception, "Caught exception while initializing module ("+module+")! Debug String: "+debug_str
-
-  # Place the item in the cache so we do not import it more than once (#1320)
-  IMPORTED_MODULE_CACHE[module_name] = ImportedModule(module_name, new_context)
-
-  return IMPORTED_MODULE_CACHE[module_name]
+  finally:
+    # there must always be exactly one or this is an internal error (and
+    # merits an exception)
+    imports_in_progress.remove(module_name)
 
 
 #### Support for recursive modules ####
