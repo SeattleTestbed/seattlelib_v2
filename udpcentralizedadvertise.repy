@@ -285,4 +285,10 @@ def udpcentralizedadvertise_lookup(key, maxvals=100):
     # okay, we *finally* seem to have what we expect...
 
     return responsetuple[1]
-      
+
+  else:
+    # We are done with the for loop. There was no reply from the server.
+    raise UDPCentralAdvertiseError("udpcentralizedadvertise_lookup for " +
+      str(key) + " (" + str(maxvals) + " maxvals) generated no response " + 
+      "from server " + udpservername + ". Giving up.")
+
