@@ -17,7 +17,7 @@ class SocketTimeoutError(Exception):
   """The socket timed out before receiving a response"""
 
 
-class _timeout_socket():
+class timeout_socket():
   """
   <Purpose>
     Provides a socket like object which supports custom timeouts
@@ -163,7 +163,7 @@ class _timeout_socket():
 
 
 # Wrapper class for TCPServerSocket in emulcomm
-class _timeout_server_socket():
+class timeout_server_socket():
   """
   <Purpose>
     Provides a TCPSeverSocket like object which supports custom timeouts
@@ -246,7 +246,7 @@ class _timeout_server_socket():
     else:
         raise SocketTimeoutError, "getconnection() timed out!"
 
-    thissocketlikeobject = _timeout_socket(realsocketlikeobject, timeout)
+    thissocketlikeobject = timeout_socket(realsocketlikeobject, timeout)
     return (remoteip, remoteport, thissocketlikeobject)
 
   # Wrap close
@@ -317,7 +317,7 @@ def timeout_openconnection(desthost, destport, localip=None, localport=None, tim
     raise AddressBindingError, "Could not find any usable source port in the range " + str(portrange) + " on IP address " + str(localip) + "."
 
 
-  thissocketlikeobject = _timeout_socket(realsocketlikeobject, timeout)
+  thissocketlikeobject = timeout_socket(realsocketlikeobject, timeout)
   return thissocketlikeobject
 
 
@@ -344,7 +344,7 @@ def timeout_listenforconnection(localip, localport, timeout=5):
 
   realsocketlikeobject = listenforconnection(localip, localport)
 
-  thissocketlikeobject = _timeout_server_socket(realsocketlikeobject, timeout)
+  thissocketlikeobject = timeout_server_socket(realsocketlikeobject, timeout)
   return thissocketlikeobject
   
     
