@@ -64,10 +64,11 @@ mycontext['advertisepipe_recently_added_items_list'] = []
 
 
 def advertise_thread():
+  # Preinitialize the start time
   start = getruntime()
 
   while advertise_thread_state['run']:
-    redo_interval_past = getruntime() - start < redo_interval
+    redo_interval_past = getruntime() - start > redo_interval
 
     if len(mycontext['advertisepipe_recently_added_items_list']) > 0:
       # There are new items to advertise.
@@ -82,7 +83,7 @@ def advertise_thread():
           try:
             key, value = mycontext['advertisepipe_recently_added_items_list'].pop(0)
             advertise.advertise_announce(key, value, ttl)
-          except AdvertiseError, TimeoutError:
+          except advertise.AdvertiseError, TimeoutError:
             # These are raised by advertise_announce. We can't do much.
             pass
           except IndexError:
@@ -92,7 +93,7 @@ def advertise_thread():
     if redo_interval_past:
       # Remember when we started the current advertisement pass
       start = getruntime()
-
+  
       # Advertise each key-value pair in the dict
       # XXX This can pretty much monopolize the vessel's link!
       try:
@@ -100,7 +101,7 @@ def advertise_thread():
           for value in value_dict.keys():
             try:
               advertise.advertise_announce(key, value, ttl)
-            except AdvertiseError, TimeoutError:
+            except advertise.AdvertiseError, TimeoutError:
               # advertise_announce had a problem.
               # Can we do anything sensible here?
               pass
