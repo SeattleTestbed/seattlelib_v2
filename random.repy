@@ -521,3 +521,13 @@ def random_sample(population, k):
     del newpopulation[pos]
 
   return retlist
+
+
+def random_shuffle(x):
+  """Shuffle list x in place; return None.
+     This is a direct port of Python 2.7.5's random.shuffle function."""
+  for i in reversed(xrange(1, len(x))):
+    # pick an element in x[:i+1] with which to exchange x[i]
+    j = int(randomfloat() * (i+1))
+    x[i], x[j] = x[j], x[i]
+
