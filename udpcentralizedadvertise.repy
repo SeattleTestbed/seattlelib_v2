@@ -51,7 +51,7 @@ def _udpcentralizedadvertise_communicate(datastringtosend, timeout, queryid):
   portrange = list(available_resources['messport'])
   # Shuffle the portrange to make it unlikely we reuse the 
   # same quintuple twice in a row (#1249)
-  random.random_shuffle(portrange)
+  random.random_sample(portrange, len(portrange))
 
   for udprequestport in portrange:
     try:
