@@ -525,8 +525,10 @@ def random_sample(population, k):
 
 def random_shuffle(x):
   """Shuffle list x in place; return None.
-     This is a direct port of Python 2.7.5's random.shuffle function."""
-  for i in reversed(xrange(1, len(x))):
+     This is a mostly direct port of Python 2.7.5's random.shuffle 
+     function, only that Repy doesn't allow reversed(), so I construct  
+     the required range ``reversed(xrange(1, len(x)))'' manually."""
+  for i in xrange(len(x)-1, 0, -1):
     # pick an element in x[:i+1] with which to exchange x[i]
     j = int(randomfloat() * (i+1))
     x[i], x[j] = x[j], x[i]
