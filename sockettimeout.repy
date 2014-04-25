@@ -290,7 +290,7 @@ def timeout_openconnection(desthost, destport, localip=None, localport=None, tim
     portrange = list(available_resources['connport'])
     # Shuffle the portrange to make it unlikely we ever reuse the 
     # same quintuple twice in a row (#1362)
-    random.random_sample(portrange, len(portrange))
+    random.random_shuffle(portrange, len(portrange))
   else:
     portrange = [localport]
 
