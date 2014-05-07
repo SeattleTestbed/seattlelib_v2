@@ -1,0 +1,5 @@
+"""
+Verify that dylink imports circularly referencing libraries only once.
+"""
+#pragma repy restrictions.default dylink.repy
+dy_import_module_symbols("ut_seattlelib_dylinkcircularimportsymbols1.r2py")

@@ -1,0 +1,5 @@
+"""
+Verify that dylink imports circularly referencing libraries only once.
+"""
+#pragma repy restrictions.default dylink.repy
+lib1 = dy_import_module("ut_seattlelib_dylinkcircularimport1.r2py")
