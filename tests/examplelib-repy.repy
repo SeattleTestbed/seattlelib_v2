@@ -1,0 +1,7 @@
+"""
+Example library used to demonstrate import-override rules.
+
+XXX Unless #1412 is fixed in dylink, this file cannot be called 
+XXX "examplelib.repy" due to a name clash with "examplelib.py"
+"""
+foo = "examplelib-repy.repy's foo"

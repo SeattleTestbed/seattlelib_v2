@@ -1,0 +1,7 @@
+"""
+Verify that dylink respects the supplied file extensions when importing 
+a library, i.e. filename.py and filename.repy are distinct files 
+(yet they represent identically-named modules, so the usual overriding 
+rules apply, see #....)
+"""
+
