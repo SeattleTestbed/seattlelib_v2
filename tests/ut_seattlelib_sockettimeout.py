@@ -3,7 +3,7 @@
   Test the sockettimeout library which now uses
   Repy V2 network API calls.
   Function Tested:
-    tcpserversocket.getconnection() in sockettimeout.repy
+    tcpserversocket.getconnection() in sockettimeout.r2py
 """
 
 from repyportability import *
@@ -12,7 +12,7 @@ add_dy_support(locals())
 from repyportability import *
 add_dy_support(locals())
 
-dy_import_module_symbols("sockettimeout.repy")
+dy_import_module_symbols("sockettimeout.r2py")
 
 
 # Create a listening socket that would timeout in 2 seconds.

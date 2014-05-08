@@ -1,12 +1,12 @@
 """
 <Name>
-  testsshkey.repy
+  testsshkey.r2py
 
 <Started>
   2009-06-03
 
 <Purpose>
-  Test the sshkey.repy module.
+  Test the sshkey.r2py module.
 
 <Authors>
   Modified by Anthony Honstain
@@ -14,8 +14,8 @@
 
 """
 
-dy_import_module_symbols('sshkey.repy')
-dy_import_module_symbols('rsa.repy')
+dy_import_module_symbols('sshkey.r2py')
+dy_import_module_symbols('rsa.r2py')
 
 
 
@@ -132,7 +132,7 @@ def test_sshkey_file_to_publickey_except1():
   
   
 def test_keys_with_rsa():
-  """ Uses the sshkey to encrypt and decrypt using the rsa.repy module """
+  """ Uses the sshkey to encrypt and decrypt using the rsa.r2py module """
   
   filename = 'test_sshkey_privatekey_plain'
   

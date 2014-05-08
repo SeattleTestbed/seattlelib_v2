@@ -6,7 +6,7 @@
   Description: Basic tests for the semaphore library...
 """
 
-dy_import_module_symbols('semaphore.repy')
+dy_import_module_symbols('semaphore.r2py')
 
 def down_then_exit(sem):
   try:

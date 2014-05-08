@@ -1,6 +1,6 @@
 """
 <Program Name>
-  $Id$
+  xmlrpc_common.r2py
 
 <Started>
   April 26, 2009
@@ -28,8 +28,8 @@
 """
 
 
-dy_import_module_symbols('base64.repy')
-dy_import_module_symbols('xmlparse.repy')
+dy_import_module_symbols('base64.r2py')
+dy_import_module_symbols('xmlparse.r2py')
 
 
 

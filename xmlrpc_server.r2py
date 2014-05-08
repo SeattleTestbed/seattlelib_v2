@@ -1,6 +1,6 @@
 """
 <Program Name>
-  xmlrpc_server.repy
+  xmlrpc_server.r2py
 
 <Started>
   April 2009
@@ -14,9 +14,9 @@
   is possible with RePy.
 """
 
-dy_import_module_symbols('xmlparse.repy')
-dy_import_module_symbols('xmlrpc_common.repy')
-dy_import_module_symbols('urllib.repy')
+dy_import_module_symbols('xmlparse.r2py')
+dy_import_module_symbols('xmlrpc_common.r2py')
+dy_import_module_symbols('urllib.r2py')
 
 def _xmlrpc_server_lookup_ip(hostname):
   # Looks up an ip address for a given hostmask.  Throws an exception for

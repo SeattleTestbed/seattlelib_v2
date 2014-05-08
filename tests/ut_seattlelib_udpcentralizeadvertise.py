@@ -10,7 +10,7 @@
 from repyportability import *
 add_dy_support(locals())
 
-dy_import_module_symbols("udpcentralizedadvertise.repy")
+dy_import_module_symbols("udpcentralizedadvertise.r2py")
 
 
 # advertise some random key with arbitrary value...

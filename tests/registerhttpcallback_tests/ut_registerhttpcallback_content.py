@@ -4,8 +4,8 @@
 # or httpretrieve raises an exception and just excutes if the test passes
 
 
-dy_import_module_symbols('registerhttpcallback.repy')
-dy_import_module_symbols('httpretrieve.repy')
+dy_import_module_symbols('registerhttpcallback.r2py')
+dy_import_module_symbols('httpretrieve.r2py')
 
 
 def test_normal_server(httprequest_dictionary, http_query, http_post):

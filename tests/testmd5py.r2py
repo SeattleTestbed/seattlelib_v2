@@ -1,6 +1,6 @@
 """
 <Name>
-  testmd5py.repy
+  testmd5py.r2py
   
 <Started>
   2009-06-03  
@@ -9,7 +9,7 @@
   Anthony Honstain - Using tests published by Ronald L. Rivest
   
 <Purpose>
-  Test the md5py.repy moudule.
+  Test the md5py.r2py moudule.
 
   Tests taken from http://tools.ietf.org/html/rfc1321.html  
     MD5 test suite:
@@ -26,8 +26,8 @@
 
 """
 
-dy_import_module_symbols('md5py.repy')
-dy_import_module_symbols('binascii.repy')
+dy_import_module_symbols('md5py.r2py')
+dy_import_module_symbols('binascii.r2py')
 
 
 

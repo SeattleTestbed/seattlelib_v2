@@ -1,6 +1,6 @@
 """
 <Program Name>
-  time.repy
+  time.r2py
 
 <Author>
   Eric Kimbrel
@@ -9,14 +9,14 @@
   Jul 2, 2009
 
 <Purpose>
- replaces the previous time.repy by use of the active interface 
- time_interface.repy and the implementors ntp_time.repy and tcp_time.repy
+ replaces the previous time.r2py by use of the active interface 
+ time_interface.r2py and the implementors ntp_time.r2py and tcp_time.r2py
 
- see time_interface.repy for details
+ see time_interface.r2py for details
 
 """
 
 
-dy_import_module_symbols('ntp_time.repy')
-dy_import_module_symbols('tcp_time.repy')
+dy_import_module_symbols('ntp_time.r2py')
+dy_import_module_symbols('tcp_time.r2py')
 

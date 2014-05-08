@@ -1,6 +1,6 @@
 """
 <Program Name>
-  advertise_client.repy
+  advertise_client.r2py
 
 <Started>
   August 3, 2011
@@ -74,7 +74,7 @@ if callfunc == 'initialize':
   elif callargs[0].lower() == 'put':
     if len(callargs) < 3:
       log(" > Not enough arguments provided. PUT usage:\n")
-      log(" > advertise_client.repy put <value> <time to live>\n")
+      log(" > advertise_client.r2py put <value> <time to live>\n")
     else:
       advertise_val = callargs[1]
       advertise_ttl = int(callargs[2])

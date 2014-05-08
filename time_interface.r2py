@@ -1,6 +1,6 @@
 """
 <Program Name>
-  time_interface.repy
+  time_interface.r2py
 
 <Author>
   Eric Kimbrel
@@ -27,7 +27,7 @@
   Then, to get the actual time, call time_gettime() which will return
   the current time (in seconds).
 
-  time.repy will attempt to use the update method of any impelemntor included.
+  time.r2py will attempt to use the update method of any impelemntor included.
   If none are included or if they all fail an exception is thrown
 
 """
@@ -46,7 +46,7 @@ class TimeError(Exception):
 def time_register_method(imp_name,update_method):
   """
   <Purpose>
-  Allow an implementation to register its update method with time.repy
+  Allow an implementation to register its update method with time.r2py
 
   <Arguments>
   imp_name, the name or unique abbreviation of the implementation

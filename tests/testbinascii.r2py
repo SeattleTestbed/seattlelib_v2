@@ -1,6 +1,6 @@
 """
 <Program Name>
-  testbinascii.repy
+  testbinascii.r2py
 
 <Started>
   Jun 29, 2009
@@ -38,7 +38,7 @@
 
 """
 
-dy_import_module_symbols('binascii.repy')
+dy_import_module_symbols('binascii.r2py')
 
 
 

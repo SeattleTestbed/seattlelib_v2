@@ -11,9 +11,9 @@ Advertisements to the Digital Object Registry run by CNRI.
 
 
 
-dy_import_module_symbols('sockettimeout.repy')
-dy_import_module_symbols('httpretrieve.repy')
-dy_import_module_symbols('xmlparse.repy')
+dy_import_module_symbols('sockettimeout.r2py')
+dy_import_module_symbols('httpretrieve.r2py')
+dy_import_module_symbols('xmlparse.r2py')
 
 
 

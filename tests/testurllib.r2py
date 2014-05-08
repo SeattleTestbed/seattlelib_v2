@@ -1,4 +1,4 @@
-dy_import_module_symbols('urllib.repy')
+dy_import_module_symbols('urllib.r2py')
 
 if callfunc == 'initialize':
 

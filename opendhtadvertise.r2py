@@ -10,10 +10,10 @@ This code is partially adapted from the example openDHT code.
 
 """
 
-dy_import_module_symbols('random.repy')
-dy_import_module_symbols('sha.repy')
-dy_import_module_symbols('xmlrpc_client.repy')
-dy_import_module_symbols('parallelize.repy')
+dy_import_module_symbols('random.r2py')
+dy_import_module_symbols('sha.r2py')
+dy_import_module_symbols('xmlrpc_client.r2py')
+dy_import_module_symbols('parallelize.r2py')
 
 
 opendhtadvertise_context = {}

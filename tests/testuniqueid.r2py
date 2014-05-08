@@ -1,4 +1,4 @@
-dy_import_module_symbols('uniqueid.repy')
+dy_import_module_symbols('uniqueid.r2py')
 
 # Okay, let's test the ops...
 

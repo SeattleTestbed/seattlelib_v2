@@ -1,13 +1,13 @@
 """
-Program Name: getvesselresources.repy
+Program Name: getvesselresources.r2py
 Author: Monzur Muhammad
 Started: April 25, 2009
 Description:
 Given a vessel name the functions finds the correct vessel and print out all the resources available.
 """
 
-dy_import_module_symbols('nmclient.repy')
-dy_import_module_symbols('rsa.repy')
+dy_import_module_symbols('nmclient.r2py')
+dy_import_module_symbols('rsa.r2py')
 
 def getvesselresources_portnum(portnum, ipaddr=getmyip(), portval=1224):
   """

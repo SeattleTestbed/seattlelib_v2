@@ -1,6 +1,6 @@
 """
 <Program Name>
-  httpretrieve.repy
+  httpretrieve.r2py
 
 <Started>
   August 19, 2009
@@ -17,9 +17,9 @@
 
 
 
-dy_import_module_symbols('urlparse.repy')
-dy_import_module_symbols('sockettimeout.repy')
-dy_import_module_symbols('urllib.repy')
+dy_import_module_symbols('urlparse.r2py')
+dy_import_module_symbols('sockettimeout.r2py')
+dy_import_module_symbols('urllib.r2py')
 
 
 

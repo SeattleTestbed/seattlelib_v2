@@ -1,6 +1,6 @@
 """ 
 <Program Name>
-  random.repy
+  random.r2py
 
 <Author>
   Justin Cappos: random_sample
@@ -38,7 +38,7 @@
       
 """
 
-dy_import_module_symbols('math.repy')
+dy_import_module_symbols('math.r2py')
 
 CACHE = {'bytes': ''}
 

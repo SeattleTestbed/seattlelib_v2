@@ -1,6 +1,6 @@
 """
 <Program Name>
-  $Id$
+  testxmlrpc_common.r2py
 
 <Started>
   May 3, 2009
@@ -9,7 +9,7 @@
   Michael Phan-Ba
 
 <Purpose>
-  Runs unit tests on xmlrpc_common.repy.
+  Runs unit tests on xmlrpc_common.r2py.
 
 <Changes>
 
@@ -25,8 +25,8 @@
 """
 
 
-dy_import_module_symbols('xmlrpc_server.repy')
-dy_import_module_symbols('xmlrpc_client.repy')
+dy_import_module_symbols('xmlrpc_server.r2py')
+dy_import_module_symbols('xmlrpc_client.r2py')
 
 
 if callfunc == 'initialize':

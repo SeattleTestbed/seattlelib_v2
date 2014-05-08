@@ -12,7 +12,7 @@ add_dy_support(locals())
 from repyportability import *
 add_dy_support(locals())
 
-dy_import_module_symbols("centralizedadvertise_v2.repy")
+dy_import_module_symbols("centralizedadvertise_v2.r2py")
 
 
 # advertise some random key with arbitrary value...

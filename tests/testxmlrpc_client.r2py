@@ -9,7 +9,7 @@
   Michael Phan-Ba
 
 <Purpose>
-  Runs unit tests on xmlrpc_client.repy.
+  Runs unit tests on xmlrpc_client.r2py.
 
   To run these tests, start the test XML-RPC server:
   python tests/xmlrpc_client/testserver.py
@@ -17,7 +17,7 @@
 """
 
 
-dy_import_module_symbols('xmlrpc_client.repy')
+dy_import_module_symbols('xmlrpc_client.r2py')
 
 
 if callfunc == 'initialize':

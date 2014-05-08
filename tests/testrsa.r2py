@@ -1,6 +1,6 @@
 """
 <Program Name>
-  testrsa.repy
+  testrsa.r2py
 
 <Started>
   May 9 2009
@@ -20,9 +20,9 @@
     test_rsa_matching_keys
 
 <Purpose>
-  Tests the rsa.repy file, this test takes a black box approach
+  Tests the rsa.r2py file, this test takes a black box approach
   towards the inner workings of the cryptographic operations and 
-  focuses more on the rsa.repy. Does not test the pycrypto suite
+  focuses more on the rsa.r2py. Does not test the pycrypto suite
   directly, that is done by a different module that is
   run from repy.
 
@@ -51,8 +51,8 @@
     
 """  
 
-dy_import_module_symbols('rsa.repy')
-dy_import_module_symbols('math.repy')
+dy_import_module_symbols('rsa.r2py')
+dy_import_module_symbols('math.r2py')
 
 def test_number_bytes_to_long():
   """ Tests long to bytes for small boundry cases. """

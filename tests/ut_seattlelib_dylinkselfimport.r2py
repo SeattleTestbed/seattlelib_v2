@@ -1,6 +1,6 @@
-#pragma repy restrictions.test dylink.repy
+#pragma repy restrictions.test dylink.r2py
 """
 Try to import (via dylink) this very file. Should NOT cause infinite recursion.
 """
 
-dy_import_module("ut_seattlelib_dylinkselfimport.repy") 
+dy_import_module("ut_seattlelib_dylinkselfimport.r2py") 

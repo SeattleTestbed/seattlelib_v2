@@ -1,4 +1,4 @@
-dy_import_module_symbols('serialize.repy')
+dy_import_module_symbols('serialize.r2py')
 
 if callfunc == 'initialize':
   for stuff in [set((1,)), set(), set(('asdf',True, None, 234)), set(((1,2),3,None)), set(())]:

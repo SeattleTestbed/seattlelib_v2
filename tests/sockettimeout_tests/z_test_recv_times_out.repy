@@ -5,7 +5,7 @@
 """
 
 # hello world
-dy_import_module_symbols('sockettimeout.repy')
+dy_import_module_symbols('sockettimeout.r2py')
 
 
 def mycallback(ip, port, sockobj, commhandle, listenhandle):

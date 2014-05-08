@@ -1,6 +1,6 @@
 """
 <Program Name>
-  sshkey.repy
+  sshkey.r2py
 
 <Started>
   2009-05-00
@@ -46,7 +46,7 @@
 
 """
 
-dy_import_module_symbols('sshkey_paramiko.repy')
+dy_import_module_symbols('sshkey_paramiko.r2py')
 
 
 class sshkey_SSHException(Exception):
@@ -142,7 +142,7 @@ def sshkey_file_to_privatekey(filename, password=None):
   """
   <Purpose>
     Reads a ssh private key file and returns the key in a format
-    suitable to used by rsa.repy.
+    suitable to used by rsa.r2py.
   
       Example ssh private key:
        -----BEGIN RSA PRIVATE KEY-----
@@ -187,7 +187,7 @@ def sshkey_file_to_privatekey(filename, password=None):
     
   <Return>
     Returns a publickey and a privatekey dictionary in the format used by 
-    the rsa.repy module.
+    the rsa.r2py module.
     publickey:
       {'n': 1.., 'e': 6..} with the keys 'n' and 'e'. 
     privatekey:
@@ -220,7 +220,7 @@ def sshkey_file_to_publickey(filename):
   """
   <Purpose> 
     Reads a ssh public key file and returns the key in a format
-    suitable to used by rsa.repy.
+    suitable to used by rsa.r2py.
   
   <Arguments>
     filename:
@@ -244,7 +244,7 @@ def sshkey_file_to_publickey(filename):
     None
     
   <Return>
-    A publickey dictionary in the format used by the rsa.repy module.
+    A publickey dictionary in the format used by the rsa.r2py module.
     {'n': 1.., 'e': 6..} with the keys 'n' and 'e'. 
   
   """

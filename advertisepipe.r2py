@@ -1,7 +1,7 @@
 """
 
 <Author>
-  advertise_object.repy:
+  advertise_object.r2py:
     Eric Kimbrel kimbrl@cs.washington.edu
     Monzur Muhammad
   This library:
@@ -25,8 +25,8 @@
 """
 
 
-advertise = dy_import_module('advertise.repy')
-uniqueid = dy_import_module('uniqueid.repy')
+advertise = dy_import_module('advertise.r2py')
+uniqueid = dy_import_module('uniqueid.r2py')
 
 # Store info to be advertised. This dict is organized as 
 # { key1: {

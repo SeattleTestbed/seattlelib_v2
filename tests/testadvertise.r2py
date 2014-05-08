@@ -1,4 +1,4 @@
-dy_import_module_symbols('advertise.repy')
+dy_import_module_symbols('advertise.r2py')
 
 if callfunc == "initialize":
 

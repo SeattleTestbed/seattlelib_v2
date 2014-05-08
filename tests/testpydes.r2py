@@ -1,6 +1,6 @@
 """
 <Name>
-  testpydes.repy
+  testpydes.r2py
   
 <Started>
   2009-06-03  
@@ -10,14 +10,14 @@
   Written by Todd Whiteman
   
 <Purpose>
-  Test the pydes.repy module. Only the test '_fulltest' from the original
+  Test the pydes.r2py module. Only the test '_fulltest' from the original
   test suite was used. The other tests were examples or provided unneeded
   profiling data.
 
 """
 
-dy_import_module_symbols('pydes.repy')
-dy_import_module_symbols('binascii.repy')
+dy_import_module_symbols('pydes.r2py')
+dy_import_module_symbols('binascii.r2py')
 
 def _fulltest_():
   # This should not produce any unexpected errors or exceptions

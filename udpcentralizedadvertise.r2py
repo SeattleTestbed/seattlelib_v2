@@ -9,9 +9,9 @@ Advertisements to a central server (similar to openDHT)
 This uses UDP and is conceptually quite similar to the centralized advertise
 service
 """
-dy_import_module_symbols('serialize.repy')
-dy_import_module_symbols('uniqueid.repy')
-random = dy_import_module('random.repy')
+dy_import_module_symbols('serialize.r2py')
+dy_import_module_symbols('uniqueid.r2py')
+random = dy_import_module('random.r2py')
 
 
 # Hmm, perhaps I should make an initialization call instead of hardcoding this?

@@ -1,6 +1,6 @@
-dy_import_module_symbols('textops.repy')
+dy_import_module_symbols('textops.r2py')
 
-# Tests for seattlelib/textops.repy.
+# Tests for seattlelib/textops.r2py.
 
 if callfunc == "initialize":
 

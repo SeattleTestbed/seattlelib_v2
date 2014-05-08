@@ -1,6 +1,6 @@
 """
 <Program Name>
-  pycrypto.repy
+  pycrypto.r2py
 
 <Started>
   2009-01
@@ -10,7 +10,7 @@
     PyCrypto which is authored by Dwayne C. Litzenberger
     
 <Purpose>
-  This file provides the encryption functionality for rsa.repy. 
+  This file provides the encryption functionality for rsa.r2py. 
   This code has been left as close to origional as possible with
   the notes about changes made to enable for easier modification
   if pycrypto is updated. 
@@ -24,7 +24,7 @@
 
 """
 
-dy_import_module_symbols('random.repy')
+dy_import_module_symbols('random.r2py')
 
 #
 #   pubkey.py : Internal functions for public key operations
@@ -767,7 +767,7 @@ def number_getPrime(N, randfunc=None):
     # This will use a bitwise OR to ensure the number is odd
     #origional: number=getRandomNumber(N, randfunc) | 1
     
-    # Anthony - changed this again, now that random.repy
+    # Anthony - changed this again, now that random.r2py
     # includes a function to get a random N bit number
     # that can be used instead.
     #number = random_randint(2**(N-1), 2**N - 1) | 1
@@ -970,7 +970,7 @@ def _import_Random():
     Modified _slowmath_RSAKey.has_private and  _slowmath_RSAKey.has_public
     to no longer use hasattr because repy no longer allows hasattr.
     The code was borrowed from the fix for RSA.py (Note: RSA.py is
-    lumped together with the other modules to get pycryptorsa.repy
+    lumped together with the other modules to get pycryptorsa.r2py
     before distribution.
 """
 

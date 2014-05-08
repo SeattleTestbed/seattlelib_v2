@@ -1,12 +1,12 @@
 """
    Author: Justin Cappos
-     Edited by Eric Kimbrel, this was originally time.repy 
+     Edited by Eric Kimbrel, this was originally time.r2py 
 
    Start Date: 8 August 2008
 
    Description:
 
-   This is an implementation of time_interface.repy
+   This is an implementation of time_interface.r2py
 
    This module handles getting the time from an external source, via UDP.
    It gets the remote time once and then uses the offset from the local 
@@ -30,10 +30,10 @@
 """
 
 
-dy_import_module_symbols('time_interface.repy')
+dy_import_module_symbols('time_interface.r2py')
 
 # Use for random sampling...
-dy_import_module_symbols('random.repy')
+dy_import_module_symbols('random.r2py')
 
 
 

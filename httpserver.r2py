@@ -1,6 +1,6 @@
 """
 <Program Name>
-  httpserver.repy
+  httpserver.r2py
 
 <Started>
   July 29, 2009
@@ -18,12 +18,12 @@
 
 
 
-dy_import_module_symbols("librepy.repy")
-dy_import_module_symbols("urllib.repy")
-dy_import_module_symbols("urlparse.repy")
-dy_import_module_symbols("uniqueid.repy")
-dy_import_module_symbols("sockettimeout.repy")
-dy_import_module_symbols("httpretrieve.repy")
+dy_import_module_symbols("librepy.r2py")
+dy_import_module_symbols("urllib.r2py")
+dy_import_module_symbols("urlparse.r2py")
+dy_import_module_symbols("uniqueid.r2py")
+dy_import_module_symbols("sockettimeout.r2py")
+dy_import_module_symbols("httpretrieve.r2py")
 
 
 
@@ -424,7 +424,7 @@ class _httpserver_bodystream:
 
     # A dictionary of the client's request headers, as parsed by
     # _httpretrieve_parse_responseheaders() (this is a function which
-    # should be moved elsewhere; for example, an http_common.repy
+    # should be moved elsewhere; for example, an http_common.r2py
     # library would work).
     self._headers = headers
 

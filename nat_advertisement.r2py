@@ -7,7 +7,7 @@ Description: Abstracts the task of looking up and advertising servers and forwar
 
 """
 
-dy_import_module_symbols('advertise.repy')
+dy_import_module_symbols('advertise.r2py')
 
 
 # What should we register as?

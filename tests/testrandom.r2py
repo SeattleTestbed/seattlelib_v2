@@ -3,7 +3,7 @@
   April 23, 2005
 
 <Purpose>
-  Test the new replacement for random.repy
+  Test the new replacement for random.r2py
   Functions tested:
     randomfloat
     random_nbit_int
@@ -20,8 +20,8 @@
 
 
 """
-dy_import_module_symbols('random.repy')
-dy_import_module_symbols('math.repy')
+dy_import_module_symbols('random.r2py')
+dy_import_module_symbols('math.r2py')
 
 # Randomfloat is provided repy.
 def test_53_bits_per_float():

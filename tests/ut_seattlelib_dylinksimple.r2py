@@ -1,4 +1,4 @@
-#pragma repy restrictions.test dylink.repy dytestmoduleexitall.repy
+#pragma repy restrictions.test dylink.r2py dytestmoduleexitall.r2py
 
 """
 Basic dylink tests.   Nothing fancy.
@@ -6,17 +6,17 @@ Basic dylink tests.   Nothing fancy.
 """
 
 
-dy_import_module_symbols('dytestmodule1.repy')
+dy_import_module_symbols('dytestmodule1.r2py')
 
 assert(x == 1)
 
-dytestmodule2 = dy_import_module('dytestmodule2.repy')
+dytestmodule2 = dy_import_module('dytestmodule2.r2py')
 
 assert(dytestmodule2.x == 2)
 
   
 
-# as per the pragma above, dytestmoduleexitall.repy should be called...
+# as per the pragma above, dytestmoduleexitall.r2py should be called...
 dy_dispatch_module()
 
 log("Should not reach here!  exitall call in dispatched code!\n")

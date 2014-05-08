@@ -1,6 +1,6 @@
 """
 <Program Name>
-  xmlrpc_client.py
+  xmlrpc_client.r2py
 
 <Started>
   May 3, 2009
@@ -14,9 +14,9 @@
 """
 
 
-dy_import_module_symbols('urlparse.repy')
-dy_import_module_symbols('httpretrieve.repy')
-dy_import_module_symbols('xmlrpc_common.repy')
+dy_import_module_symbols('urlparse.r2py')
+dy_import_module_symbols('httpretrieve.r2py')
+dy_import_module_symbols('xmlrpc_common.r2py')
 
 
 class xmlrpc_client_Client(object):

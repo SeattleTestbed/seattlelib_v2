@@ -3,13 +3,13 @@
   Test the ntp_time library which now uses
   Repy V2 network API calls.
   Function Tested:
-    ntp_time_updatetime() in ntp_time.repy
+    ntp_time_updatetime() in ntp_time.r2py
 """
     
 from repyportability import *
 add_dy_support(locals())
 
-dy_import_module_symbols("ntp_time.repy")
+dy_import_module_symbols("ntp_time.r2py")
 
 try:
   time_updatetime(12345)

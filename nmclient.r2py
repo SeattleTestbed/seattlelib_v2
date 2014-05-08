@@ -13,15 +13,15 @@ that order).
 """
 
 # for signing the data we send to the node manager
-dy_import_module_symbols("signeddata.repy")
+dy_import_module_symbols("signeddata.r2py")
 
 # session wrapper (breaks the stream into messages)
 # an abstracted "itemized data communication" in a separate API
-dy_import_module_symbols("session.repy")
+dy_import_module_symbols("session.r2py")
 
 
 # makes connections time out
-dy_import_module_symbols("sockettimeout.repy")
+dy_import_module_symbols("sockettimeout.r2py")
 
 # The idea is that this module returns "node manager handles".   A handle
 # may be used to communicate with a node manager and issue commands.   If the

@@ -1,6 +1,6 @@
 """
 <Program Name>
-  rsa.repy
+  rsa.r2py
 
 <Started>
   2008-04-23
@@ -9,7 +9,7 @@
   Modified by Anthony Honstain from the following code:
     PyCrypto which is authored by Dwayne C. Litzenberger
     
-    Seattle's origional rsa.repy which is Authored by:
+    Seattle's origional rsa.r2py which is Authored by:
       Adapted by Justin Cappos from the version by:
         author = "Sybren Stuvel, Marloes de Boer and Ivo Tamboer"
 
@@ -22,8 +22,8 @@
     
 """
 
-dy_import_module_symbols('random.repy')
-dy_import_module_symbols('pycryptorsa.repy')
+dy_import_module_symbols('random.r2py')
+dy_import_module_symbols('pycryptorsa.r2py')
     
      
         

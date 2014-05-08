@@ -1,4 +1,4 @@
-dy_import_module_symbols('parallelize.repy')
+dy_import_module_symbols('parallelize.r2py')
 
 
 def sleep_function(foo):

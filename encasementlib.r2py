@@ -55,7 +55,7 @@ def _build_INIT_DEFINITION():
 # Imports the wrapper module
 def _import_wrapper():
   # The code for the module
-  virt = _layer_code("wrapper.repy")
+  virt = _layer_code("wrapper.r2py")
 
   # Evaluate the module in a copy of the clean context
   eval_context = CLEAN_CONTEXT.copy()

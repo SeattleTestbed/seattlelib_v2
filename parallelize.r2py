@@ -21,7 +21,7 @@ YOU MUST PUT A LOCK AROUND SUCH ACCESSES.
 
 
 # I use this to get unique identifiers. 
-dy_import_module_symbols('uniqueid.repy')
+dy_import_module_symbols('uniqueid.r2py')
 
 
 

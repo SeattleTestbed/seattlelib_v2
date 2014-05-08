@@ -10,8 +10,8 @@ Provides a method of transferring data to machines behind firewalls or Network A
 """
 
 
-dy_import_module_symbols('nat_advertisement.repy')
-dy_import_module_symbols('multiplexer.repy')
+dy_import_module_symbols('nat_advertisement.r2py')
+dy_import_module_symbols('multiplexer.r2py')
 
 
 
@@ -184,7 +184,7 @@ def nat_openconn(destmac, destport, localip=None, localport=None, timeout = 5, f
      usetimeoutsock:
        use a timeout_openconn instead of openconn to connect
        to the forwarder
-       WARNING you must include sockettimeout.repy to use this
+       WARNING you must include sockettimeout.r2py to use this
 
       
   <Returns>

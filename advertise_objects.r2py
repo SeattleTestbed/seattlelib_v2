@@ -64,8 +64,8 @@ class LookupCache():
       lookup the values stored at the given key
 
     <Arguments>
-      see advertise.repy
-      WARNING optional arguments are passed on to advertise.repy if a new
+      see advertise.r2py
+      WARNING optional arguments are passed on to advertise.r2py if a new
       advertisement is performed.  If cache values are returned nothing is 
       done with the extra arguments.
 
@@ -73,7 +73,7 @@ class LookupCache():
       a list of unique values advertised at the key
 
     <Exceptions>
-      see advertise_lookup from advertise.repy
+      see advertise_lookup from advertise.r2py
       These will result in the values not being changed
     """ 
     

@@ -43,7 +43,7 @@ if callfunc == "initialize":
   MODULE_BIND_CACHE = {}
 
   # These extensions will be tried when looking for a module to import
-  COMMON_EXTENSIONS = ["", ".py", ".repy",".py.repy", ".pp"]
+  COMMON_EXTENSIONS = ["", ".py", ".repy",".py.repy", ".pp", ".r2py"]
 
   # These are the functions in the "stock" repy API,
   STOCK_API = set(["gethostbyname","getmyip","sendmessage","listenformessage","openconnection","listenforconnection",

@@ -1,12 +1,12 @@
 """
 <Program Name>
-  sshkey_paramiko.repy
+  sshkey_paramiko.r2py
 
 <Started>
   2009-05-00
 
 <Purpose>
-  To be used by sshkey.repy, this is not a stand alone module. sshkey.repy
+  To be used by sshkey.r2py, this is not a stand alone module. sshkey.r2py
   is the wrapper that developers should use. This file contains the code 
   that has been modified or taken from paramiko. It is licensed under a 
   different license then the rest of the code and to avoid any conflict it 
@@ -48,11 +48,11 @@
 
 """
 
-dy_import_module_symbols('sshkey.repy')
-dy_import_module_symbols('base64.repy')
-dy_import_module_symbols('md5py.repy')
-dy_import_module_symbols('pydes.repy')
-dy_import_module_symbols('binascii.repy')
+dy_import_module_symbols('sshkey.r2py')
+dy_import_module_symbols('base64.r2py')
+dy_import_module_symbols('md5py.r2py')
+dy_import_module_symbols('pydes.r2py')
+dy_import_module_symbols('binascii.r2py')
 
 
 class sshkey_paramiko_BERException (Exception):

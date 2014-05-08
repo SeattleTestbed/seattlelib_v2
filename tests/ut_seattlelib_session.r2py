@@ -1,6 +1,6 @@
-#pragma repy restrictions.twoports dylink.repy
+#pragma repy restrictions.twoports dylink.r2py
 
-dy_import_module_symbols("session.repy")
+dy_import_module_symbols("session.r2py")
 
 # The message we want to send across the network.
 msg_to_send = "Hello World"

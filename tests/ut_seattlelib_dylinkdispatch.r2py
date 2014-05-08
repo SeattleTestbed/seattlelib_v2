@@ -1,4 +1,4 @@
-#pragma repy restrictions.test dylink.repy
+#pragma repy restrictions.test dylink.r2py
 #pragma out Complete!
 
 """
@@ -6,7 +6,7 @@ Testing to see whether dispatch works correctly...
 
 """
 
-callargs = ['dytestmodule1.repy']
+callargs = ['dytestmodule1.r2py']
 
 # this should have worked correctly...
 assert( dy_dispatch_module() == True )

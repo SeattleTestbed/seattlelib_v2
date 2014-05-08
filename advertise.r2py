@@ -1,6 +1,6 @@
 """
 <Program Name>
-  advertise.repy
+  advertise.r2py
 
 <Started>
   October 14, 2008
@@ -12,11 +12,11 @@
   Module which allows clients to send advertise queries to various servers.
 """
 
-dy_import_module_symbols("listops.repy")
-dy_import_module_symbols("centralizedadvertise.repy")
-dy_import_module_symbols("centralizedadvertise_v2.repy")
-dy_import_module_symbols("parallelize.repy")
-dy_import_module_symbols("udpcentralizedadvertise.repy")
+dy_import_module_symbols("listops.r2py")
+dy_import_module_symbols("centralizedadvertise.r2py")
+dy_import_module_symbols("centralizedadvertise_v2.r2py")
+dy_import_module_symbols("parallelize.r2py")
+dy_import_module_symbols("udpcentralizedadvertise.r2py")
 
 
 # All the names of services we can support.

@@ -11,7 +11,7 @@
   block for more than an allotted amount of time.
 
 """
-random = dy_import_module("random.repy")
+random = dy_import_module("random.r2py")
 
 class SocketTimeoutError(Exception):
   """The socket timed out before receiving a response"""

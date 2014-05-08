@@ -30,10 +30,10 @@ multiplex any type of connection.
 
 """
 
-dy_import_module_symbols("librepysocket.repy")
+dy_import_module_symbols("librepysocket.r2py")
 
 # This is to help send dictionaries as strings
-dy_import_module_symbols("deserialize.repy")
+dy_import_module_symbols("deserialize.r2py")
 
 # Define Module Constants
 # 

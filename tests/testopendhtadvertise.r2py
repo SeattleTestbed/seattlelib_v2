@@ -1,4 +1,4 @@
-dy_import_module_symbols('opendhtadvertise.repy')
+dy_import_module_symbols('opendhtadvertise.r2py')
 
 if callfunc == "initialize":
 

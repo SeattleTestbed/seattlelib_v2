@@ -1,7 +1,7 @@
 from repyportability import *
 add_dy_support(locals())
 
-dy_import_module_symbols("domainnameinfo.repy")
+dy_import_module_symbols("domainnameinfo.r2py")
 
 
 if __name__ == '__main__':

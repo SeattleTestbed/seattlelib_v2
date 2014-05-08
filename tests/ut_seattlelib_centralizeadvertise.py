@@ -10,7 +10,7 @@
 from repyportability import *
 add_dy_support(locals())
 
-dy_import_module_symbols("centralizedadvertise.repy")
+dy_import_module_symbols("centralizedadvertise.r2py")
 
 
 

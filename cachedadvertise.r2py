@@ -1,7 +1,7 @@
 """
 
 <Author>
-  advertise_object.repy:
+  advertise_object.r2py:
     Eric Kimbrel kimbrl@cs.washington.edu
     Monzur Muhammad
   This library:
@@ -27,9 +27,9 @@
 """
 
 
-advertise = dy_import_module('advertise.repy')
+advertise = dy_import_module('advertise.r2py')
 advertisepipe = dy_import_module('advertisepipe.r2py')
-listops = dy_import_module('listops.repy')
+listops = dy_import_module('listops.r2py')
 
 # Here we store our lookup results
 lookup_cache = {}
@@ -48,7 +48,7 @@ def lookup(key, maxvals=100, lookuptype=None, concurrentevents=4,
     Look up the values stored at the given key; serve from cache if possible.
 
   <Arguments>
-    As with advertise.repy's advertise_lookup function:
+    As with advertise.r2py's advertise_lookup function:
     key:
       Advertised key to look up
     maxvals:
@@ -64,7 +64,7 @@ def lookup(key, maxvals=100, lookuptype=None, concurrentevents=4,
       lookup, set to 0. Then, only local sources, i.e. our lookup_cache 
       and advertisepipe's advertise_dict, are queried.
     
-    Note: Optional arguments are passed on to advertise.repy if a new
+    Note: Optional arguments are passed on to advertise.r2py if a new
     advertisement is performed. If cached values are returned, nothing is 
     done with the extra arguments.
 
@@ -72,7 +72,7 @@ def lookup(key, maxvals=100, lookuptype=None, concurrentevents=4,
       A list of unique values advertised at the key
 
     <Exceptions>
-      See advertise_lookup from advertise.repy
+      See advertise_lookup from advertise.r2py
   """
   results = []
 

@@ -1,4 +1,4 @@
-#pragma repy restrictions.test dylink.repy
+#pragma repy restrictions.test dylink.r2py
 
 """
 Testing to see whether symbols are overwritten
@@ -7,16 +7,16 @@ Testing to see whether symbols are overwritten
 
 x = 8
 
-dy_import_module_symbols('dytestmodule1.repy')
+dy_import_module_symbols('dytestmodule1.r2py')
 
 assert(x == 1)
 
-dy_import_module_symbols('dytestmodule2.repy')
+dy_import_module_symbols('dytestmodule2.r2py')
 
 assert(x == 2)
 
-# This one indirectly does from X import * on dytestmodule1.repy
-dy_import_module_symbols('dytestmodule3.repy')
+# This one indirectly does from X import * on dytestmodule1.r2py
+dy_import_module_symbols('dytestmodule3.r2py')
   
 assert(x == 1)
 

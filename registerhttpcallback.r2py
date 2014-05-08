@@ -1,6 +1,6 @@
 """
 <Program Name>
-  registerhttpcallback.repy
+  registerhttpcallback.r2py
 
 <Started>
   July 29, 2009
@@ -19,11 +19,11 @@
 """
 
 
-dy_import_module_symbols('urllib.repy')
-dy_import_module_symbols('urlparse.repy')
-dy_import_module_symbols('sockettimeout.repy')
+dy_import_module_symbols('urllib.r2py')
+dy_import_module_symbols('urlparse.r2py')
+dy_import_module_symbols('sockettimeout.r2py')
 # used for hierarchy exception 
-dy_import_module_symbols('http_hierarchy_error.repy')
+dy_import_module_symbols('http_hierarchy_error.r2py')
 
 
 

@@ -43,12 +43,12 @@ import nm_remote_api
 
 
 # seattle libs
-dy_import_module_symbols('centralizedadvertise.repy')
-dy_import_module_symbols('rsa.repy')
+dy_import_module_symbols('centralizedadvertise.r2py')
+dy_import_module_symbols('rsa.r2py')
 
 # it's the bizarrest thing; beraber works but 
 # satya.cs refuses to accept a socket connection
-# So for now I'll override the default in centralizedadvertise.repy
+# So for now I'll override the default in centralizedadvertise.r2py
 servername = "beraber.cs.washington.edu"
 
 ######################
@@ -119,7 +119,7 @@ def uservessels_add_node_by_hostname(host, port=nm_remote_api.DEFAULT_NODEMANAGE
     <Note>
       This function does no checking of whether the uservessels
       are allocated through GENI.  You may get vessels that you don't
-      have access to.  Please lookup with centralizedadvertise.repy first
+      have access to.  Please lookup with centralizedadvertise.r2py first
       to find your vessels.
     """
 
@@ -219,12 +219,12 @@ def usage():
     log - output the logs of all vessels
     release - unallocate vessels through GENI
     status - show the status of all vessels
-    start file_to_run.repy [args] - start a script on all vessels
+    start file_to_run.r2py [args] - start a script on all vessels
     stop - stop all scripts running on all vessels
 
   Example usage:
     python rhizoma.py richard acquire # default is 1 LAN vessel
-    python rhizoma.py richard start hello.repy # run the script
+    python rhizoma.py richard start hello.r2py # run the script
     python rhizoma.py richard status # check status
     python rhizoma.py richard stop #  kill it
     python rhizoma.py richard release # give up the vessel

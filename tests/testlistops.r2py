@@ -1,4 +1,4 @@
-dy_import_module_symbols('listops.repy')
+dy_import_module_symbols('listops.r2py')
 
 # Okay, let's test the ops...
 
