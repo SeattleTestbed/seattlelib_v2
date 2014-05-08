@@ -43,7 +43,7 @@ if callfunc == "initialize":
   MODULE_BIND_CACHE = {}
 
   # These extensions will be tried when looking for a module to import
-  COMMON_EXTENSIONS = ["", ".py", ".repy",".py.repy", ".pp", ".r2py"]
+  COMMON_EXTENSIONS = ["", ".py", ".repy", "r2py", ".py.repy", ".pp"]
 
   # These are the functions in the "stock" repy API,
   STOCK_API = set(["gethostbyname","getmyip","sendmessage","listenformessage","openconnection","listenforconnection",
@@ -162,12 +162,6 @@ def _default_context(import_context, additional_globals=[]):
   return new_context
 
 
-# Strips the common extensions to get the actual module name
-def _dy_module_name(module):
-  # Strip the module name of all extensions
-  for extension in COMMON_EXTENSIONS:
-    module = module.replace(extension, "")
-  return module
 
 
 # Constructs the VirtualNamespace that is used to bind the attributes
@@ -212,18 +206,14 @@ def _dy_module_code(module):
   else:
     # Try to get a file handle to the module
     fileh = None
-    for extension in COMMON_EXTENSIONS:
-      try:
-        fileh = openfile(module + extension,False)
-        break
-      except FileNotFoundError:
-        pass
-      except ResourceExhaustedError:
-        raise
+    try:
+      fileh = openfile(module, False)
+    except FileNotFoundError, err:
+      raise RepyImportError("Failed to locate the module! Module: '" + 
+              module + "' " + str(err))
+    except ResourceExhaustedError:
+      raise
 
-    # Was the file found?
-    if fileh is None:
-      raise Exception, "Failed to locate the module! Module: '" + module + "'"
 
     # Read in the code
     code = fileh.readat(MAX_FILE_SIZE, 0)
@@ -307,15 +297,13 @@ def dylink_import_global(module, module_context,new_callfunc="import"):
             Defaults to "import".
 
   <Exceptions>
-    Raises an exception if the module cannot be found, or if there is a problem
-    initializing a VirtualNamespace around the module. See VirtualNamespace.
+    Raises RepyImportError if the module cannot be found, or if there 
+    is a problem initializing a VirtualNamespace around the module. 
+    See VirtualNamespace.
   
   <Side Effects>
     module_context will likely be modified.  
   """
-  # Get the actual module name
-  true_module_name = _dy_module_name(module)
-
 
   # let's do a normal import of this first.   Much like Python, even if one 
   # does "from X import *" multiple times, it only gets initialized once
@@ -323,7 +311,7 @@ def dylink_import_global(module, module_context,new_callfunc="import"):
   # JAC: Potential bug, I do not fully understand why we need 
   # "additional_globals", but I do not believe it was used by this module.   
   # I think it only matters for import.   I am setting to []
-  module_object = dylink_import_module(true_module_name,module_context, new_callfunc, [])
+  module_object = dylink_import_module(module, module_context, new_callfunc, [])
 
   # Now remap the symbols.   Python overwrites symbols, so if a module X 
   # defines z=2, and Y looks like:
@@ -381,22 +369,19 @@ def dylink_import_module(module,import_context, new_callfunc="import", additiona
           in addition to the Stock repy API, this can be provided as ["foo"]
 
   <Exceptions>
-    Raises an exception if the module cannot be found, or if there is a problem
+    Raises RepyImportError if the module cannot be found, or if there is a problem
     initializing a VirtualNamespace around the module. See VirtualNamespace. See dylink_import_global. 
 
   <Returns>
     A module like object.
   """
-  # Get the actual module name
-  module_name = _dy_module_name(module)
-
   # Need to prevent circular imports from causing an infinite loop (#1379).  
   # To do this, Python associates an empty namespace with any module that is
   # being imported.   We will do the same.
-  if module_name in imports_in_progress:
-    return ImportedModule(module_name, {})
+  if module in imports_in_progress:
+    return ImportedModule(module, {})
 
-  imports_in_progress.append(module_name)
+  imports_in_progress.append(module)
   # always clean up this entry from imports_in_progress...
   try:
 
@@ -408,15 +393,15 @@ def dylink_import_module(module,import_context, new_callfunc="import", additiona
 
     # We will keep a cache of imported modules so that we only import each
     # module once (see #1320).   This mimics Python's behavior
-    if module_name in IMPORTED_MODULE_CACHE:
-      return IMPORTED_MODULE_CACHE[module_name]
+    if module in IMPORTED_MODULE_CACHE:
+      return IMPORTED_MODULE_CACHE[module]
 
     # Okay, we'll need to load it in.  Construct a new context.   By testing
     # python this is what it seems to do in all cases (even "from X import *")
     new_context = _default_context(import_context, additional_globals)
 
     # Get the code for the module
-    virt = _dy_module_code(module_name)
+    virt = _dy_module_code(module)
 
     # Set callfunc
     new_context["callfunc"] = new_callfunc
@@ -431,14 +416,14 @@ def dylink_import_module(module,import_context, new_callfunc="import", additiona
       raise Exception, "Caught exception while initializing module ("+module+")! Debug String: "+debug_str
 
     # Place the item in the cache so we do not import it more than once (#1320)
-    IMPORTED_MODULE_CACHE[module_name] = ImportedModule(module_name, new_context)
+    IMPORTED_MODULE_CACHE[module] = ImportedModule(module, new_context)
 
-    return IMPORTED_MODULE_CACHE[module_name]
+    return IMPORTED_MODULE_CACHE[module]
 
   finally:
     # there must always be exactly one or this is an internal error (and
     # merits an exception)
-    imports_in_progress.remove(module_name)
+    imports_in_progress.remove(module)
 
 
 #### Support for recursive modules ####
@@ -483,10 +468,6 @@ def dylink_dispatch(eval_context, caller_context):
   # A sane way to do this may be to simply clear the IMPORTED_MODULE_CACHE
   # upon dispatch
   IMPORTED_MODULE_CACHE = {}
-
-
-  # Get the actual module name
-  module = _dy_module_name(module)
 
   # Get the code for the module
   virt = _dy_module_code(module)
@@ -615,6 +596,16 @@ class DylinkNamespace(object):
     # Return the context
     return context
     
+
+
+class RepyImportError(Exception):
+  """
+  Define a new error for when we are able to import
+  a module properly.
+  """
+  pass
+
+
 
 # Functional wrapper around DylinkNamespace
 def get_DylinkNamespace(*args,**kwargs):
