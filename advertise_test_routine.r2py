@@ -1,4 +1,4 @@
-dy_import_module_symbols("centralizedadvertise_v2")
+dy_import_module_symbols("centralizedadvertise_v2.r2py")
 
 
 # During simultaneous sends, this lock acts as a starter pistol for the 

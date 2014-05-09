@@ -37,7 +37,7 @@ delayed.
 ##### Imports
 
 # We use a priority queue for the tasks
-dy_import_module_symbols("priority_queue")
+dy_import_module_symbols("priority_queue.r2py")
 
 ##### Constants
 

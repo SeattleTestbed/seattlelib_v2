@@ -38,8 +38,8 @@
 """
 
 
-dy_import_module_symbols('time')
-dy_import_module_symbols('advertise')
+dy_import_module_symbols('time.r2py')
+dy_import_module_symbols('advertise.r2py')
 
 
 

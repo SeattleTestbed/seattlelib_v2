@@ -13,10 +13,10 @@
   to a central-style secured advertise server.
 """
 
-dy_import_module_symbols("secureadvertise_client")
-dy_import_module_symbols("serialize")
-dy_import_module_symbols("rsa")
-dy_import_module_symbols("session")
+dy_import_module_symbols("secureadvertise_client.r2py")
+dy_import_module_symbols("serialize.r2py")
+dy_import_module_symbols("rsa.r2py")
+dy_import_module_symbols("session.r2py")
 
 
 

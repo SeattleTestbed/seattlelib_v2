@@ -17,10 +17,10 @@
 
 
 
-dy_import_module_symbols("session")
-dy_import_module_symbols("serialize")
-dy_import_module_symbols("time")
-dy_import_module_symbols("rsa")
+dy_import_module_symbols("session.r2py")
+dy_import_module_symbols("serialize.r2py")
+dy_import_module_symbols("time.r2py")
+dy_import_module_symbols("rsa.r2py")
 
 
 
