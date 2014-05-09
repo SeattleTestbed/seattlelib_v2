@@ -2,18 +2,21 @@
 Author: Armon Dadgar
 Description:
   This module is designed to help dynamically link against other modules,
-  and to provide a import like functionality in repy.
+  and to provide a import like functionality in Repy.
 
-  Its main mechanisms are dy_import_module, dy_import_module_symbols and dy_dispatch_module.
-  dy_import_module_symbols allows importing directly into the current context (ala from X import *)
-  and dy_import_module allows importing as an encapsulated module (ala import X as Y).
+  Its main mechanisms are dy_import_module, dy_import_module_symbols, and 
+  dy_dispatch_module.
+  dy_import_module_symbols allows importing directly into the current 
+  context (ala from X import *) and dy_import_module allows importing as 
+  an encapsulated module (ala import X as Y).
 
-  dy_dispatch_module is a convenience for programs that want to behavior as "modules".
-  These are behavior altering programs, that don't execute any code, but provide
-  new code or alter behavior of builtin calls. These types of modules expect to be
-  chained and to recursively call into the next module in the chain. dy_dispatch_module
-  will take the globally defined CHILD_CONTEXT and evaluate the next module in that
-  context. Modules are free to alter CHILD_CONTEXT prior to calling dy_dispatch_module.
+  dy_dispatch_module is a convenience for programs that want to behavior 
+  as "modules". These are behavior altering programs, that don't execute 
+  any code, but provide new code or alter behavior of builtin calls. These 
+  types of modules expect to be chained and to recursively call into the 
+  next module in the chain. dy_dispatch_module will take the globally 
+  defined CHILD_CONTEXT and evaluate the next module in that context. 
+  Modules are free to alter CHILD_CONTEXT prior to calling dy_dispatch_module.
 
   Modules being imported are called with callfunc set to "import" to
   allow modules to have special behavior. If the module performs some
@@ -39,22 +42,19 @@ if callfunc == "initialize":
   # (See #1320 for why this is a problem.)   
   MODULE_CACHE = {}
 
-  # This cache maps a module name -> a VirtualNamespace object for binding attributes
+  # This cache maps a module name to a VirtualNamespace object for 
+  # binding attributes
   MODULE_BIND_CACHE = {}
 
-  # These extensions will be tried when looking for a module to import
-  COMMON_EXTENSIONS = ["", ".py", ".repy", "r2py", ".py.repy", ".pp"]
 
   # These are the functions in the "stock" repy API,
-  STOCK_API = set(["gethostbyname","getmyip","sendmessage","listenformessage","openconnection","listenforconnection",
-             "openfile","listfiles","removefile","exitall","createlock","getruntime","randombytes","createthread",
-                   "sleep","log","createvirtualnamespace","getthreadname","getresources","dy_import_module","getlasterror",
-                   "dy_import_module_symbols","dy_dispatch_module"])
+  STOCK_API = set(['createlock', 'createthread', 'createvirtualnamespace', 
+      'dy_dispatch_module', 'dy_import_module', 'dy_import_module_symbols', 
+      'exitall', 'gethostbyname', 'getlasterror', 'getmyip', 'getresources', 
+      'getruntime', 'getthreadname', 'listenforconnection', 
+      'listenformessage', 'listfiles', 'log', 'openconnection', 'openfile', 
+      'randombytes', 'removefile', 'sendmessage', 'sleep'])
 
-  # Controls if we run the code preprocessor
-  # If True, we will replace the old "include" directive, but this will cause a speed penalty
-  # We also replace old style "print" statements with log()
-  RUN_PRE_PROCESS = True
 
   # This is the maximum number of bytes we will try to read in for a file.
   # Anything larger and we abort
@@ -141,14 +141,16 @@ def _dy_module_code(module):
     code = fileh.readat(MAX_FILE_SIZE, 0)
     fileh.close()
     if len(code) == MAX_FILE_SIZE:
-      log("Failed to read all of module ("+module+")! File size exceeds "+str(MAX_FILE_SIZE)+" characters!")
+      log("Failed to read all of module (" + module + 
+          ")! File size exceeds " + str(MAX_FILE_SIZE) + " characters!\n")
 
 
     # Create a new virtual namespace
     try:
       virt = DylinkNamespace(code,module)
     except Exception, e:
-      raise Exception, "Failed to initialize the module ("+module+")! Got the following exception: '" + str(e) + "'"
+      raise Exception("Failed to initialize the module (" + module + 
+          ")! Got the following exception: '" + repr(e) + "'")
     
     # Cache the module
     MODULE_CACHE[module] = virt
@@ -174,7 +176,7 @@ class ImportedModule:
     module_bind_space = _dy_bind_code(name, context)
 
     # Create the binding context
-    module_bind_context = {"c":context,"m":self}
+    module_bind_context = {"c": context, "m": self}
 
     # Perform the binding
     module_bind_space.evaluate(module_bind_context)
@@ -200,17 +202,17 @@ def dylink_import_global(module, module_context,new_callfunc="import"):
 
   <Arguments>
     module:
-            The name of a module to import. This should be excluding extensions,
-            but may be the full name. e.g. for module foo.py use "foo"
+      The filename of a module to import. This must include file extensions 
+      (thus making "mylib.py" and "mylib.r2py" distinct modules).
 
     module_context: 
-            The context to evaluate the module in. If you want to do a global import,
-            you can evaluate in the current global context. For a bundled module,
-            see dylink_import_module.
+      The context to evaluate the module in. If you want to do a global import,
+      you can evaluate in the current global context. For a bundled module,
+      see dylink_import_module.
 
     new_callfunc:
-            The value to use for callfunc during the import.
-            Defaults to "import".
+      The value to use for callfunc during the import.
+      Defaults to "import".
 
   <Exceptions>
     Raises RepyImportError if the module cannot be found, or if there 
@@ -258,7 +260,7 @@ def dylink_import_global(module, module_context,new_callfunc="import"):
 imports_in_progress = []
 
 # Packages the module being imported into a module like object
-def dylink_import_module(module,import_context, new_callfunc="import", additional_globals=[]):
+def dylink_import_module(module, import_context, new_callfunc="import", additional_globals=[]):
   """
   <Purpose>
     Imports modules dynamically into a bundles module like object.   This is
@@ -268,25 +270,28 @@ def dylink_import_module(module,import_context, new_callfunc="import", additiona
 
   <Arguments>
     module:
-          The module to import.
+      The filename of a module to import. This must include file extensions 
+      (thus making "mylib.py" and "mylib.r2py" distinct modules).
 
     import_context:
-          The context of the caller, e.g. the context of who is importing.
-          JAC: I believe this is needed to map in the appropriate calls
-          like readat, randombytes, etc.
+      The context of the caller, e.g. the context of who is importing.
+      JAC: I believe this is needed to map in the appropriate calls
+      like readat, randombytes, etc.
 
     new_callfunc:
-          The value to use for callfunc during the import.
-          Defaults to "import".
+      The value to use for callfunc during the import.
+      Defaults to "import".
 
     additional_globals:
-          An array of string globals which will be provided to the imported module.
-          E.g. if the current context defines "foo" and this should be made available
-          in addition to the Stock repy API, this can be provided as ["foo"]
+      An array of string globals which will be provided to the imported 
+      module. E.g. if the current context defines "foo" and this should 
+      be made available in addition to the Stock repy API, this can be 
+      provided as ["foo"]
 
   <Exceptions>
-    Raises RepyImportError if the module cannot be found, or if there is a problem
-    initializing a VirtualNamespace around the module. See VirtualNamespace. See dylink_import_global. 
+    Raises RepyImportError if the module cannot be found, or if there is 
+    a problem initializing a VirtualNamespace around the module. 
+    See VirtualNamespace. See dylink_import_global. 
 
   <Returns>
     A module like object.
@@ -302,8 +307,8 @@ def dylink_import_module(module,import_context, new_callfunc="import", additiona
   try:
 
     # I need to remap the context's items like readat, etc. correctly...
-    # The rationale is that a security layer may use a module, like time.   If
-    # untrusted code imports time, it should not get the security layer's 
+    # The rationale is that a security layer may use a module, like time. 
+    # If untrusted code imports time, it should not get the security layer's 
     # call for sendmessage, writeat, etc.
     # I will clear the IMPORTED_MODULE_CACHE upon dispatch
 
@@ -329,7 +334,8 @@ def dylink_import_module(module,import_context, new_callfunc="import", additiona
     except Exception, e:
       debug_str = getlasterror()
       # JAC: BUG?   Not sure why we are not just raising the true error...
-      raise Exception, "Caught exception while initializing module ("+module+")! Debug String: "+debug_str
+      raise Exception("Caught exception while initializing module (" + 
+          module + ")! Debug String: " + debug_str)
 
     # Place the item in the cache so we do not import it more than once (#1320)
     IMPORTED_MODULE_CACHE[module] = ImportedModule(module, new_context)
@@ -378,8 +384,8 @@ def dylink_dispatch(eval_context, caller_context):
   module = caller_context["callargs"][0]
 
   # I need to remap the context's items like readat, etc. correctly...
-  # The rationale is that a security layer may use a module, like time.   If
-  # untrusted code imports time, it should not get the security layer's 
+  # The rationale is that a security layer may use a module, like time.
+  # If untrusted code imports time, it should not get the security layer's 
   # call for sendmessage, writeat, etc.
   # A sane way to do this may be to simply clear the IMPORTED_MODULE_CACHE
   # upon dispatch
@@ -412,11 +418,11 @@ def init_dylink(import_context, child_context):
 
   <Arguments>
     import_context:
-            The context to initialize in.
+      The context to initialize in.
     
     child_context:
-            A copy of the import_context that is used for dy_dispatch_module
-            to pass to the child namespace.
+      A copy of the import_context that is used for dy_dispatch_module
+      to pass to the child namespace.
 
   <Side Effects>
     dy_* will be defined in the context.
@@ -454,7 +460,9 @@ def init_dylink(import_context, child_context):
 # 
 # This is placed here because it needs to be updated when the functions
 # above and below this change.
-SYMBOLS_TO_IGNORE_WHEN_FROM_X_IMPORT = ['CHILD_CONTEXT','_context','callfunc','dy_dispatch_module','dy_import_module','dy_import_module_symbols', "HAS_DYLINK", 'mycontext']
+SYMBOLS_TO_IGNORE_WHEN_FROM_X_IMPORT = ['CHILD_CONTEXT', '_context', 
+    'callfunc', 'dy_dispatch_module', 'dy_import_module', 
+    'dy_import_module_symbols', "HAS_DYLINK", 'mycontext']
 
 
 # Wrap around VirtualNamespace
@@ -479,7 +487,7 @@ class DylinkNamespace(object):
     
     # Explicitly remove dylink_* calls if disabled
     if not enable_dylink:
-      calls = ["dy_import_module","dy_import_module_symbols","dy_dispatch_module"]
+      calls = ["dy_import_module", "dy_import_module_symbols", "dy_dispatch_module"]
       for call in calls:
         if call in context:
           del context[call]
