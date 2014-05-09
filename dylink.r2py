@@ -60,84 +60,6 @@ if callfunc == "initialize":
   # Anything larger and we abort
   MAX_FILE_SIZE = 200000
 
-#### Code Pre-processor ####
-
-# Pre-processes the code, prior to creating the virtual namespace
-def _preprocess_code(code):
-  # Replace old include's
-  code = _replace_include(code)
-
-  # Replace the print statements
-  code = _replace_print(code)
-
-  # Return the modified code
-  return code
-
-# Replace's the old "include module.py" clause with
-# dy_import_module_symbols which should have the same effect
-def _replace_include(code):
-  # Find the initial include
-  index = code.find("\ninclude ")
-  
-  # While there are more include statements, we will continue to run
-  while index > -1:
-    # Find the next new line
-    new_line_index = code.find("\n",index+1)
-
-    # Read the module name
-    module_name = code[index+9:new_line_index]
-
-    # Replace this occurrence with dy_import_module_symbols
-    code = code[:index+1] + "dy_import_module_symbols('"+module_name+"', callfunc)" + code[new_line_index:]
-
-    # Add 30 to the index, since we just added more characters
-    index += 30
-
-    # Find the next occurence of include
-    index = code.find("\ninclude ",index)
-
-  # Return the modified code
-  return code
-
-
-# Replace's the old "print" statement with
-# the new log() for Repy V2
-def _replace_print(code):
-  # Find the initial include
-  index = code.find("print ")
-  
-  # While there are more print statements, we will continue to run
-  while index > -1:
-    # Find the next new line
-    new_line_index = code.find("\n",index+1)
-
-    # Get the argument to print
-    print_argument = code[index+6:new_line_index]
-    
-    # Check for ">>", this indicates they are trying to write
-    # to a pipe / file, this is not supported.
-    if print_argument.startswith(">>"):
-      raise Exception("Dylink cannot re-write print statements that use redirection! Unsupported statement: print "+print_argument)
-
-    # Check if we should add a new-line
-    if print_argument[-1] != ",":
-      log_arg = print_argument + ",'\\n'"
-    else:
-      log_arg = print_argument
-
-    # Replace this occurrence with log
-    code = code[:index] + "log("+log_arg+")" + code[new_line_index:]
-
-    # Adjust the index since we just added more characters
-    # The number of characters we are now using is 5 for log() plus the arguments
-    # We user using 6 for 'print ' and the arguments for print
-    index += (5 + len(log_arg)) - (6 + len(print_argument))
-
-    # Find the next occurence of include
-    index = code.find("print ",index)
-
-  # Return the modified code
-  return code
 
 
 #### Helper functions ####
@@ -221,12 +143,6 @@ def _dy_module_code(module):
     if len(code) == MAX_FILE_SIZE:
       log("Failed to read all of module ("+module+")! File size exceeds "+str(MAX_FILE_SIZE)+" characters!")
 
-    # Pre-process the code
-    if RUN_PRE_PROCESS:
-      try:
-        code = _preprocess_code(code)
-      except Exception, e:
-        raise Exception, "Failed to pre-process the module ("+module+")! Got the following exception: '" + str(e) +"'"
 
     # Create a new virtual namespace
     try:
