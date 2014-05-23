@@ -1,0 +1,119 @@
+"""
+Verify that advertisepipe works, and its add_to_pipe and remove_handle 
+functions do what is expected. For this, let's announce a few keys with 
+values, remove handles from keys that are also advertised by other 
+handles, etc.
+
+Note that I'm checking the removals against the advertise_dict rather than 
+the actual advertise services, because that would involve lots of TTLs' 
+worth of waiting.
+
+The initial advertise dict should contain approximately this:
+{
+key1: { value1: [ handle1 ] },
+key2: { value2: [ handle2 ] },
+key3: { value3: [ handle3 ] }
+}
+
+We'll add a "duplicate key", i.e. announce a different value under an 
+existing key so that
+
+    keyZ: { valueY: [ handleX ], valueW: [ handleV ] }
+
+We'll also add a "duplicate item" later on so that for one key/value, there is 
+another handle in the list:
+
+    keyA: { valueB: [ handleC, handleD ] }
+"""
+#pragma repy restrictions.default dylink.r2py
+#pragma out
+
+ITEMS_TO_ANNOUNCE = 3
+
+
+advertisepipe = dy_import_module("advertisepipe.r2py")
+advertise = dy_import_module("advertise.r2py")
+random = dy_import_module("random.r2py")
+
+
+
+def logtn(*args):
+  argstrings = []
+  for arg in args:
+    argstrings.append(str(arg))
+
+  logstring = str(getruntime()) + " " + " ".join(argstrings) + "\n"
+  log(logstring)
+
+
+
+logtn("Create random keys and values")
+keys = []
+values = []
+for i in range(ITEMS_TO_ANNOUNCE):
+  keys.append(str(random.random_int_below(1000000)))
+  values.append(str(random.random_int_below(1000000)))
+
+
+
+logtn("Advertise each key-value pair; check if they are correctly advertised.")
+handles = []
+for key, value in zip(keys, values):
+  handles.append(advertisepipe.add_to_pipe(key, value))
+  # Wait for twice the worst-case waiting time beween checks for new items
+  logtn("Advertised " + key + ", looking it up on the advertise services")
+  sleep(2 * 2 * advertisepipe.CHECK_INTERVAL)
+
+  lookup_values = []
+
+  # Give advertise another chance if it fails momentarily
+  for i in range(5):
+   try:
+     lookup_values = advertise.advertise_lookup(key)
+     break
+   except:
+     sleep(2)
+     continue
+
+  assert value in lookup_values, str(value) + " not in " + str(lookup_values)
+
+
+
+# All of the keys were correctly advertised!
+logtn("Remove one handle and check that the key really disappeared")
+advertisepipe.remove_from_pipe(handles[-1])
+assert keys[-1] not in advertisepipe.advertise_dict
+
+
+
+logtn("Advertise another value under an existing key")
+handle_for_duplicate_key = advertisepipe.add_to_pipe(keys[0], "another value for key[0]")
+
+logtn("Remove one handle for that key, the other must still exist")
+advertisepipe.remove_from_pipe(handles[0])
+assert keys[0] in advertisepipe.advertise_dict
+
+
+
+logtn("Add an already existing key-value pair, creating a new handle")
+handle_for_duplicate_item = advertisepipe.add_to_pipe(keys[1], values[1])
+
+logtn("Remove first handle for that item, the item must still exist")
+advertisepipe.remove_from_pipe(handles[1])
+assert keys[1] in advertisepipe.advertise_dict
+
+
+
+logtn("Remove all handles, advertise thread should stop now")
+handles.append(handle_for_duplicate_key)
+handles.append(handle_for_duplicate_item)
+for handle in handles:
+  advertisepipe.remove_from_pipe(handle)
+
+
+
+sleep(2 * 2 * advertisepipe.CHECK_INTERVAL)
+assert len(advertisepipe.advertise_dict) == 0, \
+    "Removing all handles didn't leave the advertise_dict empty: " + \
+    str(advertisepipe.advertise_dict)
+
