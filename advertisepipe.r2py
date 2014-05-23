@@ -1,5 +1,4 @@
 """
-
 <Author>
   advertise_object.r2py:
     Eric Kimbrel kimbrl@cs.washington.edu
@@ -47,11 +46,16 @@ advertise_thread_state = {'run': False}
 advertise_thread_state_lock = createlock()
 
 # Time to live we set on items we announce
-ttl = 240
+TTL = 240
 
 # Re-advertise items after this many seconds
-redo_interval = 120
+REDO_INTERVAL = 120
 
+# Pause between checks for (re-)advertising items
+CHECK_INTERVAL = 1
+
+# Count the number of active advertisepipe threads. 
+# There should be at most 1.
 mycontext['advertisepipe_thread_count'] = 0
 
 
@@ -60,68 +64,99 @@ mycontext['advertisepipe_thread_count'] = 0
 mycontext['advertisepipe_recently_added_items_list'] = []
 
 
+# Store errors that occur in the advertise_thread as tuples of 
+# (getruntime(), repr(e)) where e is the exception you caught
+mycontext['advertisepipe_last_error'] = None
+
+# Pause for this long if the advertise_thread encounters errors
+ERROR_RETRY_INTERVAL = 5
 
 
 
 def advertise_thread():
+  """
+  The core advertise function. If the REDO_INTERVAL has passed, 
+  advertise everything that's in the advertise_dict.
+  If new items to be advertise were added recently, advertise those.
+  Any errors that are raised here are caught in the wrapper function 
+  error_safe_advertise_thread().
+  """
+  # If no other advertise_thread is running, start (and count in!) myself.
+  assert mycontext['advertisepipe_thread_count'] <= 0, \
+      str(mycontext['advertisepipe_thread_count']) + \
+      " advertise_threads are already running."
+
+  advertise_thread_state_lock.acquire(True)
+  mycontext['advertisepipe_thread_count'] = 1
+  advertise_thread_state_lock.release()
   # Preinitialize the start time
   start = getruntime()
 
   while advertise_thread_state['run']:
-    redo_interval_past = getruntime() - start > redo_interval
-
-    if len(mycontext['advertisepipe_recently_added_items_list']) > 0:
-      # There are new items to advertise.
-
-      if redo_interval_past:
-        # We are past redo_interval and need to advertise everything 
-        # anyway, no need to special-case the new additions here!
-        mycontext['advertisepipe_recently_added_items_list'] = []
-      else:
-        # No, we are still within redo_interval. Advertise the new items now.
-        while True:
-          try:
-            key, value = mycontext['advertisepipe_recently_added_items_list'].pop(0)
-            advertise.advertise_announce(key, value, ttl)
-          except advertise.AdvertiseError, TimeoutError:
-            # These are raised by advertise_announce. We can't do much.
-            pass
-          except IndexError:
-            # We've popped all recently added items. Done!
-            break
+    # Shall we re-advertise what we have?
+    redo_interval_past = getruntime() - start > REDO_INTERVAL
 
     if redo_interval_past:
+      # We need to advertise everything (new additions and existing 
+      # items), no need to special-case the new additions here!
+      mycontext['advertisepipe_recently_added_items_list'] = []
+
+      # Make sure the advertise_dict doesn't change while we loop through it
+      advertise_thread_state_lock.acquire(True)
+
       # Remember when we started the current advertisement pass
       start = getruntime()
-  
+
       # Advertise each key-value pair in the dict
       # XXX This can pretty much monopolize the vessel's link!
-      try:
-        for key, value_dict in advertise_dict.items():
-          for value in value_dict.keys():
-            try:
-              advertise.advertise_announce(key, value, ttl)
-            except advertise.AdvertiseError, TimeoutError:
-              # advertise_announce had a problem.
-              # Can we do anything sensible here?
-              pass
-      except KeyError:
-        # One of the keys isn't in the dict anymore. Retry.
-        # Any alternatives?
-        continue
- 
+      for key, value_dict in advertise_dict.items():
+        for value in value_dict.keys():
+          advertise.advertise_announce(key, value, TTL)
 
-    # Now wait until either the redo_interval expires, we are told to 
+      advertise_thread_state_lock.release()
+
+
+    # Advertise any new additions to the advertise pipe
+    for key, value in mycontext['advertisepipe_recently_added_items_list']:
+      advertise.advertise_announce(key, value, TTL)
+    else:
+      # Finally, empty the new additions list
+      mycontext['advertisepipe_recently_added_items_list'] = []
+
+
+    # Now wait until either the REDO_INTERVAL expires, we are told to 
     # stop running, or a new item awaits advertisement.
-    while getruntime() - start < redo_interval and \
+    while getruntime() - start < REDO_INTERVAL and \
       advertise_thread_state['run'] and \
       len(mycontext['advertisepipe_recently_added_items_list']) == 0:
-      sleep(1)
+      sleep(CHECK_INTERVAL)
      
   # When we are about to exit, lower the thread count.
   advertise_thread_state_lock.acquire(True)
   mycontext['advertisepipe_thread_count'] -= 1
   advertise_thread_state_lock.release()
+
+
+
+def error_safe_advertise_thread():
+  """
+  Wrapper function to catch errors that might occur in advertise_thread, 
+  and retry by starting a new thread.
+  No exception is considered fatal. Every exception is logged in the 
+  global variable mycontext['advertisethread_last_error'].
+  """
+  while True:
+    try:
+      advertise_thread()
+    except Exception, e:
+      # The current thread has died. Discount it, log the error, retry.
+      mycontext['advertisepipe_thread_count'] -= 1
+      mycontext['advertisepipe_last_error'] = (getruntime(), repr(e))
+      sleep(ERROR_RETRY_INTERVAL)
+    else:
+      # The thread has returned, indicating that it has detected it 
+      # should stop. It has done the accounting already.
+      break
 
 
 
@@ -155,14 +190,10 @@ def add_to_pipe(key, value):
     # We know (or have generated) key and value, now add our handle
     advertise_dict[key][value].append(handle)
 
-  # Signal to the advertise thread that we want to get advertised now.
+  # Signal to the advertise thread that we want to get advertised now, 
+  # and start a thread to do so.
   mycontext['advertisepipe_recently_added_items_list'].append((key, value))
-
-  # If the advertise thread is not running start it
-  # MMM: Could there be any potential bug with race
-  # condition? I am using locks for both start and
-  # stop methods.
-  start_advertise_thread()
+  start_error_safe_advertise_thread()
     
   # return the handle
   return handle
@@ -197,6 +228,7 @@ def remove_from_pipe(handle):
       # Additionally, remove values without handles ...
       if handle_list == []:
         del advertise_dict[key][value]
+
     # ... and keys without values
     if advertise_dict[key] == {}:
       del advertise_dict[key]
@@ -204,20 +236,19 @@ def remove_from_pipe(handle):
   # If there is nothing left to advertise, stop the advertise thread.
   if len(advertise_dict) == 0:
     advertise_thread_state['run'] = False
-    advertise_thread_state_lock.release()
+
+  advertise_thread_state_lock.release()
     
 
 
-def start_advertise_thread():
-  # Start up the advertisement thread.
+def start_error_safe_advertise_thread():
   advertise_thread_state_lock.acquire(True)
+
   if not advertise_thread_state['run']:
     advertise_thread_state['run'] = True
       
-  # Only start up a new thread if there aren't any
-  # running at the moment.
-  if mycontext['advertisepipe_thread_count'] == 0:
-    createthread(advertise_thread)
+  createthread(error_safe_advertise_thread)
 
   advertise_thread_state_lock.release()
+
 
