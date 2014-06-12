@@ -167,8 +167,32 @@ def time_gettime():
 
 
 
+def time_getunixtime():
+  """
+   <Purpose>
+    Gives the current time since 1970-01-01 (``The Epoch''), 
+    i.e. Unix time. The returned timestamp can be parsed by 
+    utilities like date, e.g.
+
+    date -d @THETIMESTAMP  # Linux
+    date -r THETIMESTAMP  # the BSDs, Mac OS X
+
+   <Arguments>
+    None.
+
+   <Exceptions>
+    As with time_gettime()
+
+   <Side Effects>
+    None.
+
+   <Returns>
+    Current Unix time in seconds.
+  """
+  return time_gettime() - time_seconds_from_1900_to_1970
+
+
+
+
 # in case you want to change to time since the 1970 (as is common)
 time_seconds_from_1900_to_1970 = 2208988800
-
-
-
