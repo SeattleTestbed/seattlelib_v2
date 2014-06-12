@@ -13,10 +13,10 @@
 """
 
 listops = dy_import_module("listops.r2py")
-central = dy_import_module("centralizedadvertise.r2py")
-central_v2 = dy_import_module("centralizedadvertise_v2.r2py")
+centralilzedadvertise = dy_import_module("centralizedadvertise.r2py")
+centrallizedadvertise_v2 = dy_import_module("centralizedadvertise_v2.r2py")
 parallelize = dy_import_module("parallelize.r2py")
-udp_central = dy_import_module("udpcentralizedadvertise.r2py")
+udp_centralizedadvertise = dy_import_module("udpcentralizedadvertise.r2py")
 
 
 # All the names of services we can support.
@@ -91,11 +91,11 @@ def _try_advertise_announce(args):
 
   try:
     if which_service == "central":
-      central.centralizedadvertise_announce(key, value, ttlval)
+      centralizedadvertise.centralizedadvertise_announce(key, value, ttlval)
     elif which_service == "central_v2":
-      central_v2.v2centralizedadvertise_announce(key, value, ttlval)
+      centralizedadvertise_v2.v2centralizedadvertise_announce(key, value, ttlval)
     elif which_service == "UDP":
-      udp_central.udpcentralizedadvertise_announce(key, value, ttlval)
+      udp_centralizedadvertise.udpcentralizedadvertise_announce(key, value, ttlval)
     else:
       # This should be redundant with the previous explicit AdvertiseError.
       # One cannot (usually) be too careful.
@@ -206,7 +206,7 @@ def advertise_announce(key, value, ttlval, concurrentevents=4, \
   # Once we have either timed out or exceeded graceperiod with at least one 
   # service reporting, return whatever data we have. Remaining threads will 
   # be forsaken and allowed to terminate at their leisure.
-  while not parallelizeparallelize_isfunctionfinished(ph):
+  while not parallelize.parallelize_isfunctionfinished(ph):
     sleep(0.015)
     if getruntime() - start_time > timeout or \
         (getruntime() - start_time > graceperiod and onefinished[0]):
@@ -257,11 +257,11 @@ def _try_advertise_lookup(args):
 
   try:
     if which_service == "central":
-      results = central.centralizedadvertise_lookup(key, maxvals)
+      results = centralizedadvertise.centralizedadvertise_lookup(key, maxvals)
     elif which_service == "central_v2":
-      results = central_v2.v2centralizedadvertise_lookup(key, maxvals)
+      results = centralizedadvertise_v2.v2centralizedadvertise_lookup(key, maxvals)
     elif which_service == "UDP":
-      results = udp_central.udpcentralizedadvertise_lookup(key, maxvals)
+      results = udp_centralizedadvertise.udpcentralizedadvertise_lookup(key, maxvals)
     else:
       raise AdvertiseError("Did not understand service type!")
 
