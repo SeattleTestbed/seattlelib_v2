@@ -13,8 +13,8 @@
 """
 
 listops = dy_import_module("listops.r2py")
-centralilzedadvertise = dy_import_module("centralizedadvertise.r2py")
-centrallizedadvertise_v2 = dy_import_module("centralizedadvertise_v2.r2py")
+centralizedadvertise = dy_import_module("centralizedadvertise.r2py")
+centralizedadvertise_v2 = dy_import_module("centralizedadvertise_v2.r2py")
 parallelize = dy_import_module("parallelize.r2py")
 udp_centralizedadvertise = dy_import_module("udpcentralizedadvertise.r2py")
 
