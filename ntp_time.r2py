@@ -30,10 +30,10 @@
 """
 
 
-dy_import_module_symbols('time_interface.r2py')
+time_interface = dy_import_module('time_interface.r2py')
 
 # Use for random sampling...
-dy_import_module_symbols('random.r2py')
+random = dy_import_module('random.r2py')
 
 
 
@@ -56,7 +56,7 @@ def ntp_time_updatetime(localport):
     respond.
 
    <Side Effects>
-    time_settime(currenttime) is called as the subprocess of a subprocess, which
+    time_interface.time_settime(currenttime) is called as the subprocess of a subprocess, which
     adjusts the current time.
 
    <Returns>
@@ -75,7 +75,7 @@ def ntp_time_updatetime(localport):
     # then wait for a response from any server for atmost 5 seconds. This way
     # the total wait time is reduced to 5 seconds, since any one of the server's
     # is guaranteed to give a response.
-    for servername in random_sample(timeservers,5):
+    for servername in random.random_sample(timeservers,5):
 
       # this sends a request, version 3 in "client mode"
       ntp_request_string = chr(27)+chr(0)*47
@@ -98,14 +98,14 @@ def ntp_time_updatetime(localport):
         sleep(0.05) # Retry amount time...
       else:
         # XXX Check for matching address/port, #1268
-        time_settime(_time_convert_timestamp_to_float(mess[40:48]))
+        time_interface.time_settime(_time_convert_timestamp_to_float(mess[40:48]))
         return
     
   finally:
     socketobj.close()
 
   # Failure, tried servers without luck...
-  raise TimeError, "Time Server update failed.  Perhaps retry later..."
+  raise time_interface.TimeError, "Time Server update failed.  Perhaps retry later..."
 
 
 
@@ -120,4 +120,4 @@ def _time_convert_timestamp_to_float(timestamp):
 
 
 #register the update method
-time_register_method('ntp',ntp_time_updatetime)
+time_interface.time_register_method('ntp',ntp_time_updatetime)

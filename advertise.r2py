@@ -12,11 +12,11 @@
   Module which allows clients to send advertise queries to various servers.
 """
 
-dy_import_module_symbols("listops.r2py")
-dy_import_module_symbols("centralizedadvertise.r2py")
-dy_import_module_symbols("centralizedadvertise_v2.r2py")
-dy_import_module_symbols("parallelize.r2py")
-dy_import_module_symbols("udpcentralizedadvertise.r2py")
+listops = dy_import_module("listops.r2py")
+central = dy_import_module("centralizedadvertise.r2py")
+central_v2 = dy_import_module("centralizedadvertise_v2.r2py")
+parallelize = dy_import_module("parallelize.r2py")
+udp_central = dy_import_module("udpcentralizedadvertise.r2py")
 
 
 # All the names of services we can support.
@@ -91,11 +91,11 @@ def _try_advertise_announce(args):
 
   try:
     if which_service == "central":
-      centralizedadvertise_announce(key, value, ttlval)
+      central.centralizedadvertise_announce(key, value, ttlval)
     elif which_service == "central_v2":
-      v2centralizedadvertise_announce(key, value, ttlval)
+      central_v2.v2centralizedadvertise_announce(key, value, ttlval)
     elif which_service == "UDP":
-      udpcentralizedadvertise_announce(key, value, ttlval)
+      udp_central.udpcentralizedadvertise_announce(key, value, ttlval)
     else:
       # This should be redundant with the previous explicit AdvertiseError.
       # One cannot (usually) be too careful.
@@ -200,21 +200,21 @@ def advertise_announce(key, value, ttlval, concurrentevents=4, \
 
   # Begin parallel jobs, instructing parallelize to run no more than 
   # concurrentevents at once.
-  ph = parallelize_initfunction(parallize_worksets, _try_advertise_announce, \
+  ph = parallelize.parallelize_initfunction(parallize_worksets, _try_advertise_announce, \
       concurrentevents=concurrentevents)
 
   # Once we have either timed out or exceeded graceperiod with at least one 
   # service reporting, return whatever data we have. Remaining threads will 
   # be forsaken and allowed to terminate at their leisure.
-  while not parallelize_isfunctionfinished(ph):
+  while not parallelizeparallelize_isfunctionfinished(ph):
     sleep(0.015)
     if getruntime() - start_time > timeout or \
         (getruntime() - start_time > graceperiod and onefinished[0]):
-      parallelize_abortfunction(ph)
+      parallelize.parallelize_abortfunction(ph)
       break
 
   # This does not terminate all parallel threads; do not assume it does.
-  parallelize_closefunction(ph)
+  parallelize.parallelize_closefunction(ph)
 
   # check to see if any successfully returned 
   if onefinished == [False]:
@@ -257,11 +257,11 @@ def _try_advertise_lookup(args):
 
   try:
     if which_service == "central":
-      results = centralizedadvertise_lookup(key, maxvals)
+      results = central.centralizedadvertise_lookup(key, maxvals)
     elif which_service == "central_v2":
-      results = v2centralizedadvertise_lookup(key, maxvals)
+      results = central_v2.v2centralizedadvertise_lookup(key, maxvals)
     elif which_service == "UDP":
-      results = udpcentralizedadvertise_lookup(key, maxvals)
+      results = udp_central.udpcentralizedadvertise_lookup(key, maxvals)
     else:
       raise AdvertiseError("Did not understand service type!")
 
@@ -379,7 +379,7 @@ def advertise_lookup(key, maxvals=100, lookuptype=None, \
 
   if atleastonecorrectresult:
     # Filter results and return.
-    return listops_uniq(results)
+    return listops.listops_uniq(results)
 
   else:
     # JAC: I should check the errors here and raise TimeoutError only if

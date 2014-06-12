@@ -38,7 +38,7 @@
       
 """
 
-dy_import_module_symbols('math.r2py')
+math = dy_import_module('math.r2py')
 
 CACHE = {'bytes': ''}
 
@@ -352,7 +352,7 @@ def random_int_below(upper_bound):
   if upper_bound == 1:
     return 0
   
-  k = int(1.00001 + math_log(upper_bound - 1, 2.0))   # 2**k > n-1 > 2**(k-2)
+  k = int(1.00001 + math.math_log(upper_bound - 1, 2.0))   # 2**k > n-1 > 2**(k-2)
   r = random_nbit_int(k)
   while r >= upper_bound:
     r = random_nbit_int(k)

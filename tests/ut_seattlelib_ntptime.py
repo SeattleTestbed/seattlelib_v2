@@ -9,12 +9,13 @@
 from repyportability import *
 add_dy_support(locals())
 
-dy_import_module_symbols("ntp_time.r2py")
+time_interface = dy_import_module("time.r2py")
+ntp_time = dy_import_module("ntp_time.r2py")
 
 try:
-  time_updatetime(12345)
+  time_interface.time_updatetime(12345)
 
-  time_gettime()
+  time_interface.time_gettime()
 
-except TimeError, err:
+except time_interface.TimeError, err:
   log("[FAILED]: NTP time failed for following reason: " + str(err))
