@@ -1,0 +1,18 @@
+"""
+Verify that we can catch an excpetion defined in an imported library 
+and raised in another.
+"""
+#pragma repy restrictions.test dylink.r2py
+#pragma out Successfully caught Lib1Error().
+
+lib1 = dy_import_module("portability_testlib1.r2py") # defines the exception
+lib2 = dy_import_module("portability_testlib2.r2py") # raises it
+
+try:
+  lib2.raise_lib1error()
+except lib1.Lib1Error:
+  log("Successfully caught Lib1Error().\n")
+except Exception, e:
+  log("Error: Expected Lib1Error() with id " + str(id(lib1.Lib1Error)) + 
+      " but caught '" + repr(e) + "' with id " + str(id(e)) + " \n")
+
