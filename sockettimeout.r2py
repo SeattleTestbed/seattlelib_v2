@@ -244,7 +244,7 @@ class timeout_server_socket():
       else:
         break
     else:
-        raise SocketTimeoutError, "getconnection() timed out!"
+      raise SocketTimeoutError, "getconnection() timed out!"
 
     thissocketlikeobject = timeout_socket(realsocketlikeobject, timeout)
     return (remoteip, remoteport, thissocketlikeobject)
