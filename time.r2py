@@ -45,4 +45,8 @@ def time_gettime():
   return time_interface.time_gettime()
 
 
+def time_getunixtime():
+  return time_interface.time_getunixtime()
+
+
 TimeError = time_interface.TimeError
