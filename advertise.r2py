@@ -124,7 +124,7 @@ def _try_advertise_announce(args):
 
 
 
-def advertise_announce(key, value, ttlval, concurrentevents=4, \
+def advertise_announce(key, value, ttlval, concurrentevents=4, 
     graceperiod=5, timeout=30):
   """
   <Purpose>
@@ -188,20 +188,19 @@ def advertise_announce(key, value, ttlval, concurrentevents=4, \
   # Populate parallel jobs list.
   for service_type in _advertise_all_services:
     if nodemanager_announce_context["skip" + service_type] == 0:
-      parallize_worksets.append((service_type, key, value, ttlval, \
+      parallize_worksets.append((service_type, key, value, ttlval, 
           exceptions, onefinished))
     else:
       nodemanager_announce_context_lock.acquire(True)
       try:
-        nodemanager_announce_context["skip" + service_type] = \
-            nodemanager_announce_context["skip" + service_type] - 1
+        nodemanager_announce_context["skip" + service_type] -= 1
       finally:
         nodemanager_announce_context_lock.release()
 
   # Begin parallel jobs, instructing parallelize to run no more than 
   # concurrentevents at once.
-  ph = parallelize.parallelize_initfunction(parallize_worksets, _try_advertise_announce, \
-      concurrentevents=concurrentevents)
+  ph = parallelize.parallelize_initfunction(parallize_worksets, 
+      _try_advertise_announce, concurrentevents=concurrentevents)
 
   # Once we have either timed out or exceeded graceperiod with at least one 
   # service reporting, return whatever data we have. Remaining threads will 
@@ -274,7 +273,7 @@ def _try_advertise_lookup(args):
 
 
 
-def advertise_lookup(key, maxvals=100, lookuptype=None, \
+def advertise_lookup(key, maxvals=100, lookuptype=None, 
     concurrentevents=4, graceperiod=5, timeout=60):
   """
   <Purpose>
@@ -342,25 +341,25 @@ def advertise_lookup(key, maxvals=100, lookuptype=None, \
       raise AdvertiseError("Incorrect service type '" + servicetype + "' passed to advertise_lookup().")
 
   # Start parallel jobs.
-  ph = parallelize_initfunction(parallel_worksets, _try_advertise_lookup, \
-      concurrentevents=concurrentevents)
+  ph = parallelize.parallelize_initfunction(parallel_worksets, 
+      _try_advertise_lookup, concurrentevents=concurrentevents)
 
   # Wait until either timeout or graceperiod with at least one service 
   # success, and then continue.
-  while not parallelize_isfunctionfinished(ph):
+  while not parallelize.parallelize_isfunctionfinished(ph):
     sleep(0.015)
     if getruntime() - start_time > timeout:
       # This timed out.   Time to abort.   Fix for #1329.
-      parallelize_abortfunction(ph)
+      parallelize.parallelize_abortfunction(ph)
       raise TimeoutError("Advertise lookup timed out without contacting any service")
     if (getruntime() - start_time > graceperiod and onefinished[0]):
       # This hit the grace period.   (At least one service worked, but not
       # as many as were requested.)
-      parallelize_abortfunction(ph)
+      parallelize.parallelize_abortfunction(ph)
       break
 
 
-  all_parallel_results = parallelize_getresults(ph)
+  all_parallel_results = parallelize.parallelize_getresults(ph)
   parallel_results = all_parallel_results['returned']
   results = []
 
@@ -375,7 +374,7 @@ def advertise_lookup(key, maxvals=100, lookuptype=None, \
 
       results += return_value
 
-  parallelize_closefunction(ph)
+  parallelize.parallelize_closefunction(ph)
 
   if atleastonecorrectresult:
     # Filter results and return.
