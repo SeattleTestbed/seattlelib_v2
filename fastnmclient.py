@@ -23,16 +23,16 @@ add_dy_support(locals())
 
 # session wrapper (breaks the stream into messages)
 # an abstracted "itemized data communication" in a separate API
-dy_import_module_symbols("session.r2py")
+session = dy_import_module("session.r2py")
 
 
 # makes connections time out
-dy_import_module_symbols("sockettimeout.r2py")
+sockettimeout = dy_import_module("sockettimeout.r2py")
 
 # For rsa key conversion.
-dy_import_module_symbols("rsa.r2py")
+rsa = dy_import_module("rsa.r2py")
 
-dy_import_module_symbols("time.r2py")
+time = dy_import_module("time.r2py")
 # The idea is that this module returns "node manager handles".   A handle
 # may be used to communicate with a node manager and issue commands.   If the
 # caller wants to have a set of node managers with the same state, this can
@@ -96,7 +96,7 @@ def nmclient_rawcommunicate(nmhandle, *args):
   else:
     # do the normal openconn
     try:
-      thisconnobject = timeout_openconnection(nmclient_handledict[nmhandle]['IP'], nmclient_handledict[nmhandle]['port'],timeout=nmclient_handledict[nmhandle]['timeout']) 
+      thisconnobject = sockettimeout.timeout_openconnection(nmclient_handledict[nmhandle]['IP'], nmclient_handledict[nmhandle]['port'],timeout=nmclient_handledict[nmhandle]['timeout']) 
     except Exception, e:
       raise NMClientException, str(e)
 
@@ -105,8 +105,8 @@ def nmclient_rawcommunicate(nmhandle, *args):
   try:
 
     # send the args separated by '|' chars (as is expected by the node manager)
-    session_sendmessage(thisconnobject, '|'.join(args))
-    return session_recvmessage(thisconnobject)
+    session.session_sendmessage(thisconnobject, '|'.join(args))
+    return session.session_recvmessage(thisconnobject)
   except Exception, e:
     raise NMClientException, str(e)
   finally:
@@ -124,7 +124,7 @@ def nmclient_signedcommunicate(nmhandle, *args):
 
   if nmclient_handledict[nmhandle]['timestamp'] == True:
     # set the time based upon the current time...
-    timestamp = time_gettime()
+    timestamp = time.time_gettime()
   elif not nmclient_handledict[nmhandle]['timestamp']:
     # we're false, so set to None
     timestamp = None
@@ -187,7 +187,7 @@ def nmclient_signedcommunicate(nmhandle, *args):
   else:  
 
     try:
-      thisconnobject = timeout_openconnection(nmclient_handledict[nmhandle]['IP'], nmclient_handledict[nmhandle]['port'], timeout=nmclient_handledict[nmhandle]['timeout'])
+      thisconnobject = sockettimeout.timeout_openconnection(nmclient_handledict[nmhandle]['IP'], nmclient_handledict[nmhandle]['port'], timeout=nmclient_handledict[nmhandle]['timeout'])
     except Exception, e:
       raise NMClientException, str(e)
 
@@ -195,13 +195,13 @@ def nmclient_signedcommunicate(nmhandle, *args):
   # always close the connobject afterwards...
   try:
     try:
-      session_sendmessage(thisconnobject, signeddata)
+      session.session_sendmessage(thisconnobject, signeddata)
     except Exception, e:
       # label the exception and change the type...
       raise NMClientException, "signedcommunicate failed on session_sendmessage with error '"+str(e)+"'"
 
     try:
-      message = session_recvmessage(thisconnobject)
+      message = session.session_recvmessage(thisconnobject)
     except Exception, e:
       # label the exception and change the type...
       raise NMClientException, "signedcommunicate failed on session_recvmessage with error '"+str(e)+"'"
@@ -424,7 +424,7 @@ def nmclient_getvesseldict(nmhandle):
     elif line.startswith('Nodename: '):
       retdict['nodename'] = line[len('Nodename: '):]
     elif line.startswith('Nodekey: '):
-      retdict['nodekey'] = rsa_string_to_publickey(line[len('Nodekey: '):])
+      retdict['nodekey'] = rsa.rsa_string_to_publickey(line[len('Nodekey: '):])
  
     # start of a vessel
     elif line.startswith('Name: '):
@@ -441,7 +441,7 @@ def nmclient_getvesseldict(nmhandle):
 
     elif line.startswith('OwnerKey: '):
       thiskeystring = line[len('OwnerKey: '):]
-      thiskey = rsa_string_to_publickey(thiskeystring)
+      thiskey = rsa.rsa_string_to_publickey(thiskeystring)
       thisvessel['ownerkey'] = thiskey
 
     elif line.startswith('OwnerInfo: '):
@@ -463,7 +463,7 @@ def nmclient_getvesseldict(nmhandle):
 
     elif line.startswith('UserKey: '):
       thiskeystring = line[len('UserKey: '):]
-      thiskey = rsa_string_to_publickey(thiskeystring)
+      thiskey = rsa.rsa_string_to_publickey(thiskeystring)
 
       thisvessel['userkeys'].append(thiskey)
 

@@ -28,8 +28,8 @@
 """
 
 
-dy_import_module_symbols('base64.r2py')
-dy_import_module_symbols('xmlparse.r2py')
+base64 = dy_import_module('base64.r2py')
+xmlparse = dy_import_module('xmlparse.r2py')
 
 
 
@@ -344,7 +344,7 @@ def _xmlrpc_common_value2xml(obj):
   # rather than
   #   class Foo: pass
   elif object_type is xmlrpc_common_Binary:
-    xml_string.append("<base64>%s</base64>" % base64_standard_b64encode(obj.data))
+    xml_string.append("<base64>%s</base64>" % base64.base64_standard_b64encode(obj.data))
 
   else:
     raise ValueError("Marshaller: Unsupported type '%s'" % type(obj))
@@ -379,7 +379,7 @@ def xmlrpc_common_call2python(xml):
     parameters.
 
   """
-  xml_node = xmlparse_parse(xml)
+  xml_node = xmlparse.xmlparse_parse(xml)
 
   if xml_node.tag_name != "methodCall":
     message = "Unexpected root node: %s" % xml_node.tag_name
@@ -432,7 +432,7 @@ def xmlrpc_common_response2python(xml):
     The method results or a xmlrpc_common_Fault on reading a fault.
 
   """
-  xml_node = xmlparse_parse(xml)
+  xml_node = xmlparse.xmlparse_parse(xml)
 
   if xml_node.tag_name != "methodResponse":
     message = "Unexpected root node: %s" % xml_node.tag_name
@@ -610,7 +610,7 @@ def _xmlrpc_common_value2python(xml_node):
     return result
 
   elif tag == "base64":
-    return xmlrpc_common_Binary(base64_standard_b64decode(value_node.content))
+    return xmlrpc_common_Binary(base64.base64_standard_b64decode(value_node.content))
 
   else:
     message = "Demarshaller: Unsupported value type: %s" % value_node.tag_name

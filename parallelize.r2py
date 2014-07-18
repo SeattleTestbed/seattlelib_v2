@@ -21,7 +21,7 @@ YOU MUST PUT A LOCK AROUND SUCH ACCESSES.
 
 
 # I use this to get unique identifiers. 
-dy_import_module_symbols('uniqueid.r2py')
+uniqueid = dy_import_module('uniqueid.r2py')
 
 
 
@@ -230,7 +230,7 @@ def parallelize_initfunction(targetlist, callerfunc,concurrentevents=5, *extrafu
       A handle used for status information, etc.
   """
 
-  parallelizehandle = uniqueid_getid()
+  parallelizehandle = uniqueid.uniqueid_getid()
 
   # set up the dict locally one line at a time to avoid a ginormous line
   handleinfo = {}

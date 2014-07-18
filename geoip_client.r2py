@@ -15,7 +15,7 @@
   Where server_address is the ip address of a remote GeoIP XMl-RPC server.
 """
 
-dy_import_module_symbols('xmlrpc_client.r2py')
+xmlrpc_client = dy_import_module('xmlrpc_client.r2py')
 
 
 """
@@ -45,7 +45,7 @@ def geoip_init_client(url="http://geoipserver.poly.edu:12679"):
       
   """
   # Store XML-RPC client globally in list to avoid using mycontext dict
-  geoip_clientlist[0] = xmlrpc_client_Client(url)
+  geoip_clientlist[0] = xmlrpc_client.xmlrpc_client_Client(url)
 
 
 def geoip_record_by_addr(addr, timeout=5):

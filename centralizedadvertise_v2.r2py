@@ -9,10 +9,10 @@ Advertisements to a central server (similar to openDHT)
 
 """
 
-dy_import_module_symbols('session.r2py')
+session= dy_import_module('session.r2py')
 # I'll use socket timeout to prevent hanging when it takes a long time...
-dy_import_module_symbols('sockettimeout.r2py')
-dy_import_module_symbols('serialize.r2py')
+sockettimeout = dy_import_module('sockettimeout.r2py')
+serialize = dy_import_module('serialize.r2py')
 
 
 # Hmm, perhaps I should make an initialization call instead of hardcoding this?
@@ -68,16 +68,16 @@ def v2centralizedadvertise_announce(key, value, ttlval):
   # build the tuple to send, then convert to a string because only strings
   # (bytes) can be transmitted over the network...
   datatosend = ('PUT',key,value,ttlval)
-  datastringtosend = serialize_serializedata(datatosend)
+  datastringtosend = serialize.serialize_serializedata(datatosend)
 
   
   # send the data over a timeout socket using the session library, then
   # get a response from the server.
-  sockobj = timeout_openconnection(gethostbyname(v2servername), v2serverport, 
+  sockobj = sockettimeout.timeout_openconnection(gethostbyname(v2servername), v2serverport, 
     timeout=10)
   try:
-    session_sendmessage(sockobj, datastringtosend)
-    rawresponse = session_recvmessage(sockobj)
+    session.session_sendmessage(sockobj, datastringtosend)
+    rawresponse = session.session_recvmessage(sockobj)
   finally:
     # BUG: This raises an error right now if the call times out ( #260 )
     # This isn't a big problem, but it is the "wrong" exception
@@ -85,7 +85,7 @@ def v2centralizedadvertise_announce(key, value, ttlval):
   
   # We should check that the response is 'OK'
   try:
-    response = serialize_deserializedata(rawresponse)
+    response = serialize.serialize_deserializedata(rawresponse)
     if response != 'OK':
       raise CentralAdvertiseError("Centralized announce failed with '"+response+"'")
   except ValueError, e:
@@ -133,15 +133,15 @@ def v2centralizedadvertise_lookup(key, maxvals=100):
   # build the tuple to send, then convert to a string because only strings
   # (bytes) can be transmitted over the network...
   messagetosend = ('GET',key,maxvals)
-  messagestringtosend = serialize_serializedata(messagetosend)
+  messagestringtosend = serialize.serialize_serializedata(messagetosend)
 
   # send the data over a timeout socket using the session library, then
   # get a response from the server.
-  sockobj = timeout_openconnection(gethostbyname(v2servername), v2serverport, 
+  sockobj = sockettimeout.timeout_openconnection(gethostbyname(v2servername), v2serverport, 
     timeout=10)
   try:
-    session_sendmessage(sockobj, messagestringtosend)
-    rawreceiveddata = session_recvmessage(sockobj)
+    session.session_sendmessage(sockobj, messagestringtosend)
+    rawreceiveddata = session.session_recvmessage(sockobj)
   finally:
     # BUG: This raises an error right now if the call times out ( #260 )
     # This isn't a big problem, but it is the "wrong" exception
@@ -149,7 +149,7 @@ def v2centralizedadvertise_lookup(key, maxvals=100):
 
 
   try:
-    responsetuple = serialize_deserializedata(rawreceiveddata)
+    responsetuple = serialize.serialize_deserializedata(rawreceiveddata)
   except ValueError, e:
     raise CentralAdvertiseError("Received unknown response from server '"+rawresponse+"'")
 

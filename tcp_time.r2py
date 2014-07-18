@@ -19,13 +19,13 @@
 
 """
 
-dy_import_module_symbols('time_interface.r2py')
+time_interface = dy_import_module('time_interface.r2py')
 
-dy_import_module_symbols('advertise.r2py')
+advertise = dy_import_module('advertise.r2py')
 
-dy_import_module_symbols('random.r2py')
+random = dy_import_module('random.r2py')
 
-dy_import_module_symbols('sockettimeout.r2py')
+sockettimeout = dy_import_module('sockettimeout.r2py')
 
 
 
@@ -69,7 +69,7 @@ def tcp_time_updatetime(localport):
   exceptionslist = ["advertise_lookup did not reveal any node advertising 'time_server'"]
   for attempt in range(2):
     try:
-      serveraddresses = advertise_lookup("time_server")
+      serveraddresses = advertise.advertise_lookup("time_server")
     except Exception, e:
       # Log and retry
       exceptionslist.append((type(e), str(e)))
@@ -79,12 +79,12 @@ def tcp_time_updatetime(localport):
         break
   else:
     # We never broke out of the for loop. This indicates a problem.
-    raise TimeError("tcp_time could not find any servers running time_server.r2py using advertise_lookup. Errors: " + str(exceptionslist))
+    raise time_interface.TimeError("tcp_time could not find any servers running time_server.r2py using advertise_lookup. Errors: " + str(exceptionslist))
 
 
   timelength = 25  # Max length of string, representing the time, to be received
   # XXX Shuffling takes excessively long (10s on a list of 20 servers)!
-  shuffledserveraddresses = random_sample(serveraddresses,min(len(serveraddresses),5))
+  shuffledserveraddresses = random.random_sample(serveraddresses,min(len(serveraddresses),5))
 
   # Try to obtain a timestamp from one of at most five 
   # random servers hosting time_server.r2py
@@ -96,7 +96,7 @@ def tcp_time_updatetime(localport):
     remoteport = int(remoteaddress[1])
 
     try:
-      sockobject = timeout_openconnection(remoteip, remoteport, 
+      sockobject = sockettimeout.timeout_openconnection(remoteip, remoteport, 
         getmyip(), localport, timeout=10)
     except Exception, e:
       exceptionslist.append((server_ip_and_port, type(e), str(e)))
@@ -104,7 +104,7 @@ def tcp_time_updatetime(localport):
       break
   else:
     # Didn't break out of the loop. Tried all time servers to no avail.
-    raise TimeError("tcp_time could not contact any of the ",len(shuffledserveraddresses)," servers running time_server.r2py. Errors encountered: " + str(exceptionslist))
+    raise time_interface.TimeError("tcp_time could not contact any of the ",len(shuffledserveraddresses)," servers running time_server.r2py. Errors encountered: " + str(exceptionslist))
 
 
   currenttime = ''
@@ -114,11 +114,11 @@ def tcp_time_updatetime(localport):
   currenttime = float(currenttime[:-1])
 
   # finally, set the time
-  time_settime(currenttime)
+  time_interface.time_settime(currenttime)
   
 
 
 
 
 #register the update method
-time_register_method('tcp', tcp_time_updatetime)
+time_interface.time_register_method('tcp', tcp_time_updatetime)

@@ -9,8 +9,8 @@ Advertisements to a central server (similar to openDHT)
 This uses UDP and is conceptually quite similar to the centralized advertise
 service
 """
-dy_import_module_symbols('serialize.r2py')
-dy_import_module_symbols('uniqueid.r2py')
+serialize = dy_import_module('serialize.r2py')
+uniqueid = dy_import_module('uniqueid.r2py')
 random = dy_import_module('random.r2py')
 
 
@@ -86,7 +86,7 @@ def _udpcentralizedadvertise_communicate(datastringtosend, timeout, queryid):
         # XXX Check if that's the server we contacted! See #1268.
         (remoteip, remoteport, mess) = udpresponsesocket.getmessage()
         if (remoteip, remoteport) == (udpserverip, udpserverport):
-          return serialize_deserializedata(mess)
+          return serialize.serialize_deserializedata(mess)
       except SocketWouldBlockError:
         pass
 
@@ -140,7 +140,7 @@ def udpcentralizedadvertise_announce(key, value, ttlval):
 
   # myrequestport = getusableport()
 
-  unique_request_id = uniqueid_getid()
+  unique_request_id = uniqueid.uniqueid_getid()
 
   # We'll loop through and send a request, increasing the timeout upon failure
   for thistimeout in udpcentralizedservertimeouts:
@@ -148,7 +148,7 @@ def udpcentralizedadvertise_announce(key, value, ttlval):
     # build the tuple to send, then convert to a string because only strings
     # (bytes) can be transmitted over the network...
     datatosend = ('PUT',key,value,ttlval, unique_request_id)
-    datastringtosend = serialize_serializedata(datatosend)
+    datastringtosend = serialize.serialize_serializedata(datatosend)
   
     rawresponse = None
 
@@ -233,12 +233,12 @@ def udpcentralizedadvertise_lookup(key, maxvals=100):
   for thistimeout in udpcentralizedservertimeouts:
 
     # get a unique request id
-    unique_request_id = uniqueid_getid()
+    unique_request_id = uniqueid.uniqueid_getid()
   
     # build the tuple to send, then convert to a string because only strings
     # (bytes) can be transmitted over the network...
     messagetosend = ('GET',key,maxvals,unique_request_id)
-    messagestringtosend = serialize_serializedata(messagetosend)
+    messagestringtosend = serialize.serialize_serializedata(messagetosend)
 
   
     try:
@@ -251,7 +251,7 @@ def udpcentralizedadvertise_lookup(key, maxvals=100):
   
 
     # try:
-    #   responsetuple = serialize_deserializedata(rawreceiveddata[2])
+    #   responsetuple = serialize.serialize_deserializedata(rawreceiveddata[2])
     # except ValueError, e:
     #   raise UDPCentralAdvertiseError("Received unknown response from server '"+rawresponse+"'")
 
