@@ -96,7 +96,7 @@ def advertise_thread():
              "Error advertising advertise_dict " + repr(e))
           mycontext["advertisepipe_last_error"] = error
           log(error, "\n")
-          sleep(5)
+          sleep(ERROR_RETRY_INTERVAL)
         except Exception, e:
           # Hu? We didn't expect *that* exception. Log and retry later.
           error = (getruntime(), 
@@ -152,7 +152,8 @@ def start_error_safe_advertise_thread():
 def add_to_pipe(key, value):
   """
   <Purpose>
-    Add the key-value pair to the advertise pipe
+    Add the key-value pair to the advertise pipe, and advertise 
+    it instantly.
 
   <Arguments>
     key, value:
@@ -185,8 +186,11 @@ def add_to_pipe(key, value):
   # Done adding the item, make the dict freely accessible again.
   advertise_dict_lock.release()
 
-  # Signal to the advertise thread that we want to get advertised now, 
-  # and start a thread to do so.
+  # Advertise this item right away
+  singlethreadedadvertise_announce(key, value, TTL)
+
+  # Signal to the advertise thread that it should continuously 
+  # advertise us, and start a thread to do so (if required).
   start_error_safe_advertise_thread()
     
   # return the handle
@@ -231,4 +235,26 @@ def remove_from_pipe(handle):
 
   # Done with our changes.
   advertise_dict_lock.release()
+
+
+
+def singlethreadedadvertise_announce(key, value, ttl):
+  """
+  This is a deliberately single-threaded version of advertise's 
+  advertise_announce. We avoid "runaway" conditions such as when 
+  the node was offline and spawned very many advertise threads 
+  during that period.
+  """
+  # _try_advertise_announce passes status info via these references. 
+  # We don't care if we fail advertising the first time --- the 
+  # advertise_thread will retry for us and announce when possible, 
+  # i.e. within REDO_INTERVAL seconds of the node coming back online, 
+  # or every ERROR_RETRY_INTERVAL seconds if the advertise services 
+  # had an error.
+  exceptions = ['']
+  finishedref = [False]
+
+  for service in advertise._advertise_all_services:
+    advertise._try_advertise_announce(service, key, value, ttl, exceptions, 
+        finishedref)
 
