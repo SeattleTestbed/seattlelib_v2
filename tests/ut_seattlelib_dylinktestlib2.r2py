@@ -1,0 +1,10 @@
+"""
+Raise the exception defined in ut_seattlelib_dylinktestlib1.r2py.
+Helper library for ut_seattlelib_dylink_catch_nestedimport_exception.r2py.
+"""
+
+lib1 = dy_import_module("ut_seattlelib_dylinktestlib1.r2py")
+
+def raise_lib1error():
+  raise lib1.Lib1Error
+

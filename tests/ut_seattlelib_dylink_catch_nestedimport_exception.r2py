@@ -5,8 +5,11 @@ and raised in another.
 #pragma repy restrictions.test dylink.r2py
 #pragma out Successfully caught Lib1Error().
 
-lib1 = dy_import_module("portability_testlib1.r2py") # defines the exception
-lib2 = dy_import_module("portability_testlib2.r2py") # raises it
+# lib1 defines the exception
+lib1 = dy_import_module("ut_seattlelib_dylinktestlib1.r2py")
+
+# lib2 raises it
+lib2 = dy_import_module("ut_seattlelib_dylinktestlib2.r2py")
 
 try:
   lib2.raise_lib1error()

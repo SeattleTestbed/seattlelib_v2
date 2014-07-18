@@ -1,0 +1,7 @@
+"""
+Define an exception for ut_seattlelib_dylinktestlib2.r2py.
+Helper library for ut_seattlelib_dylink_catch_nestedimport_exception.r2py.
+"""
+class Lib1Error(Exception):
+  """The exception the portability unit test is trying to catch."""
+
