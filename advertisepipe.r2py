@@ -25,6 +25,12 @@
 
 
 advertise = dy_import_module('advertise.r2py')
+
+# XXX Used for singlethreadedadvertise_announce
+centralizedadvertise = dy_import_module("centralizedadvertise.r2py")
+centralizedadvertise_v2 = dy_import_module("centralizedadvertise_v2.r2py")
+udp_centralizedadvertise = dy_import_module("udpcentralizedadvertise.r2py")
+
 uniqueid = dy_import_module('uniqueid.r2py')
 
 # Store info to be advertised. This dict is organized as 
@@ -95,19 +101,21 @@ def advertise_thread():
           error = (getruntime(), 
              "Error advertising advertise_dict " + repr(e))
           mycontext["advertisepipe_last_error"] = error
-          log(error, "\n")
           sleep(ERROR_RETRY_INTERVAL)
         except Exception, e:
           # Hu? We didn't expect *that* exception. Log and retry later.
           error = (getruntime(), 
              "Unexpected error advertising advertise_dict " + repr(e))
-          log(error, "\n")
           advertise_dict_lock.release()
           raise
+    else:
+      # If we reach this, the advertise_dict was empty.
+      advertise_dict_lock.release()
+      return
 
     advertise_dict_lock.release()
 
-    # Now wait until either the REDO_INTERVAL expires before repeating.
+    # Now wait until the REDO_INTERVAL expires before repeating.
     while getruntime() - start < REDO_INTERVAL:
       sleep(CHECK_INTERVAL)
      
@@ -245,16 +253,18 @@ def singlethreadedadvertise_announce(key, value, ttl):
   the node was offline and spawned very many advertise threads 
   during that period.
   """
-  # _try_advertise_announce passes status info via these references. 
-  # We don't care if we fail advertising the first time --- the 
-  # advertise_thread will retry for us and announce when possible, 
-  # i.e. within REDO_INTERVAL seconds of the node coming back online, 
-  # or every ERROR_RETRY_INTERVAL seconds if the advertise services 
-  # had an error.
-  exceptions = ['']
-  finishedref = [False]
+  announce_functions = [centralizedadvertise.centralizedadvertise_announce, 
+      centralizedadvertise_v2.v2centralizedadvertise_announce, 
+      udp_centralizedadvertise.udpcentralizedadvertise_announce]
 
-  for service in advertise._advertise_all_services:
-    advertise._try_advertise_announce(service, key, value, ttl, exceptions, 
-        finishedref)
+  for announce_function in announce_functions:
+    try:
+      announce_function(key, value, ttl)
+    except:
+      # We don't care if we fail advertising the first time --- the 
+      # advertise_thread will retry for us and announce when possible, 
+      # i.e. within REDO_INTERVAL seconds of the node coming back online, 
+      # or every ERROR_RETRY_INTERVAL seconds if the advertise services 
+      # had an error.
+      pass
 

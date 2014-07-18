@@ -28,7 +28,7 @@ another handle in the list:
 #pragma repy restrictions.default dylink.r2py
 #pragma out
 
-ITEMS_TO_ANNOUNCE = 3
+ITEMS_TO_ANNOUNCE = 3  # I need at least 3
 
 
 advertisepipe = dy_import_module("advertisepipe.r2py")
@@ -56,13 +56,11 @@ for i in range(ITEMS_TO_ANNOUNCE):
 
 
 
-logtn("Advertise each key-value pair; check if they are correctly advertised.")
+logtn("Advertise each key-value pair in " + str(zip(keys, values)) + "; check if they are correctly advertised.")
 handles = []
 for key, value in zip(keys, values):
   handles.append(advertisepipe.add_to_pipe(key, value))
-  # Wait for twice the worst-case waiting time beween checks for new items
-  logtn("Advertised " + key + ", looking it up on the advertise services")
-  sleep(2 * 2 * advertisepipe.CHECK_INTERVAL)
+  logtn("Advertised " + key + ":" + value + ", looking it up on the advertise services")
 
   lookup_values = []
 
@@ -70,13 +68,14 @@ for key, value in zip(keys, values):
   for i in range(5):
    try:
      lookup_values = advertise.advertise_lookup(key)
+     logtn("Looking up", key, "returned", lookup_values)
      break
-   except:
-     sleep(2)
+   except Exception, e:
+     log("Lookup failed with", repr(e), "\n")
+     sleep(advertisepipe.ERROR_RETRY_INTERVAL)
      continue
 
   assert value in lookup_values, str(value) + " not in " + str(lookup_values)
-
 
 
 # All of the keys were correctly advertised!
@@ -104,16 +103,19 @@ assert keys[1] in advertisepipe.advertise_dict
 
 
 
-logtn("Remove all handles, advertise thread should stop now")
+logtn("Removing all handles")
 handles.append(handle_for_duplicate_key)
 handles.append(handle_for_duplicate_item)
 for handle in handles:
   advertisepipe.remove_from_pipe(handle)
 
-
-
-sleep(2 * 2 * advertisepipe.CHECK_INTERVAL)
 assert len(advertisepipe.advertise_dict) == 0, \
     "Removing all handles didn't leave the advertise_dict empty: " + \
     str(advertisepipe.advertise_dict)
+
+logtn("All handles gone, advertise_thread should stop now")
+
+sleep(2 * advertisepipe.ERROR_RETRY_INTERVAL)
+
+exitall()
 
