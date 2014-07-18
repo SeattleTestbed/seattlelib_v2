@@ -1,0 +1,14 @@
+"""
+Verify that time_interface raises an error when we ask it to 
+updatetime before registering a time method (like NTP or TCP).
+"""
+#pragma repy restrictions.default dylink.r2py
+time_interface = dy_import_module("time_interface.r2py")
+
+# The port shouldn't matter, we supply it anyway to not trigger another error
+timeport = list(getresources()[0]["messport"])[0]
+try:
+  time_interface.time_updatetime(timeport)
+except time_interface.TimeError:
+  # That's what we expect
+  pass

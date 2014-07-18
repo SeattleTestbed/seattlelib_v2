@@ -99,6 +99,8 @@ def time_updatetime(localport):
       # Exit when we succeed.
       # Be warned that any error messages are suppressed!
       return
+  else:
+    raise TimeError("time_updatetime called before time_register_method!")
 
   # we failed
   raise TimeError('Error(s) in time_updatetime: ' + str(exception_list))
