@@ -138,7 +138,11 @@ def error_safe_advertise_thread():
       # The thread has returned, indicating that it has detected it 
       # should stop. Release the thread lock so that a new advertise 
       # thread can be spawned later on demand.
-      advertise_thread_lock.release()
+      try:
+        advertise_thread_lock.release()
+      except LockDoubleReleaseError:
+        pass
+
       break
 
  
