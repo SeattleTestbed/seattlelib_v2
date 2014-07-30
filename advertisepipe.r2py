@@ -106,6 +106,7 @@ def advertise_thread():
           # Hu? We didn't expect *that* exception. Log and retry later.
           error = (getruntime(), 
              "Unexpected error advertising advertise_dict " + repr(e))
+          mycontext["advertisepipe_last_error"] = error
           advertise_dict_lock.release()
           raise
 
