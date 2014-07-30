@@ -108,11 +108,8 @@ def advertise_thread():
              "Unexpected error advertising advertise_dict " + repr(e))
           advertise_dict_lock.release()
           raise
-    else:
-      # If we reach this, the advertise_dict was empty.
-      advertise_dict_lock.release()
-      return
 
+    # If we reach this, advertising our items went just fine.
     advertise_dict_lock.release()
 
     # Now wait until the REDO_INTERVAL expires before repeating.
