@@ -1,9 +1,7 @@
-seattlelib_v2/*
-clearinghouse/*
-repy_v2/*
-utf/*
-dist/LICENSE.txt
+../*
+dependencies/repy_v2/*
+common/*
+common/utf/*
 # Tests
-test seattlelib_v2/tests/*
-test clearinghouse/tests/*
-test repy_v2/testsV2/*
+test ../tests/*
+test dependencies/repy_v2/testsV2/*
