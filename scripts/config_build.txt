@@ -1,7 +1,8 @@
 ../*
-dependencies/repy_v2/*
+repy_v2/*
 common/*
 common/utf/*
 # Tests
 test ../tests/*
-test dependencies/repy_v2/testsV2/*
+test ../test/*
+test ../testlibrepy/*

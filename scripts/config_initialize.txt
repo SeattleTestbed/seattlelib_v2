@@ -1,2 +1,2 @@
-https://github.com/SeattleTestbed/repy_v2 dependencies/repy_v2
-https://github.com/SeattleTestbed/common
+https://github.com/SeattleTestbed/repy_v2 ../DEPENDENCIES/repy_v2
+https://github.com/SeattleTestbed/common ../DEPENDENCIES/common
