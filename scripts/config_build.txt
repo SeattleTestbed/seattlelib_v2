@@ -1,5 +1,6 @@
 ../*
 repy_v2/*
+portability/*
 common/*
 common/utf/*
 # Tests
