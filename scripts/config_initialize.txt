@@ -1,0 +1,5 @@
+https://github.com/SeattleTestbed/seattlelib_v2
+https://github.com/SeattleTestbed/clearinghouse
+https://github.com/SeattleTestbed/utf
+https://github.com/SeattleTestbed/repy_v2
+https://github.com/SeattleTestbed/dist -b new_build_v1
