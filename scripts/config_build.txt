@@ -2,8 +2,9 @@
 DEPENDENCIES/repy_v2/*
 DEPENDENCIES/portability/*
 DEPENDENCIES/common/*
-DEPENDENCIES/common/utf/*
+
 # Tests
+test DEPENDENCIES/common/utf/*
 test tests/*
 test test/*
 test testlibrepy/*
