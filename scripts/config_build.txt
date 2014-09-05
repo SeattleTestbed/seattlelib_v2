@@ -1,9 +1,9 @@
-../*
-repy_v2/*
-portability/*
-common/*
-common/utf/*
+./*
+DEPENDENCIES/repy_v2/*
+DEPENDENCIES/portability/*
+DEPENDENCIES/common/*
+DEPENDENCIES/common/utf/*
 # Tests
-test ../tests/*
-test ../test/*
-test ../testlibrepy/*
+test tests/*
+test test/*
+test testlibrepy/*
