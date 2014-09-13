@@ -24,7 +24,7 @@ thread pools can be utilized with minimal effort.
 ##### Imports
 
 # Get a run loop
-librunloop = dy_import_module("librepyrunloop")
+librunloop = dy_import_module("librepyrunloop.r2py")
 
 ##### Module Data
 
