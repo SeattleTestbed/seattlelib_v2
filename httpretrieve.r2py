@@ -42,7 +42,7 @@ class HttpBrokenServerError(Exception):
 
 
 def httpretrieve_open(url, querydata=None, postdata=None,\
-    httpheaders=None, proxy=None, timeout=None):
+    httpheaders=None, proxy=None, timeout=5):
   """
   <Purpose>
      Returns a file-like object that can be used to read the content from
@@ -156,6 +156,8 @@ def httpretrieve_open(url, querydata=None, postdata=None,\
 
     # Check if we've timed out (if the user requested a timeout); update the
     # socket timeout to reflect the time taken sending the request.
+    # XXX I doubt it makes sense to do that. sockettimeout provides 
+    # XXX timeouts for us. Review this, simplify if possible.
     if timeout is None:
       sockobj.settimeout(0)
     elif getruntime() - starttimefloat >= timeout:
