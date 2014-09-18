@@ -17,9 +17,9 @@
 
 
 
-dy_import_module_symbols('urlparse.r2py')
-dy_import_module_symbols('sockettimeout.r2py')
-dy_import_module_symbols('urllib.r2py')
+urlparse = dy_import_module('urlparse.r2py')
+sockettimeout = dy_import_module('sockettimeout.r2py')
+urllib = dy_import_module('urllib.r2py')
 
 
 
@@ -85,7 +85,7 @@ def httpretrieve_open(url, querydata=None, postdata=None,\
     HttpConnectionError if opening the connection fails, or if the
       connection is closed by the server before we expect.
 
-    SocketTimeoutError if the timeout is exceeded.
+    TimeoutError if the timeout is exceeded.
 
     HttpBrokenServerError if the response or the Location response header
       is malformed.
@@ -103,7 +103,7 @@ def httpretrieve_open(url, querydata=None, postdata=None,\
   starttimefloat = getruntime()
 
   # Check if the URL is valid and get host, path, port and query
-  parsedurldict = urlparse_urlsplit(url)
+  parsedurldict = urlparse.urlparse_urlsplit(url)
   hoststr = parsedurldict['hostname']
   pathstr = parsedurldict['path']
   portint = parsedurldict.get('port')
@@ -128,11 +128,11 @@ def httpretrieve_open(url, querydata=None, postdata=None,\
     if proxy is not None:
       # if there is a proxy, open a connection with the proxy instead of the actual server
       # use the timeout we are given (or none)
-      sockobj = timeout_openconnection(proxy[0], proxy[1], timeout=timeout)  
+      sockobj = sockettimeout.timeout_openconnection(proxy[0], proxy[1], timeout=timeout)  
     else:
       # if there is no proxy open a connection with server directly
       # use the timeout we are given (or none)
-      sockobj = timeout_openconnection(gethostbyname(hoststr), portint, timeout=timeout)
+      sockobj = sockettimeout.timeout_openconnection(gethostbyname(hoststr), portint, timeout=timeout)
 
   except Exception, e:
     # If a socket object was created, we want to clean in up.
@@ -159,7 +159,7 @@ def httpretrieve_open(url, querydata=None, postdata=None,\
     if timeout is None:
       sockobj.settimeout(0)
     elif getruntime() - starttimefloat >= timeout:
-      raise SocketTimeoutError("Timed out")
+      raise TimeoutError("Timed out")
     else:
       sockobj.settimeout(timeout - (getruntime() - starttimefloat))
 
