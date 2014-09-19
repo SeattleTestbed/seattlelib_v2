@@ -16,9 +16,8 @@
 """
 
 
-
+librepysocket = dy_import_module("librepysocket.r2py")
 urlparse = dy_import_module('urlparse.r2py')
-sockettimeout = dy_import_module('sockettimeout.r2py')
 urllib = dy_import_module('urllib.r2py')
 
 
@@ -72,10 +71,9 @@ def httpretrieve_open(url, querydata=None, postdata=None,\
     proxy (optional):
            A proxy server 2-tuple to bind to: ('host', port).       
     timeout (optional):
-           A timeout for establishing a connection to the web server,
-           sending headers, and reading the response headers.
-
-           If excluded or None, never times out.
+           A timeout for establishing a connection to the web server.
+           Sending headers, and reading the response headers is not 
+           subject to timing out at the moment.
 
   <Exceptions>
     ValueError if given an invalid URL, or malformed limit or timeout
@@ -127,21 +125,16 @@ def httpretrieve_open(url, querydata=None, postdata=None,\
   try:
     if proxy is not None:
       # if there is a proxy, open a connection with the proxy instead of the actual server
-      # use the timeout we are given (or none)
-      sockobj = sockettimeout.timeout_openconnection(proxy[0], proxy[1], timeout=timeout)  
+      sockobj = librepysocket.openconn(proxy[0], proxy[1], timeout=timeout)  
     else:
       # if there is no proxy open a connection with server directly
-      # use the timeout we are given (or none)
-      sockobj = sockettimeout.timeout_openconnection(gethostbyname(hoststr), portint, timeout=timeout)
+      sockobj = librepysocket.openconn(gethostbyname(hoststr), portint, timeout=timeout)
 
-  except Exception, e:
+  except TimeoutError:
     # If a socket object was created, we want to clean in up.
     if sockobj:
       sockobj.close()
-
-    if repr(e).startswith("timeout("):
-      raise HttpConnectionError("Socket timed out connecting to host/port.")
-    raise
+    raise HttpConnectionError("Socket timed out connecting to host/port.")
 
   try:
     # Builds the HTTP request:
@@ -153,17 +146,6 @@ def httpretrieve_open(url, querydata=None, postdata=None,\
 
     # Now, we're done with the HTTP request part of the session, and we need
     # to get the HTTP response.
-
-    # Check if we've timed out (if the user requested a timeout); update the
-    # socket timeout to reflect the time taken sending the request.
-    # XXX I doubt it makes sense to do that. sockettimeout provides 
-    # XXX timeouts for us. Review this, simplify if possible.
-    if timeout is None:
-      sockobj.settimeout(0)
-    elif getruntime() - starttimefloat >= timeout:
-      raise TimeoutError("Timed out")
-    else:
-      sockobj.settimeout(timeout - (getruntime() - starttimefloat))
 
     # Receive the header lines from the web server (a series of CRLF-terminated
     # lines, terminated by an empty line, or by the server closing the
@@ -205,7 +187,7 @@ def httpretrieve_open(url, querydata=None, postdata=None,\
     friendlystatusstr = statuslinelist[2]
     try:
       statusint = int(statuslinelist[1])
-    except ValueError, e:
+    except ValueError:
       raise HttpBrokenServerError("Server returned garbage for HTTP " + \
         "response (status code isn't integer).")
 
@@ -219,7 +201,7 @@ def httpretrieve_open(url, querydata=None, postdata=None,\
       sockobj.close()
       try:
         redirecturlstr = httpheaderdict["Location"][0]
-      except (KeyError, IndexError), ke:
+      except (KeyError, IndexError):
         # When a server returns a redirect status code (3xx) but no Location
         # header, some clients, e.g. Firefox, just show the response body
         # as they would normally for a 2xx or 4xx response. So, I think we
@@ -228,7 +210,11 @@ def httpretrieve_open(url, querydata=None, postdata=None,\
         pass
       else:
         # If the server did send a redirect location, let's go there.
-        return httpretrieve_open(redirecturlstr)
+        try:
+          return httpretrieve_open(redirecturlstr)
+        except Exception, e:
+          # XXX Clean this mess up. Let's define an HttpRedirectionError or some such.
+          raise Exception("Error following redirect: " + repr(e))
 
     # If we weren't requested to redirect, and we didn't, return a read-only
     # file-like object (representing the response body) to the caller.
