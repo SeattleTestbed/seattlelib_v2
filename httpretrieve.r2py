@@ -22,7 +22,7 @@ urllib = dy_import_module('urllib.r2py')
 
 
 
-class HttpConnectionError(Exception):
+class HttpConnectionError(RepyException):
   """
   Error indicating that the web server has unexpectedly dropped the
   connection.
@@ -31,7 +31,7 @@ class HttpConnectionError(Exception):
 
 
 
-class HttpBrokenServerError(Exception):
+class HttpBrokenServerError(RepyException):
   """
   Error indicating that the web server has sent us complete garbage instead
   of something resembling HTTP.
@@ -156,11 +156,10 @@ def httpretrieve_open(url, querydata=None, postdata=None,\
         # This should probably be replaced with page-sized reads in the future,
         # but for now, the behavior is at least correct.
         headersstr += sockobj.recv(1)
-      except Exception, e:
-        if str(e) == "Socket closed":
-          break
-        else:
-          raise
+      except SocketWouldBlockError:
+        sleep(0.01)
+      except SocketClosedRemote:
+        break
 
     httpheaderlist = headersstr.split("\r\n")
     # Ignore (a) trailing blank line(s) (for example, the response header-
@@ -393,12 +392,11 @@ class _httpretrieve_filelikeobject:
     while True:
       try:
         contentchunkstr = self._sockobj.recv(lefttoread or 4096)
-      except Exception, e:
-        if str(e) == "The socket has been closed remotely!":
-          self._totalcontentisreceived = True
-          break
-        else:
-          raise
+      except SocketWouldBlockError:
+        sleep(0.01)
+      except SocketClosedRemote:
+        self._totalcontentisreceived = True
+        break
       
       httpcontentstr += contentchunkstr
       self._totalread += len(contentchunkstr)
