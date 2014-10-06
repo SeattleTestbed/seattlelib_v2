@@ -297,16 +297,16 @@ def _httpserver_parseHTTPheader(headerdatalist):
 def _httpserver_sendAll(sock, datastr, besteffort=False):
   
   sent = 0
-    while sent < len(datastr):
-      try:
-        sent += sock.send(data[sent:])  
-      except SocketWouldBlockError:
-        # retry if response hasn't been sent yet
-        sleep(.05)
-        continue
-      except SocketClosedRemote:
-        log('client from',srcip,'aborted before response could be sent...\n')
-        return
+  while sent < len(datastr):
+    try:
+      sent += sock.send(data[sent:])  
+    except SocketWouldBlockError:
+      # retry if response hasn't been sent yet
+      sleep(.05)
+      continue
+    except SocketClosedRemote:
+      log('client from',srcip,'aborted before response could be sent...\n')
+      return
     
 
 
