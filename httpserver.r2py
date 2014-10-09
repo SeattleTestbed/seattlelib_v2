@@ -28,7 +28,7 @@ dy_import_module_symbols("httpretrieve.r2py")
 
 
 
-class _httpserver_ClientClosedSockEarly(Exception):
+class _httpserver_ClientClosedSockEarly(RepyException):
   # Raised internally when the client unexpectedly closes the socket. The
   # correct behavior in this instance is to clean up that handler and
   # continue.
@@ -37,14 +37,14 @@ class _httpserver_ClientClosedSockEarly(Exception):
 
 
 
-class _httpserver_BadRequest(Exception):
+class _httpserver_BadRequest(RepyException):
   # Raised internally when the client's request is malformed.
   pass
 
 
 
 
-class _httpserver_ServerError(Exception):
+class _httpserver_ServerError(RepyException):
   # Raised internally when the callback function unexpectedly raises an
   # exception.
   pass
@@ -52,7 +52,7 @@ class _httpserver_ServerError(Exception):
 
 
 
-class _httpserver_BadTransferCoding(Exception):
+class _httpserver_BadTransferCoding(RepyException):
   # Raised internally when the request's encoding is something we can't
   # handle (most everything at the time of writing).
   pass
@@ -299,7 +299,7 @@ def _httpserver_sendAll(sock, datastr, besteffort=False):
   sent = 0
   while sent < len(datastr):
     try:
-      sent += sock.send(data[sent:])  
+      sent += sock.send(datastr[sent:])  
     except SocketWouldBlockError:
       # retry if response hasn't been sent yet
       sleep(.05)
@@ -877,18 +877,18 @@ def _httpserver_process_single_request(sock, cbfunc, extradata, httpdid, \
         reqinfo['headers']["Connection"]):
       closeconn = True
 
-    try:
-      # Send response headers.
-      _httpserver_sendAll(sock, response)
+    
+    # Send response headers.
+    _httpserver_sendAll(sock, response)
 
-      # Read chunks from the callback and efficiently send them to
-      # the client using HTTP/1.1 chunked encoding.
-      _httpserver_sendfile_chunked(sock, messagestream)
+    # Read chunks from the callback and efficiently send them to
+    # the client using HTTP/1.1 chunked encoding.
+    _httpserver_sendfile_chunked(sock, messagestream)
 
-      # The reason we care about the data actually going through for HTTP/1.1
-      # is that we keep connections open. If there is an error, we shouldn't
-      # keep going, so we indicate that the socket should be closed.
-      closeconn = True
+    # The reason we care about the data actually going through for HTTP/1.1
+    # is that we keep connections open. If there is an error, we shouldn't
+    # keep going, so we indicate that the socket should be closed.
+    closeconn = True
 
   else:
     # If the cbfunc's response dictionary didn't specify 0.9, 1.0, or 1.1,
