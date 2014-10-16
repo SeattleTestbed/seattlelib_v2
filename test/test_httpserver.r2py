@@ -1,0 +1,38 @@
+dy_import_module_symbols("httpserver.r2py")
+
+
+# prints failed message if the test failes and raises an exception the registorhttpcallback
+# or httpretrieve raises an exception and just excutes if the test passes
+
+
+def test_normal_server(httprequest_dictionary):
+  # normal server just sends a message  
+
+  # store the http dictionary to check the content
+  mycontext['httprequest_dictionary'] = httprequest_dictionary
+  dict_toreturn = {
+          'version': '1.1',
+          'statuscode': 101,
+          'statusmsg': "valid",
+          'headers': { 'X-Header-Foo': 'Bar' },
+          'message': "this is original message"
+        }
+  return dict_toreturn
+   
+    
+if callfunc == 'initialize':
+  # used to store the httprequest_dictionary from server
+  mycontext['httprequest_dictionary'] = {}
+  
+  # used to send post data using the httpretrieve client
+  http_query = {"first": "1st", "second": "2nd"}
+  http_post = {"third": "3rd", "fourth": "4th"}
+  
+
+  # register the callback server
+  try:
+    handle = httpserver_registercallback(('192.168.1.6',12345), test_normal_server)
+  except Exception, e:
+     raise Exception('failed test: server raised an exception: ' + str(e))
+
+  
