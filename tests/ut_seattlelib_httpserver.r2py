@@ -3,9 +3,6 @@
 
 httpserver = dy_import_module("httpserver.r2py")
 
-# prints failed message if the test failes and raises an exception the registorhttpcallback
-# or httpretrieve raises an exception and just excutes if the test passes
-
 
 def test_normal_server(httprequest_dictionary):
   # normal server just sends a message  
