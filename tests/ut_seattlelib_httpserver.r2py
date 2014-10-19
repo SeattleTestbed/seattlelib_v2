@@ -36,5 +36,7 @@ if callfunc == 'initialize':
     handle = httpserver.httpserver_registercallback((getmyip(),12345), test_normal_server)
   except Exception, e:
      raise Exception('failed test: server raised an exception: ' + str(e))
+  
+  exitall()
 
   
