@@ -1,3 +1,5 @@
+#pragma repy restrictions.default dylink.r2py
+#pragma out
 
 httpserver = dy_import_module("httpserver.r2py")
 
