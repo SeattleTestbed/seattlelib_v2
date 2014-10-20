@@ -139,9 +139,6 @@ def get_connports(localip=None):
   <Returns>
     A list of valid connports for localport
   """
-  # Check if the IP is valid
-  if localip is not None and not _is_valid_ip_address(localip):
-    raise RepyArgumentError("Invalid IP address specified!")
 
   # Resolve the IP
   if localip is None:
@@ -686,8 +683,6 @@ def waitforconn(localip, localport, func, thread_pool=None, check_intv=0.1, err_
   """
 
   # Check the args
-  if localip is not None and not _is_valid_ip_address(localip):
-    raise RepyArgumentError("Invalid Local IP address specified!")
   if thread_pool is not None and "ThreadPool" not in str(type(thread_pool)):
     raise RepyArgumentError("Invalid object provided for the thread pool!")
   if type(check_intv) not in [int, float]:
