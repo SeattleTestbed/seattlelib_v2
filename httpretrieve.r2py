@@ -513,12 +513,12 @@ def _httpretrieve_build_request(host, port, path, querydata, postdata, \
 
   # Type-conversions:
   if type(querydata) is dict:
-    querydata = urllib_quote_parameters(querydata)
+    querydata = urllib.urllib_quote_parameters(querydata)
   elif querydata is None:
     querydata = ""
 
   if type(postdata) is dict:
-    postdata = urllib_quote_parameters(postdata)
+    postdata = urllib.urllib_quote_parameters(postdata)
 
   # Default to GET, unless the caller specifies a message body to send.
   methodstr = "GET"
