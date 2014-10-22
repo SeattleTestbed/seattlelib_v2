@@ -1,12 +1,10 @@
 #pragma repy restrictions.default dylink.r2py
-#pragma out
 
-httpserver = dy_import_module("httpserver.r2py")
+dy_import_module_symbols("httpserver.r2py")
 
-
+# this method will work as callback function for httpserver_registercallback in httpserver.r2py 
 def test_normal_server(httprequest_dictionary):
   # normal server just sends a message  
-
   # store the http dictionary to check the content
   mycontext['httprequest_dictionary'] = httprequest_dictionary
   dict_toreturn = {
@@ -23,17 +21,10 @@ if callfunc == 'initialize':
   # used to store the httprequest_dictionary from server
   mycontext['httprequest_dictionary'] = {}
   
-  # used to send post data using the httpretrieve client
-  http_query = {"first": "1st", "second": "2nd"}
-  http_post = {"third": "3rd", "fourth": "4th"}
-  
-
   # register the callback server
   try:
-    handle = httpserver.httpserver_registercallback((getmyip(),12345), test_normal_server)
+    handle = httpserver_registercallback((getmyip(),12345), test_normal_server)
   except Exception, e:
      raise Exception('failed test: server raised an exception: ' + str(e))
-  
-  exitall()
 
   
