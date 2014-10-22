@@ -28,3 +28,4 @@ if callfunc == 'initialize':
      raise Exception('failed test: server raised an exception: ' + str(e))
 
   
+  exitall()
