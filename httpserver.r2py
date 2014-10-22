@@ -19,6 +19,9 @@
   instead calling a user-supplied function on each request. The return
   value of the user-supplied function determines the response that is sent
   to the HTTP client.
+  
+  This file is updated to make it appropriate to be used for Repy V2. The code 
+  changes include Exception handling correction and other functio changes.
 
 """
 
