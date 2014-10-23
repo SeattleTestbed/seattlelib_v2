@@ -62,9 +62,13 @@ def httpretrieve_open(url, querydata=None, postdata=None,\
            both postdata and querydata are omitted, there is no query
            string sent in the request.
 
-           For both querydata and postdata, strings are sent *unmodified*.
-           This means you probably should encode them first, with
-           urllib_quote().
+           Per default, we use
+               `Content-Encoding: application/x-www-form-urlencoded`
+           for querydata and postdata. However, we do not MIME-encode the 
+           data; the caller must take care of that (using `urllib_quote`).
+           If you encode querydata/postdata differently, also supply a 
+           `httpheaders` dict, with the key `Content-Encoding` mapping to 
+           the MIME type you use.
     httpheaders (optional):
            A dictionary of supplemental HTTP request headers to add to the
            request.
@@ -505,14 +509,14 @@ def _httpretrieve_build_request(host, port, path, querydata, postdata, \
   if path == "":
     raise ValueError("Invalid path -- empty string.")
   if postdata is not None and type(postdata) is not str:
-    raise TypeError("postdata should be a urlencoded string")
+    raise TypeError("postdata should be a MIME-encoded string")
 
   # Initialize querydata if not given, ...
   querydata = querydata or ""
 
   # ... and ensure it is a str
   if type(querydata) is not str:
-    raise TypeError("querydata should be a urlencoded string")
+    raise TypeError("querydata should be a MIME-encoded string")
 
   # Initialize the HTTP headers dict if not given, ...
   httpheaders = httpheaders or {}
@@ -521,8 +525,10 @@ def _httpretrieve_build_request(host, port, path, querydata, postdata, \
   if type(httpheaders) is not dict:
     raise TypeError("httpheaders must be a dict")
 
-  # If we have query or post data, announce its encoding
-  httpheaders['Content-Type'] = 'application/x-www-form-urlencoded'
+  # If we have query or post data, set a default encoding if not given
+  if querydata or postdata and "Content-Type" not in httpheaders:
+    httpheaders['Content-Type'] = 'application/x-www-form-urlencoded'
+
 
   # Default to GET, unless the caller specifies a message body to send.
   methodstr = "GET"
