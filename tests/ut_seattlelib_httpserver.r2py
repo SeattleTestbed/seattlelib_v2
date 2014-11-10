@@ -1,4 +1,4 @@
-#pragma repy restrictions.default dylink.r2py
+#pragma repy restrictions.threeports dylink.r2py
 
 dy_import_module_symbols("httpserver.r2py")
 
@@ -16,6 +16,11 @@ def test_normal_server(httprequest_dictionary):
         }
   return dict_toreturn
    
+
+
+def client():
+  sockobj = openconnection(getmyip(), 12345,getmyip(),12346,25)
+  assert sockobj.send('') == len('')
     
 if callfunc == 'initialize':
   # used to store the httprequest_dictionary from server
@@ -25,7 +30,11 @@ if callfunc == 'initialize':
   try:
     handle = httpserver_registercallback((getmyip(),12345), test_normal_server)
   except Exception, e:
-     raise Exception('failed test: server raised an exception: ' + str(e))
+    raise Exception('failed test: server raised an exception: ' + str(e))
 
+  #client call
+  client()
+
+  sleep(0.1)
   
   exitall()
