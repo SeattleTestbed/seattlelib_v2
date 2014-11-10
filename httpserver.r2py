@@ -9,7 +9,7 @@
   Conrad Meyer
 
 <Updated>
-  Oct 22, 2014
+  Nov 10, 2014
 
 <Updateder>
   Urvashi Soni
@@ -19,19 +19,16 @@
   instead calling a user-supplied function on each request. The return
   value of the user-supplied function determines the response that is sent
   to the HTTP client.
-  
-  This file is updated to make it appropriate to be used for Repy V2. The code 
-  changes include Exception handling correction and other functio changes.
 
 """
 
 
 
-dy_import_module_symbols("librepy.r2py")
-dy_import_module_symbols("urllib.r2py")
-dy_import_module_symbols("urlparse.r2py")
-dy_import_module_symbols("uniqueid.r2py")
-dy_import_module_symbols("sockettimeout.r2py")
+librepy = dy_import_module("librepy.r2py")
+urllib = dy_import_module("urllib.r2py")
+urlparse = dy_import_module("urlparse.r2py")
+uniqueid = dy_import_module("uniqueid.r2py")
+sockettimeout = dy_import_module("sockettimeout.r2py")
 dy_import_module_symbols("httpretrieve.r2py")
 
 
@@ -139,15 +136,17 @@ def httpserver_registercallback(addresstuple, cbfunc):
   _httpserver_context['lock'].acquire(True)
 
   try:
-    newhttpdid = uniqueid_getid()
+    newhttpdid = uniqueid.uniqueid_getid()
+
     # Keep track of this server's id in a closure:
     def _httpserver_cbclosure(remoteip, remoteport, sock, ch, listench):
       # Do the actual processing on the request.
       _httpserver_socketcb(remoteip, remoteport, sock, ch, listench, \
           newhttpdid)
-      sock.close()  
+      sock.close() 
+
     _httpserver_context['handles'][newhttpdid] = \
-        waitforconn(addresstuple[0], addresstuple[1], _httpserver_cbclosure)
+        librepy.waitforconn(addresstuple[0], addresstuple[1], _httpserver_cbclosure)
     _httpserver_context['cbfuncs'][newhttpdid] = cbfunc
 
     return newhttpdid
@@ -288,12 +287,12 @@ def _httpserver_parseHTTPheader(headerdatalist):
     infodict['querystr'] = None
 
   try:
-    infodict['headers'] = _httpretrieve_parse_responseheaders(otherheaderslist)
+    infodict['headers'] = _httpretrieve_parse_responseheaders(otherheaderslist) 
   except HttpBrokenServerError:
     raise _httpserver_BadRequest("Request headers are misformed.")
 
   try:
-    infodict['querydict'] = urllib_unquote_parameters(infodict['querystr'])
+    infodict['querydict'] = urllib.urllib_unquote_parameters(infodict['querystr'])
   except (ValueError, AttributeError, TypeError):
     infodict['querydict'] = None
 
