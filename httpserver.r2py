@@ -9,7 +9,7 @@
   Conrad Meyer
 
 <Updated>
-  Nov 10, 2014
+  Oct 22, 2014
 
 <Updateder>
   Urvashi Soni
@@ -29,7 +29,9 @@ urllib = dy_import_module("urllib.r2py")
 urlparse = dy_import_module("urlparse.r2py")
 uniqueid = dy_import_module("uniqueid.r2py")
 sockettimeout = dy_import_module("sockettimeout.r2py")
-dy_import_module_symbols("httpretrieve.r2py")
+dy_import_module_symbols("httpretrieve.r2py")  
+# httprettrieve is left out intentionally because dylink.r2py needs some changes.
+# please refer to https://github.com/SeattleTestbed/seattlelib_v2/issues/153
 
 
 
@@ -196,7 +198,7 @@ def _httpserver_socketcb(remoteip, remoteport, sock, ch, listench, httpdid):
       # There was some sort of flaw in the client's request.
       response = "HTTP/1.0 400 Bad Request\r\n" + \
           "Content-Type: text/plain\r\n\r\n" + str(br) + "\r\n"
-      _httpserver_sendAll(sock, response, besteffort=True)
+      _httpserver_send_all(sock, response, besteffort=True)
       break
     
     except _httpserver_ServerError, se:
@@ -204,7 +206,7 @@ def _httpserver_socketcb(remoteip, remoteport, sock, ch, listench, httpdid):
       # we didn't expect.
       response = "HTTP/1.0 500 Internal Server Error\r\n" + \
           "Content-Type: text/plain\r\n\r\n" + str(se) + "\r\n"
-      _httpserver_sendAll(sock, response, besteffort=True)
+      _httpserver_send_all(sock, response, besteffort=True)
       break
     
     except _httpserver_BadTransferCoding, bte:
@@ -214,7 +216,7 @@ def _httpserver_socketcb(remoteip, remoteport, sock, ch, listench, httpdid):
           ("Content-Length: %d\r\n" % (len(str(bte)) + 2)) + \
           "Connection: close\r\n" + \
           "Content-Type: text/plain\r\n\r\n" + str(bte) + "\r\n"
-      _httpserver_sendAll(sock, response, besteffort=True)
+      _httpserver_send_all(sock, response, besteffort=True)
       break
 
     except _httpserver_ClientClosedSockEarly:
@@ -302,7 +304,7 @@ def _httpserver_parseHTTPheader(headerdatalist):
 
 
 
-def _httpserver_sendAll(sock, datastr, besteffort=False):
+def _httpserver_send_all(sock, datastr, besteffort=False):
   
   sent = 0
   while sent < len(datastr):
@@ -761,7 +763,7 @@ def _httpserver_sendfile(sock, filelikeobj):
     chunk = filelikeobj.read(4096)
     if len(chunk) == 0:
       break
-    _httpserver_sendAll(sock, chunk, besteffort=True)
+    _httpserver_send_all(sock, chunk, besteffort=True)
 
 
 
@@ -777,12 +779,12 @@ def _httpserver_sendfile_chunked(sock, filelikeobj):
     # encode as HTTP/1.1 chunks:
     totallen += len(chunk)
     chunk = "%X\r\n%s\r\n" % (len(chunk), chunk)
-    _httpserver_sendAll(sock, chunk)
+    _httpserver_send_all(sock, chunk)
 
   lastchunk = "0\r\n"
   lastchunk += ("Content-Length: %d\r\n" % totallen)
   lastchunk += "\r\n"
-  _httpserver_sendAll(sock, lastchunk)
+  _httpserver_send_all(sock, lastchunk)
 
 
 
@@ -865,7 +867,7 @@ def _httpserver_process_single_request(sock, cbfunc, extradata, httpdid, \
     for key, val in headers.items():
       response += key + ": " + val + "\r\n"
     response += "\r\n"
-    _httpserver_sendAll(sock, response, besteffort=True)
+    _httpserver_send_all(sock, response, besteffort=True)
 
     # Send the response body:
     _httpserver_sendfile(sock, messagestream)
@@ -887,7 +889,7 @@ def _httpserver_process_single_request(sock, cbfunc, extradata, httpdid, \
 
     
     # Send response headers.
-    _httpserver_sendAll(sock, response)
+    _httpserver_send_all(sock, response)
 
     # Read chunks from the callback and efficiently send them to
     # the client using HTTP/1.1 chunked encoding.
