@@ -100,6 +100,7 @@ def time_updatetime(localport):
       # Be warned that any error messages are suppressed!
       return
   else:
+    # All of the update_function's raised errors. Report these exceptions to the caller.
     raise TimeError('Error(s) in time_updatetime: ' + str(exception_list))
 
   
