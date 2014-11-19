@@ -18,7 +18,7 @@
 
 
 ntp_time = dy_import_module('ntp_time.r2py')
-tcp_time = dy_import_module_symbols('tcp_time.r2py')
+tcp_time = dy_import_module('tcp_time.r2py')
 time_interface = dy_import_module("time_interface.r2py")
 
 
