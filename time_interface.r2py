@@ -87,6 +87,11 @@ def time_updatetime(localport):
     None.
   """
   exception_list = []
+  
+  # Raise exception if TIME_IMP_DICT is empty. Otherwise proceed ahead.
+  if not TIME_IMP_DICT:
+    raise TimeError("time_updatetime called with an empty TIME_IMP_DICT. Use time_register_method to populate it!")
+    
   # try the 'update' function for each implementation, storing exceptions in
   # case of total failure, and exiting the function when any of the 'update'
   # functions succeed.
