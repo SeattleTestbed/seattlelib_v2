@@ -1,0 +1,65 @@
+"""
+This unit test checks the argument checking for waitforconn().
+"""
+#pragma repy restrictions.default dylink.r2py librepy.r2py
+
+def noop(remoteip, remoteport, sock, thiscommhandle, listencommhandle):
+  sock.close()
+  log("Bad! noop() called!\n")
+
+# We don't have port 80
+try:
+  stop_func = waitforconn(getmyip(), 80, noop)
+  stop_func()
+  log("Port 80 allowed!\n")
+except ResourceForbiddenError:
+  pass
+
+# Float is not allowed as a port
+try:
+  stop_func = waitforconn(getmyip(), 12345.0, noop)
+  stop_func()
+  log("Floating port allowed!\n")
+except RepyArgumentError:
+  pass
+
+# Try a bad localip
+try:
+  stop_func = waitforconn("321.123.444.555", 12345, noop)
+  stop_func()
+  log("Bad localip allowed!\n")
+except RepyArgumentError:
+  pass
+
+# Try a really bad localip
+try:
+  stop_func = waitforconn("hi there", 12345, noop)
+  stop_func()
+  log("Really bad localip allowed!\n")
+except RepyArgumentError:
+  pass
+
+# Try a negative check interval
+try:
+  stop_func = waitforconn(getmyip(), 12345, noop, check_intv=-1)
+  stop_func()
+  log("Negative check interval worked!\n")
+except RepyArgumentError:
+  pass
+
+# Try a 0 check interval
+try:
+  stop_func = waitforconn(getmyip(), 12345, noop, check_intv=0)
+  stop_func()
+  log("0 check interval worked!\n")
+except RepyArgumentError:
+  pass
+
+# Try a bad thread pool
+try:
+  stop_func = waitforconn(getmyip(), 12345, noop, thread_pool="test")
+  stop_func()
+  log("Bad thread pool argument worked!\n")
+except RepyArgumentError:
+  pass
+

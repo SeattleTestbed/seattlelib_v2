@@ -1,0 +1,39 @@
+#pragma repy restrictions.default dylink.r2py librepy.r2py
+"""
+This test tries to sub-class the Thread object.
+"""
+
+# Create a timeout thread
+def timeout():
+  sleep(4)
+  log("Timeout!\n")
+  exitall()
+
+STARTED = [False]
+
+class CustomThread (Thread):
+  def run(self):
+    STARTED[0] = True
+    sleep(1)
+
+
+# Create an instance of our custom thread
+ct = CustomThread()
+
+# Start the thread
+ct.start()
+if not ct.is_alive():
+  log("Thread should be alive!\n")
+
+# Join the thread
+ct.join()
+
+if ct.is_alive():
+  log("Thread should be dead!\n")
+
+if not STARTED[0]:
+  log("Thread never started!\n")
+
+exitall()
+
+

@@ -1,0 +1,68 @@
+#pragma repy restrictions.default dylink.r2py librepy.r2py
+"""
+This unit test checks the behavior of librepyrandom.
+
+We check:
+  1) The return type is correct
+  2) We can generate 100 random result from each API
+"""
+
+# Check that all the functions work at some level
+num1 = randomint()
+if type(num1) is not int:
+  log("Result of randomint() is not an int! Type:", type(num1), "\n")
+
+num2 = randomlong()
+if type(num2) is not long:
+  log("Result of randomlong() is not a long! Type:", type(num2), "\n")
+
+num3 = randomfloat()
+if type(num3) is not float:
+  log("Result of randomfloat() is not a float! Type:", type(num3), "\n")
+
+data = randomstring(64)
+if type(data) is not str:
+  log("Result of randomstring() is not a string! Type:", type(data), "\n")
+
+elif len(data) != 64:
+  log("Data provided by randombytes is not the correct length!\n")
+
+
+# Try to generate 100 unique of each
+unique_int = set([])
+for x in xrange(100):
+  n = randomint()
+  if n in unique_int:
+    log("Generated non-unique number!\n")
+  if n < 0:
+     log("Generated negative int!\n")
+  unique_int.add(n)
+
+unique_long = set([])
+for x in xrange(100):
+  n = randomlong()
+  if n in unique_long:
+    log("Generated non-unique long!\n")
+  if n < 0:
+    log("Generated negative long!\n")
+  unique_long.add(n)
+
+unique_float = set([])
+for x in xrange(100):
+  n = randomfloat()
+  if n in unique_float:
+    log("Generated non-unique float!\n")
+  if n >= 1 or n <= 0:
+    log("Generated float out of bounds:", str(n), "\n")
+  unique_float.add(n)
+
+unique_str = set([])
+for x in xrange(100):
+  s = randomstring(32)
+  if s in unique_str:
+    log("Generated non-unique str!\n")
+  if len(s) != 32:
+    log("Generated string is wrong length! Length:", len(s), "\n")
+  unique_str.add(s)
+
+
