@@ -5,15 +5,16 @@
   Function Tested:
     ntp_time_updatetime() in ntp_time.r2py
 """
-    
-from repyportability import *
-add_dy_support(locals())
+#pragma repy restrictions.default dylink.r2py    
+#from repyportability import *
+#add_dy_support(locals())
 
-time_interface = dy_import_module("time.r2py")
+time_interface = dy_import_module("time_interface.r2py")
 ntp_time = dy_import_module("ntp_time.r2py")
-
+timeport = list(getresources()[0]["connport"])[0]
 try:
-  time_interface.time_updatetime(12345)
+  
+  time_interface.time_updatetime(timeport)
 
   time_interface.time_gettime()
 
