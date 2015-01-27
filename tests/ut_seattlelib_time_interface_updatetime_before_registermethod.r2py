@@ -12,3 +12,6 @@ try:
 except time_interface.TimeError:
   # That's what we expect
   pass
+else:
+  # we have to fail this if we try didnt raise a exception for not registering time method
+  log("[FAIL]: Did not raise exception for not registering time method (ntp/tcp) \n")
