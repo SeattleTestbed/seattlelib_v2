@@ -13,5 +13,10 @@ except time_interface.TimeError:
   # That's what we expect
   pass
 else:
-  # we have to fail this if we try didnt raise a exception for not registering time method
-  log("[FAIL]: The call to time_interface.time_updatetime() method has succeeded but instead it should have raised time_interface.TimeError exception.  This exception has to be raised if time_register_method() which registers the (tcp / ntp) method is not called prior to calling time_interface.time_updatetime() method \n")
+  # we have to fail this if we try didnt raise a exception 
+  #for not registering time method
+  log("[FAIL]: The call to time_interface.time_updatetime() method "
+  "has succeeded but instead it should have raised time_interface.TimeError "
+  "exception.  This exception has to be raised if time_register_method() which "
+  "registers the (tcp / ntp) method is not called prior to "
+  "calling time_interface.time_updatetime() method \n")
