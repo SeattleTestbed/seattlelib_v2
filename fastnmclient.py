@@ -24,6 +24,7 @@ add_dy_support(locals())
 # session wrapper (breaks the stream into messages)
 # an abstracted "itemized data communication" in a separate API
 session = dy_import_module("session.r2py")
+random = dy_import_module("random.r2py")
 
 
 # makes connections time out
@@ -217,9 +218,9 @@ def nmclient_safelygethandle():
   # need a lock when removing because a race is benign (it prevents reuse)
   nmclient_handledictlock.acquire(True)
   try:
-    potentialhandle = randomfloat()
+    potentialhandle = random.randomfloat()
     while potentialhandle in nmclient_handledict:
-      potentialhandle = randomfloat()
+      potentialhandle = random.randomfloat()
 
     # Added to fix #885.   This ensures that the handle won't be reused
     nmclient_handledict[potentialhandle] = {}

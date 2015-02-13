@@ -4,7 +4,7 @@ DEPENDENCIES/portability/*
 DEPENDENCIES/common/*
 
 # Tests
-test DEPENDENCIES/common/utf/*
+test DEPENDENCIES/utf/*
 test tests/*
 test test/*
 test testlibrepy/*

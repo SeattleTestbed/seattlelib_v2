@@ -1,0 +1,39 @@
+#pragma repy restrictions.default dylink.r2py librepy.r2py
+"""
+This unit test checks the Thread object.
+"""
+
+# Start a timeout thread
+def timeout():
+  sleep(5)
+  log("Timeout!\n")
+  exitall()
+createthread(timeout)
+
+
+# This is the target of the thread
+STARTED = [False]
+def thread_func():
+  STARTED[0] = True
+  sleep(2)
+  
+# Create a thread object
+tobj = Thread(target=thread_func)
+
+# Start the thread, check if it is alive
+tobj.start()
+if not tobj.is_alive():
+  log("Thread should be alive!\n")
+
+# Join the thread
+tobj.join()
+
+# Check that the thread is now dead
+if tobj.is_alive():
+  log("Thread should be dead!\n")
+
+if not STARTED[0]:
+  log("Thread never started!\n")
+
+exitall()
+

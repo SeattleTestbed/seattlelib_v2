@@ -1,0 +1,33 @@
+#pragma repy restrictions.default dylink.r2py librepy.r2py
+"""
+This unit test checks the lock object.
+"""
+
+# Setup a timeout thread
+def timeout():
+  sleep(5)
+  log("Timeout!\n")
+  exitall()
+createthread(timeout)
+
+# Create the lock
+lock = Lock()
+
+# Acquire the lock
+gotit = lock.acquire()
+if not gotit:
+  log("Should have acquired lock!\n")
+
+gotit = lock.acquire(False)
+if gotit:
+  log("Should not have acquired lock!\n")
+
+lock.release()
+gotit = lock.acquire()
+if not gotit:
+  log("Should have acquired lock! (2)\n")
+
+exitall()
+
+
+
