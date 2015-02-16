@@ -1,4 +1,4 @@
-pragma out Error opening source file 'non_exist.repy'
+#pragma out Error opening source file 'non_exist.repy'
 
 """
 repypp.py is a preprocessor for repy. It includes dependent files as needed.This is used to help the 
