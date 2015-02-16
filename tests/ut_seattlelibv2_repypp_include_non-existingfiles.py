@@ -1,34 +1,31 @@
-#pragma out Error opening source file 'nonexit.py'
+pragma out Error opening source file 'non_exist.repy'
 
 """
-ut_seattlelibv2_repypp_include_non-existingfiles.py -- This script tests if repypp.py check erroneous 
-#include statements(include non-existing files).
+repypp.py is a preprocessor for repy. It includes dependent files as needed.This is used to help the 
+programmer avoid the need to use import. They can instead use "include X" which works somewhat like "from X import *".
 
+This script tests if repypp.py check erroneous #include statements(include non-existing files).
 """
 
 import os
 import sys
-import tempfile
 import subprocess
 
 def main():
-    #create a temporary_file1 contains:
+    #create a temporary_file contains:
     #def foo():
-    # pass
-    temporary_file1 = tempfile.NamedTemporaryFile(prefix='testfile_', suffix='.py', dir= os.path.dirname(os.path.realpath(__file__)), delete=True)
-    temporary_file1.writelines(['def foo():\n','  pass'])
+    #  pass
+    temporary_file = open('testfile_repypp_example.repy', 'w')
+    temporary_file.write('include non_exist.repy\ndef bar():\n  pass') 
+    temporary_file.close()
 
-    #create a temporary_file2 contains:
-    #include nonexit.py
-    #def bar():
-    # pass
-    temporary_file2 = tempfile.NamedTemporaryFile(prefix='testfile_', suffix='.py', dir= os.path.dirname(os.path.realpath(__file__)), delete=True)
-    temporary_file2.writelines(['include nonexit.py\n','def bar():\n','  pass'])
-    
-    subprocess.call(['python', 'repypp.py', temporary_file2.name, 'unittest.py'])   
-    
-    if os.path.isfile('unittest.py'):
-        os.remove('unittest.py')
+    subprocess.call(['python', 'repypp.py', 'testfile_repypp_example.repy', 'testfile_repypp_example_preprocessed.repy']) 
+      
+    if os.path.isfile('testfile_repypp_example_preprocessed.repy'):
+        os.remove('testfile_repypp_example_preprocessed.repy')
+        
+    if os.path.isfile('testfile_repypp_example.repy'):
+        os.remove('testfile_repypp_example.repy')
     
 if __name__ == "__main__":
   main()
