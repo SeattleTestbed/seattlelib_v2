@@ -5,8 +5,10 @@
 #pragma out written to outfile.   Outfile and infile must be distinct.
 
 """
-ut_seattlelibv2_repypp_multiplearguments.py -- This script tests if repypp.py check erroneous 
-#include statements(have multiple arguments).
+repypp.py is a preprocessor for repy. It includes dependent files as needed.This is used to help the 
+programmer avoid the need to use import. They can instead use "include X" which works somewhat like "from X import *".
+
+This script tests if repypp.py check erroneous arguments(have multiple arguments).
 
 """
 
@@ -18,21 +20,26 @@ import subprocess
 def main():
     #create a temporary_file1 contains:
     #def foo():
-    # pass
-    temporary_file1 = tempfile.NamedTemporaryFile(prefix='testfile_', suffix='.py', dir= os.path.dirname(os.path.realpath(__file__)), delete=True)
-    temporary_file1.writelines(['def foo():\n','  pass'])
+    #  pass
+    temporary_file1 = open('testfile_repypp_example1.repy', 'w')
+    temporary_file1.write('def foo():\n  pass\n') 
+    temporary_file1.close()
 
     #create a temporary_file2 contains:
-    #include temporary_file1.py
+    #include testfile_repypp_example1.repy
     #def bar():
-    # pass
-    temporary_file2 = tempfile.NamedTemporaryFile(prefix='testfile_', suffix='.py', dir= os.path.dirname(os.path.realpath(__file__)), delete=True)
-    temporary_file2.writelines(['include ' + temporary_file1.name + '\n','def bar():\n','  pass'])
+    #  pass
+    temporary_file2 = open('testfile_repypp_example2.repy', 'w')
+    temporary_file2.write('include testfile_repypp_example1.repy\ndef bar():\n  pass\n') 
+    temporary_file2.close()
 
-    subprocess.call(['python', 'repypp.py', temporary_file2.name, 'unittest.py' , temporary_file1.name])   
+    subprocess.call(['python', 'repypp.py', 'testfile_repypp_example2.repy', 'testfile_repypp_example2_preprocessed.repy' , 'testfile_repypp_example2.repy'])   
     
-    if os.path.isfile('unittest.py'):
-        os.remove('unittest.py')
+    if os.path.isfile('testfile_repypp_example2_preprocessed.repy'):
+        os.remove('testfile_repypp_example2_preprocessed.repy')
+        
+    os.remove('testfile_repypp_example1.repy')
+    os.remove('testfile_repypp_example2.repy')
     
 if __name__ == "__main__":
   main()
