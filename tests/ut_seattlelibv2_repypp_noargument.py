@@ -5,34 +5,19 @@
 #pragma out written to outfile.   Outfile and infile must be distinct.
 
 """
-ut_seattlelibv2_repypp_noargument.py -- This script tests if repypp.py check erroneous 
-#include statements(have no arguments at all).
+repypp.py is a preprocessor for repy. It includes dependent files as needed.This is used to help the 
+programmer avoid the need to use import. They can instead use "include X" which works somewhat like "from X import *".
+
+This script tests if repypp.py check erroneous arguments(have no arguments at all).
 
 """
 
-import os
 import sys
-import tempfile
 import subprocess
 
 def main():
-    #create a temporary_file1 contains:
-    #def foo():
-    # pass
-    temporary_file1 = tempfile.NamedTemporaryFile(prefix='testfile_', suffix='.py', dir= os.path.dirname(os.path.realpath(__file__)), delete=True)
-    temporary_file1.writelines(['def foo():\n','  pass'])
-
-    #create a temporary_file2 contains:
-    #include temporary_file1.py
-    #def bar():
-    # pass
-    temporary_file2 = tempfile.NamedTemporaryFile(prefix='testfile_', suffix='.py', dir= os.path.dirname(os.path.realpath(__file__)), delete=True)
-    temporary_file2.writelines(['include ' + temporary_file1.name + '\n','def bar():\n','  pass'])
-    
     subprocess.call(['python', 'repypp.py'])   
     
-    if os.path.isfile('unittest.py'):
-        os.remove('unittest.py')
     
 if __name__ == "__main__":
   main()
