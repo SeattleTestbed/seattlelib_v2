@@ -13,7 +13,8 @@ import subprocess
 
 def main():
     #create a temporary_file contains:
-    #def foo():
+    #include non_exist.repy
+    #def bar():
     #  pass
     temporary_file = open('testfile_repypp_example.repy', 'w')
     temporary_file.write('include non_exist.repy\ndef bar():\n  pass') 
