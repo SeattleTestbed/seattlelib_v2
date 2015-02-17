@@ -20,8 +20,18 @@ def main():
     temporary_file.write('include non_exist.repy\ndef bar():\n  pass') 
     temporary_file.close()
 
-    subprocess.call(['python', 'repypp.py', 'testfile_repypp_example.repy', 'testfile_repypp_example_preprocessed.repy']) 
-      
+    #subprocess.call(['python', 'repypp.py', 'testfile_repypp_example.repy', 'testfile_repypp_example_preprocessed.repy']) 
+    
+    process = subprocess.Popen([sys.executable, 'repypp.py', 'testfile_repypp_example.repy', 'testfile_repypp_example_preprocessed.repy'], 
+                           stderr=subprocess.PIPE,
+                           stdout=subprocess.PIPE)
+
+    (out, err) = process.communicate()
+    if out != 'Error opening source file \'non_exist.repy\'':
+        print out
+        print "repypp.py can't check check erroneous #include statements(include non-existing files)."
+
+
     if os.path.isfile('testfile_repypp_example_preprocessed.repy'):
         os.remove('testfile_repypp_example_preprocessed.repy')
         
