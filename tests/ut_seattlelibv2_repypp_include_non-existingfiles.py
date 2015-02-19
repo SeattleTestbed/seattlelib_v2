@@ -1,36 +1,33 @@
 #pragma out Error opening source file 'non_exist.repy'
 
 """
-repypp.py is a preprocessor for repy. It includes dependent files as needed.This is used to help the 
-programmer avoid the need to use import. They can instead use "include X" which works somewhat like "from X import *".
+repypp.py is a preprocessor for repy. It includes dependent files as 
+needed.This is used to help the programmer avoid the need to use 
+import. They can instead use "include X" which works somewhat like 
+"from X import *".
 
-This script tests if repypp.py check erroneous #include statements(include non-existing files).
+This script tests if repypp.py check erroneous include statements
+(include non-existing files).
 """
 
 import os
-import sys
-import subprocess
+import test_repypp_library
 
 def main():
+    filecontent = '''include non_exist.repy
+def bar():
+  pass
+'''
     #create a temporary_file contains:
     #include non_exist.repy
     #def bar():
     #  pass
-    temporary_file = open('testfile_repypp_example.repy', 'w')
-    temporary_file.write('include non_exist.repy\ndef bar():\n  pass') 
-    temporary_file.close()
+    test_repypp_library.createtempfile('testfile_repypp_example.repy', filecontent)
 
-    #subprocess.call(['python', 'repypp.py', 'testfile_repypp_example.repy', 'testfile_repypp_example_preprocessed.repy']) 
-    
-    process = subprocess.Popen([sys.executable, 'repypp.py', 'testfile_repypp_example.repy', 'testfile_repypp_example_preprocessed.repy'], 
-                           stderr=subprocess.PIPE,
-                           stdout=subprocess.PIPE)
+    if os.path.isfile('non_exist.repy'):
+        os.remove('non_exist.repy')
 
-    (out, err) = process.communicate()
-    if out != 'Error opening source file \'non_exist.repy\'':
-        print out
-        print "repypp.py can't check check erroneous #include statements(include non-existing files)."
-
+    test_repypp_library.preprocess('testfile_repypp_example.repy')
 
     if os.path.isfile('testfile_repypp_example_preprocessed.repy'):
         os.remove('testfile_repypp_example_preprocessed.repy')
