@@ -41,12 +41,12 @@ def bar():
     test_repypp_library.createtempfile('testfile_repypp_example2.repy', filecontent2)
     
     try:
-        subprocess.call([sys.executable, 'repypp.py', 'testfile_repypp_example2.repy', 'testfile_repypp_example2_preprocessed.repy' , 'testfile_repypp_example2.repy'])   
+        subprocess.call([sys.executable, 'repypp.py', 'testfile_repypp_example1.repy', 'testfile_repypp_example1_preprocessed.repy' , 'testfile_repypp_example2.repy'])   
     except:
         print 'Can not execute repypp.py'
 
-    if os.path.isfile('testfile_repypp_example2_preprocessed.repy'):
-        os.remove('testfile_repypp_example2_preprocessed.repy')
+    if os.path.isfile('testfile_repypp_example1_preprocessed.repy'):
+        os.remove('testfile_repypp_example1_preprocessed.repy')
         
     os.remove('testfile_repypp_example1.repy')
     os.remove('testfile_repypp_example2.repy')
