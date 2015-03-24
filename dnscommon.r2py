@@ -345,7 +345,7 @@ def convert_packet_to_dictionary(dns_packet_data):
   # one. Otherwise, it is assigned a value of zero.
   packet_dict['authentic_data'] = False
   if three_byte & 32 != 0:
-    packt_dict['authentic_data'] = True
+    packet_dict['authentic_data'] = True
 
   # 'checking_disabled' occupies the fourth bit of three_byte, and indicates 
   # whether the client desires that data be verified by the server or that they 
