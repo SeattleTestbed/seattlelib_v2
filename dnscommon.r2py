@@ -494,12 +494,12 @@ def _read_single_answer(answer_index, dns_query_data):
   """
   # Parse answer address.
   read_index, answer_name = _parse_address(answer_index, dns_query_data)
-
+  
   # Read the type.
   answer_type = _type_lookup_table[
                       _charpair_to_int16(dns_query_data[read_index:read_index + 2])]
-  read_index += 2
 
+  read_index += 2
   # Read the class.
   answer_class = _class_lookup_table[
                      _charpair_to_int16(dns_query_data[read_index:read_index + 2])]
@@ -519,9 +519,13 @@ def _read_single_answer(answer_index, dns_query_data):
 
   # There are a lot of different types of queries. We can parse all of these ones 
   # in the same way, though.
-  simple_answers = ['A', 'NS', 'CNAME', 'MD', 'MB', 'MF', 'MG', 'MR', 'MX', 'PTR']
+  simple_answers = ['A', 'CNAME', 'MD', 'MB', 'MF', 'MG', 'MR', 'MX']
   if answer_type in simple_answers:
     read_index, resource_data['address'] = _parse_answer_address(read_index, dns_query_data)
+  elif answer_type == 'NS':
+    read_index, resource_data['nameserver'] = _parse_address(read_index,dns_query_data)
+  elif answer_type == 'PTR':
+    read_index, resource_data['domain'] = _parse_address(read_index, dns_query_data)
   elif answer_type == 'SOA':
     read_index, mname = _parse_address(read_index, dns_query_data)
     resource_data['mname'] = mname
@@ -560,7 +564,7 @@ def _read_single_answer(answer_index, dns_query_data):
     'time_to_live' : time_to_live,
     'answer_data' : resource_data
                 }
-
+                
   return read_index, answer_dict
 
 
@@ -600,7 +604,7 @@ def _parse_answer_address(address_index, dns_query_data):
   address_index += 1
   address += str(ord(dns_query_data[address_index]))
   address_index += 1
-  
+
   return address_index, address
 
 
