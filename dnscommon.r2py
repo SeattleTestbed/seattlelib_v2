@@ -109,6 +109,7 @@ _type_lookup_table = {
   14 : 'MINFO',     # Mailbox Information
   15 : 'MX',        # Mail Exchange
   16 : 'TXT',       # Text Strings
+  28 : 'AAAA',      # IPv6 address
   252 : 'AXFR',     # Request for transfer of zone
   253 : 'MAILB',    # Request for mailbox-related RRs
   254 : 'MAILA',    # Request for mail agent RRs       (Obsolete)
@@ -130,6 +131,7 @@ _type_lookup_table = {
   'MINFO' : 14,
   'MX' : 15,
   'TXT' : 16,
+  'AAAA' : 28,
   'AXFR' : 252,
   'MAILB' : 253,
   'MAILA' : 254,
@@ -504,7 +506,6 @@ def _read_single_answer(answer_index, dns_query_data):
   answer_class = _class_lookup_table[
                      _charpair_to_int16(dns_query_data[read_index:read_index + 2])]
   read_index += 2
-
   # Some math magic with the TTL.
   time_to_live = _charpair_to_int16(dns_query_data[read_index:read_index + 2]) * 2 ** 16
   read_index += 2
@@ -519,13 +520,18 @@ def _read_single_answer(answer_index, dns_query_data):
 
   # There are a lot of different types of queries. We can parse all of these ones 
   # in the same way, though.
-  simple_answers = ['A', 'CNAME', 'MD', 'MB', 'MF', 'MG', 'MR', 'MX']
+  simple_answers = ['A', 'CNAME', 'MD', 'MB', 'MF', 'MG', 'MR']
   if answer_type in simple_answers:
     read_index, resource_data['address'] = _parse_answer_address(read_index, dns_query_data)
   elif answer_type == 'NS':
     read_index, resource_data['nameserver'] = _parse_address(read_index,dns_query_data)
   elif answer_type == 'PTR':
     read_index, resource_data['domain'] = _parse_address(read_index, dns_query_data)
+  elif answer_type == 'MX':
+    read_index+=2
+    read_index, resource_data['records'] = _parse_address(read_index, dns_query_data)
+  elif answer_type == 'AAAA':
+    read_index, resource_data['address'] = _parse_aaaa_address(read_index, dns_query_data)
   elif answer_type == 'SOA':
     read_index, mname = _parse_address(read_index, dns_query_data)
     resource_data['mname'] = mname
@@ -556,7 +562,6 @@ def _read_single_answer(answer_index, dns_query_data):
     resource_data['retry'] = retry
     resource_data['expire'] = expire
     resource_data['minimum'] = minimum
-
   answer_dict = {
     'name' : answer_name,
     'type' : answer_type,
@@ -564,11 +569,64 @@ def _read_single_answer(answer_index, dns_query_data):
     'time_to_live' : time_to_live,
     'answer_data' : resource_data
                 }
-                
+
   return read_index, answer_dict
 
 
+def _parse_aaaa_address(address_index, dns_query_data):
+  """
+  <Purpose>
+    This method parses a IPv6 directly out of an answer 
+    section. This method is needed because answer IPs are not delimited, 
+    since their labels are not of variable length.
+  
+  <Arguments>
+    address_index
+      The integer index at which the address starts.
+    dns_query_data
+      The string containing raw query data
 
+  <Exceptions>
+    If the address is improperly formatted, this will produce an integer 
+    parsing failure.
+
+  <Side Effects>
+    None
+
+  <Returns>
+    A tuple containing the new read index and IPv6 Address.
+  """
+  #converts packet data to hex
+  add = ''
+  address = ''
+  new_list = []
+  for i in range(0,16):
+    add+=str(hex(ord(dns_query_data[address_index])))
+    add+=":"
+    address_index += 1
+  add = add[:-1]
+
+  #converts hex data to readable IPv6
+  add_list = add.split(":")
+  for i in add_list:
+    i = i[2:]
+    if len(i) == 2:
+        new_list.append(i)
+    elif len(i)==1:
+        i = '0'+i
+        new_list.append(i)
+
+  for i in range(0,16,2):
+    try:
+        address+= new_list[i]+new_list[i+1]
+        address+=':'
+    except IndexError:
+        pass
+  address=address[:-1]
+  #address = address.replace('0000','')
+  #address = address.replace('::',':')
+
+  return address_index, address
 
 def _parse_answer_address(address_index, dns_query_data):
   """
