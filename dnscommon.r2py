@@ -532,6 +532,13 @@ def _read_single_answer(answer_index, dns_query_data):
     read_index, resource_data['records'] = _parse_address(read_index, dns_query_data)
   elif answer_type == 'AAAA':
     read_index, resource_data['address'] = _parse_aaaa_address(read_index, dns_query_data)
+  elif answer_type == 'TXT':
+    txt_length = len(dns_query_data)-read_index
+    resource_text = []
+    for i in range(0,txt_length):
+      resource_text.append(dns_query_data[read_index])
+      read_index+=1
+    resource_data['text'] = ''.join(resource_text)
   elif answer_type == 'SOA':
     read_index, mname = _parse_address(read_index, dns_query_data)
     resource_data['mname'] = mname
