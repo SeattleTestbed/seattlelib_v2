@@ -1,0 +1,391 @@
+"""
+<Program Name>
+  dnsquery.r2py
+
+<Date Created>
+  February 20, 2010
+
+<Author(s)>
+  Pranav Raj Tyagi
+  pt992@nyu.edu
+
+<Major Edits>
+  None
+
+<Purpose>
+  Implements a function to query a name server for the INTERNET-class A recordof a FQDN
+  and replies in a 'tuple'
+
+<Notes>
+  Implement a function to query a name server for the INTERNET-class A record of a FQDN, 
+  and return the reply in a `tuple`, as Python's `socket.gethostbyname_ex` does.
+    
+  'gethostbyname_ex(name)' - to get IPv4 address for given domain naime
+  'reverseLookup(address)' - to get the domain name for the given IPv4 address
+  'namingServer(name)' - to get the NS for the given domain name
+  'recordsMX(name)' - to get the MX records for the given domain name
+  'txtRecords(name)' - to get the TXT records for the given domain name
+  'getAAAA(name)' - to get the IPV6 address for the given domain name
+
+  ------------
+"""
+
+#imports dnscommon.r2py file from repyv2 library using dylink.r2py
+dnscommon = dy_import_module("dnscommon.r2py")
+libsocket = dy_import_module("librepysocket.r2py")
+
+listen_ip = '8.8.8.8'
+listen_port = 53
+client_ip = getmyip()
+client_port = libsocket.get_messports(client_ip)[0]
+#destip = gethostbyname('myresolver.zenodotus.poly.edu')
+
+
+default_flags = {
+                 'communication_id': 'a7',
+                 'query_response': False,
+                 'operation_code': 0,
+                 'authority_advisory': False,
+                 'truncation': False,
+                 'recursion_desired': True,
+                 'recursion_accepted': False,
+                 'z': False,
+                 'authentic_data': False,
+                 'checking_disabled': False,
+                 'error_code': 0,
+                 'answer_count': 0,
+                 'authority_record_count': 0,
+                 'additional_record_count': 0,
+                 'answers': []
+                }
+#sends and receive the packet to and from DNS
+def dns_connection(client_ip,client_port,destip, destport ,questions):
+  """
+  <Purpose>
+    Parses the question and sends it to DNS.
+
+  <Arguments>
+    questions
+      An array of dictionaries, one dictionary per question. Format is:
+       {'name', 'type', 'class'}
+
+  <Exceptions>
+    None
+
+  <Returns>
+    A formatted dictionary in the form:
+  {
+    'raw_data':                <long string> (network raw)
+    'remote_ip':               string (formatted unicode, IP Address)
+    'remote_port':             integer
+    'communication_id'         string (network raw)
+    'query_response'           boolean
+    'operation_code'           integer
+    'authority_advisory'       boolean
+    'truncation'               boolean
+    'recursion_desired'        boolean
+    'recursion_accepted'       boolean
+    'z'                        boolean
+    'authentic_data'           boolean
+    'checking_disabled'        boolean
+    'error_code'               integer (4 bit)
+    'question_count'           integer (16 bit)
+    'answer_count'             integer (16 bit)
+    'authority_record_count'   integer (16 bit)
+    'additional_record_count'  integer (16 bit)   )
+    'questions': array of dictionaries containing:
+    'name'                  string (formatted unicode, IP Address)
+    'type'                  string (formatted unicode, eg A, AAAA, MX)
+    'class'                 string (formatted unicode, eg IN, HE, CH)
+    'answers': array of dictionaries containing:
+    'name'                  string (formatted unicode, IP Address)
+        'type'                  string (formatted unicode, eg A, AAAA, MX)
+        'class'                 string (formatted unicode, eg IN, HE, CH)
+        'time_to_live'          integer (seconds, 32 bit)
+        'answer_data'           dictionary (format based on type)
+
+  }
+
+    The 'answer_data' dictionary field can have various formats. Here are the
+    three which are currently supported:
+    SOA:
+      'mname' <IP>
+      'rname' <IP>
+      'serial' <32 bit int>
+      'refresh' <32 bit int>
+      'retry' <32 bit int>
+      'expire' <32 bit int>
+      'minimum' <32 bit int>
+    NS:
+      'address' <Domain Name>
+    A:
+      'address' <IP>
+  """
+
+  packet_dict = {}
+  response_string = ""
+  succeeded = False
+  #generate packet from question that are asked by the user 
+  converted_packet = dnscommon.generate_packet(questions, flags=default_flags)
+  #listens for UDP messages
+  udpserversocket = listenformessage(client_ip, client_port)
+  #sends data to DNS
+  sent = sendmessage(destip, destport, converted_packet, client_ip, client_port)
+  #receives packet from DNS and then converts into dictionary and returns dictionary
+  while succeeded != True:
+    try:
+      remote_ip, remote_port, response_string = udpserversocket.getmessage()
+      packet_dict = dnscommon.convert_packet_to_dictionary(response_string)
+      if packet_dict != None:
+        succeeded = True
+        udpserversocket.close()
+        return packet_dict
+    except SocketWouldBlockError:
+      #https://seattle.poly.edu/wiki/FutureRepyExceptions/SocketWouldBlockError
+      succeeded = False
+
+def gethostbyname_ex(dns_query_data):
+  """
+  <Purpose>
+    Interrogate dns_query_data
+
+  <Arguments>
+    dns_query_data contains query name or IP address user wants
+
+  <Exceptions>
+    KeyError if dns_query_data is not correct. If caught, it will pass and not show any result.
+
+
+  <Returns>
+    A dictionary that contains the list of IPv4 addresses for the same interface on the same host. Its in form of 
+    answer_dict{
+    'name' : dns_query_data
+    'answer_data' : list_of_addresses
+    }
+
+  """
+  
+  #query data needs to create a simple dictionary
+  questions = [{'name': dns_query_data , 'type' : 'A', 'class': 'IN'}]
+  #calls dns_connection to get answers from DNS.
+  packet_dict = dns_connection(client_ip,client_port,listen_ip,listen_port, questions)
+  #fetches answers from packet_dictionary received
+  answers = packet_dict['answers']
+  resource_data = []
+  add_list = []
+  try:  
+    for item in answers:
+      resource_data.append(item['answer_data'])
+    for answer in resource_data:
+      add_list.append(answer['address'])
+  except KeyError:
+    pass
+  if not add_list:
+    answer_dict = None
+  else:
+    answer_dict = (dns_query_data,add_list)
+  return answer_dict
+
+def reverseLookup(dns_query_data):
+  """
+  <Purpose>
+    Interrogate dns_query_data for reverse query i.e. gets a domain name for queried IPv4
+    address
+
+  <Arguments>
+    dns_query_data contains query name
+
+  <Exceptions>
+    KeyError if dns_query_data is not correct. If caught, it will pass and not show any result.
+
+  <Returns>
+    A dictionary that contains the domain name. Its in form of 
+    answer_dict{
+    'name' : dns_query_data
+    'answer_data' : name_list 
+    }
+
+  """
+  querySplit = dns_query_data.split('.')
+  querySplit.reverse()
+  query = ''
+  for offset in querySplit:
+    query += offset+'.'
+  query +='in-addr.arpa'
+
+  questions = [{'name': query , 'type' : 'PTR', 'class': 'IN'}]
+  packet_dict = dns_connection(client_ip,client_port,destip,listen_port, questions)
+  answers = packet_dict['answers']
+  resource_data = []
+  name_list = []
+  try:
+    for item in answers:
+      resource_data.append(item['answer_data'])
+    domain = resource_data[0]
+  except KeyError:
+    pass
+  if domain == None:
+    answer_dict = None
+  else:
+    answer_dict = (dns_query_data,domain)
+  return answer_dict
+
+def namingServer(dns_query_data):
+  """
+  <Purpose>
+    Interrogate dns_query_data for Naming servers records
+
+  <Arguments>
+    dns_query_data contains query name
+
+  <Exceptions>
+    KeyError if dns_query_data is not correct. If caught, it will pass and not show any result.
+
+  <Returns>
+    A dictionary that contains the naming servers. Its in form of 
+    answer_dict{
+    'name' : dns_query_data
+    'answer_data' : name_list 
+    }
+
+  """
+
+  questions = [{'name': dns_query_data , 'type' : 'NS', 'class': 'IN'}]
+  packet_dict = dns_connection(client_ip,client_port,destip,listen_port, questions)
+  answers = packet_dict['answers']
+  resource_data = []
+  name_list = []
+  try:
+    for item in answers:
+      resource_data.append(item['answer_data'])
+    for answer in resource_data:
+      name_list.append(answer['nameserver'])
+  except KeyError:
+    pass
+  if not name_list:
+    answer_dict = None
+  else:
+    answer_dict = (dns_query_data, name_list)
+  return answer_dict
+
+def recordsMX(dns_query_data):
+  """
+  <Purpose>
+    Interrogate dns_query_data for MX records
+
+  <Arguments>
+    dns_query_data contains query name
+
+  <Exceptions>
+    KeyError if dns_query_data is not correct. If caught, it will pass and not show any result.
+
+  <Returns>
+    A dictionary that contains the MX records. Its in form of 
+    answer_dict{
+    'name' : dns_query_data
+    'answer_data' : record_list 
+    }
+
+  """
+
+  questions = [{'name': dns_query_data , 'type' : 'MX', 'class': 'IN'}]
+  packet_dict = dns_connection(client_ip,client_port,destip,listen_port, questions)
+  answers = packet_dict['answers']
+  resource_data = []
+  record_list = []
+  try:
+    for item in answers:
+      resource_data.append(item['answer_data'])
+    for answer in resource_data:
+      record_list.append(answer['records'])
+  except KeyError:
+    pass
+  if not record_list:
+    answer_dict = None
+  else:
+    answer_dict = (dns_query_data, record_list)
+  return answer_dict
+
+def txtRecords(dns_query_data):
+  """
+  <Purpose>
+    Interrogate dns_query_data for TXT record
+
+  <Arguments>
+    dns_query_data contains query name
+
+  <Exceptions>
+    KeyError if dns_query_data is not correct. If caught, it will pass and not show any result.
+
+
+  <Returns>
+    A dictionary that contains the text data. Its in form of 
+    answer_dict{
+    'name' : dns_query_data
+    'answer_data' : text_data
+    }
+
+  """
+  
+  #query data needs to create a simple dictionary
+  questions = [{'name': dns_query_data , 'type' : 'TXT', 'class': 'IN'}]
+  #calls dns_connection to get answers from DNS.
+  packet_dict = dns_connection(client_ip,client_port,listen_ip,listen_port, questions)
+  #fetches answers from packet_dictionary received
+  answers = packet_dict['answers']
+  resource_data = []
+  text_data = []
+  try:  
+    for item in answers:
+      resource_data.append(item['answer_data'])
+    for answer in resource_data:
+      text_data.append(answer['text'])
+  except KeyError:
+    pass
+  if not text_data:
+    answer_dict = None
+  else:
+    answer_dict = (dns_query_data, text_data)
+  return answer_dict
+
+def getAAAA(dns_query_data):
+  """
+  <Purpose>
+    Interrogate dns_query_data
+
+  <Arguments>
+    dns_query_data contains query name or IPv6 address user wants
+
+  <Exceptions>
+    KeyError if dns_query_data is not correct. If caught, it will pass and not show any result.
+
+
+  <Returns>
+    A dictionary that contains the list of IPv6 addresses for the same interface on the same host. Its in form of 
+    answer_dict{
+    'name' : dns_query_data
+    'answer_data' : IPv6 address
+    }
+
+  """
+  
+  #query data needs to create a simple dictionary
+  questions = [{'name': dns_query_data , 'type' : 'AAAA', 'class': 'IN'}]
+  #calls dns_connection to get answers from DNS.
+  packet_dict = dns_connection(client_ip,client_port,listen_ip,listen_port, questions)
+  #fetches answers from packet_dictionary received
+  answers = packet_dict['answers']
+  resource_data = []
+  add_list = []
+  try:  
+    for item in answers:
+      resource_data.append(item['answer_data'])
+    for answer in resource_data:
+      add_list.append(answer['address'])
+  except KeyError:
+    pass
+  if not add_list:
+    answer_dict = None
+  else:
+    answer_dict = (dns_query_data,add_list)
+  return answer_dict
