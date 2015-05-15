@@ -38,7 +38,7 @@ listen_ip = '8.8.8.8'
 listen_port = 53
 client_ip = getmyip()
 client_port = libsocket.get_messports(client_ip)[0]
-#destip = gethostbyname('myresolver.zenodotus.poly.edu')
+destip = gethostbyname('myresolver.zenodotus.poly.edu')
 
 
 default_flags = {
