@@ -528,7 +528,7 @@ def _read_single_answer(answer_index, dns_query_data):
   elif answer_type == 'PTR':
     read_index, resource_data['domain'] = _parse_address(read_index, dns_query_data)
   elif answer_type == 'MX':
-    read_index+=2
+    read_index += 2
     read_index, resource_data['records'] = _parse_address(read_index, dns_query_data)
   elif answer_type == 'AAAA':
     read_index, resource_data['address'] = _parse_aaaa_address(read_index, dns_query_data)
@@ -537,7 +537,7 @@ def _read_single_answer(answer_index, dns_query_data):
     resource_text = []
     for i in range(0,txt_length):
       resource_text.append(dns_query_data[read_index])
-      read_index+=1
+      read_index += 1
     resource_data['text'] = ''.join(resource_text)
   elif answer_type == 'SOA':
     read_index, mname = _parse_address(read_index, dns_query_data)
@@ -618,20 +618,18 @@ def _parse_aaaa_address(address_index, dns_query_data):
   for i in add_list:
     i = i[2:]
     if len(i) == 2:
-        new_list.append(i)
+      new_list.append(i)
     elif len(i)==1:
-        i = '0'+i
-        new_list.append(i)
+      i = '0'+i
+      new_list.append(i)
 
   for i in range(0,16,2):
     try:
-        address+= new_list[i]+new_list[i+1]
-        address+=':'
+      address+= new_list[i]+new_list[i+1]
+      address+=':'
     except IndexError:
-        pass
+      pass
   address=address[:-1]
-  #address = address.replace('0000','')
-  #address = address.replace('::',':')
 
   return address_index, address
 
