@@ -124,14 +124,14 @@ def geoip_location_str(location_dict):
   """
 
   location_str = ""
-  if 'city' in location_dict:
+  if 'city' in location_dict and location_dict['city'] is not None:
     location_str = location_str + location_dict['city'] + ", "
 
   if 'country_name' in location_dict:
     # If location is in the US or Canada, include the state/province
-    if location_dict['country_name'] in ['United States', 'Canada'] \
-          and 'region_name' in location_dict:
-      location_str = location_str + location_dict['region_name'] + ", "
+    if location_dict['country_name'] in ['United States', 'Canada']:
+      if 'region_name' in location_dict and location_dict['region_name'] is not None:
+        location_str = location_str + location_dict['region_name'] + ", "
     location_str = location_str + location_dict['country_name']
 
   return location_str
