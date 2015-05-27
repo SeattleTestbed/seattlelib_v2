@@ -292,18 +292,15 @@ def recordsMX(dns_query_data):
   packet_dict = dns_connection(client_ip,client_port,destip,listen_port, questions)
   answers = packet_dict['answers']
   resource_data = []
-  record_list = []
   try:
     for item in answers:
       resource_data.append(item['answer_data'])
-    for answer in resource_data:
-      record_list.append(answer['records'])
   except KeyError:
     pass
-  if not record_list:
+  if not resource_data:
     answer_dict = None
   else:
-    answer_dict = (dns_query_data, record_list)
+    answer_dict = (dns_query_data, resource_data)
   return answer_dict
 
 def txtRecords(dns_query_data):
