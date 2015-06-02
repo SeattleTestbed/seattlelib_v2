@@ -331,7 +331,7 @@ def txtRecords(dns_query_data):
   if not resource_data:
     for item in answers:
       resource_data.append(item['answer_data'])
-  answer_dict = (dns_query_data, text_data)
+  answer_dict = (dns_query_data, resource_data)
   return answer_dict
 
 def getAAAA(dns_query_data):
