@@ -40,7 +40,6 @@ client_ip = getmyip()
 client_port = libsocket.get_messports(client_ip)[0]
 destip = gethostbyname('myresolver.zenodotus.poly.edu')
 
-
 default_flags = {
                  'communication_id': 'a7',
                  'query_response': False,
@@ -172,18 +171,15 @@ def gethostbyname_ex(dns_query_data):
   #fetches answers from packet_dictionary received
   answers = packet_dict['answers']
   resource_data = []
-  add_list = []
   try:  
     for item in answers:
-      resource_data.append(item['answer_data'])
-    for answer in resource_data:
-      add_list.append(answer['address'])
+      resource_data.append(item['answer_data']['address'])
   except KeyError:
     pass
-  if not add_list:
-    answer_dict = None
-  else:
-    answer_dict = (dns_query_data,add_list)
+  if not resource_data:
+    for item in answers:
+      resource_data.append(item['answer_data'])
+  answer_dict = (dns_query_data,resource_data)
   return answer_dict
 
 def reverseLookup(dns_query_data):
@@ -217,7 +213,6 @@ def reverseLookup(dns_query_data):
   packet_dict = dns_connection(client_ip,client_port,destip,listen_port, questions)
   answers = packet_dict['answers']
   resource_data = []
-  name_list = []
   try:
     for item in answers:
       resource_data.append(item['answer_data'])
@@ -254,18 +249,15 @@ def namingServer(dns_query_data):
   packet_dict = dns_connection(client_ip,client_port,destip,listen_port, questions)
   answers = packet_dict['answers']
   resource_data = []
-  name_list = []
   try:
     for item in answers:
-      resource_data.append(item['answer_data'])
-    for answer in resource_data:
-      name_list.append(answer['nameserver'])
+      resource_data.append(item['answer_data']['nameserver'])
   except KeyError:
     pass
-  if not name_list:
-    answer_dict = None
-  else:
-    answer_dict = (dns_query_data, name_list)
+  if not resource_data:
+    for item in answers:
+      resource_data.append(item['answer_data'])
+  answer_dict = (dns_query_data, resource_data)
   return answer_dict
 
 def recordsMX(dns_query_data):
@@ -289,7 +281,7 @@ def recordsMX(dns_query_data):
   """
 
   questions = [{'name': dns_query_data , 'type' : 'MX', 'class': 'IN'}]
-  packet_dict = dns_connection(client_ip,client_port,destip,listen_port, questions)
+  packet_dict = dns_connection(client_ip,client_port,listen_ip,listen_port, questions)
   answers = packet_dict['answers']
   resource_data = []
   try:
@@ -331,18 +323,15 @@ def txtRecords(dns_query_data):
   #fetches answers from packet_dictionary received
   answers = packet_dict['answers']
   resource_data = []
-  text_data = []
   try:  
     for item in answers:
-      resource_data.append(item['answer_data'])
-    for answer in resource_data:
-      text_data.append(answer['text'])
+      resource_data.append(item['answer_data']['text'])
   except KeyError:
     pass
-  if not text_data:
-    answer_dict = None
-  else:
-    answer_dict = (dns_query_data, text_data)
+  if not resource_data:
+    for item in answers:
+      resource_data.append(item['answer_data'])
+  answer_dict = (dns_query_data, text_data)
   return answer_dict
 
 def getAAAA(dns_query_data):
@@ -373,16 +362,13 @@ def getAAAA(dns_query_data):
   #fetches answers from packet_dictionary received
   answers = packet_dict['answers']
   resource_data = []
-  add_list = []
   try:  
     for item in answers:
-      resource_data.append(item['answer_data'])
-    for answer in resource_data:
-      add_list.append(answer['address'])
+      resource_data.append(item['answer_data']['address'])
   except KeyError:
     pass
-  if not add_list:
-    answer_dict = None
-  else:
-    answer_dict = (dns_query_data,add_list)
+  if not resource_data:
+    for item in answers:
+      resource_data.append(item['answer_data'])
+  answer_dict = (dns_query_data, resource_data)
   return answer_dict

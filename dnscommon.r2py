@@ -537,9 +537,8 @@ def _read_single_answer(answer_index, dns_query_data):
   elif answer_type == 'TXT':
     txt_length = len(dns_query_data)-read_index
     resource_text = ''
-    for i in range(0,txt_length):
-      resource_text += dns_query_data[read_index]
-      read_index += 1
+    resource_text += dns_query_data[read_index:read_index+txt_length]
+    read_index += txt_length
     resource_data['text'] = resource_text
   elif answer_type == 'SOA':
     read_index, mname = _parse_address(read_index, dns_query_data)
@@ -611,7 +610,6 @@ def _parse_aaaa_address(address_index, dns_query_data):
   for i in range(0,16):
     add.append(str(hex(ord(dns_query_data[address_index]))))
     address_index += 1
-
   #converts hex data to readable IPv6
   for i in add:
     i = i[2:]
