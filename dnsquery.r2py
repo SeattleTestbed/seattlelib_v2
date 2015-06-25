@@ -29,6 +29,9 @@
 
   ------------
 """
+class NonExistentDomainError(Exception):
+  # Used to indicate that one of our methods was passed bad arguments.
+  pass
 
 #imports dnscommon.r2py file from repyv2 library using dylink.r2py
 dnscommon = dy_import_module("dnscommon.r2py")
@@ -38,7 +41,7 @@ listen_ip = '8.8.8.8'
 listen_port = 53
 client_ip = getmyip()
 client_port = libsocket.get_messports(client_ip)[0]
-destip = gethostbyname('myresolver.zenodotus.poly.edu')
+#destip = gethostbyname('myresolver.zenodotus.poly.edu')
 
 default_flags = {
                  'communication_id': 'a7',
@@ -171,14 +174,15 @@ def gethostbyname_ex(dns_query_data):
   #fetches answers from packet_dictionary received
   answers = packet_dict['answers']
   resource_data = []
-  try:  
-    for item in answers:
-      resource_data.append(item['answer_data']['address'])
-  except KeyError:
-    pass
-  if not resource_data:
-    for item in answers:
-      resource_data.append(item['answer_data'])
+  if answers[0]['type'] == 'SOA':
+    error_string = "Domain not found"
+    raise NonExistentDomainError(error_string)
+  else:
+    try:  
+      for item in answers:
+        resource_data.append(item['answer_data']['address'])
+    except KeyError:
+      pass
   answer_dict = (dns_query_data,resource_data)
   return answer_dict
 
