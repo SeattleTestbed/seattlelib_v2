@@ -37,6 +37,10 @@ random = dy_import_module('random.r2py')
 
 
 
+timeservers = ["time-a.nist.gov", "time-b.nist.gov", 
+    "time-a.timefreq.bldrdoc.gov", "time-b.timefreq.bldrdoc.gov", 
+    "time-c.timefreq.bldrdoc.gov", "utcnist.colorado.edu", "time.nist.gov", 
+    "nist.netservicesgroup.com"]
 
 
 
@@ -64,8 +68,6 @@ def ntp_time_updatetime(localport):
   """
 
   ip = getmyip()
-
-  timeservers = ["time-a.nist.gov", "time-b.nist.gov", "time-a.timefreq.bldrdoc.gov", "time-b.timefreq.bldrdoc.gov", "time-c.timefreq.bldrdoc.gov", "utcnist.colorado.edu", "time.nist.gov", "nist1.symmetricom.com", "nist.netservicesgroup.com"]
 
   socketobj = listenformessage(ip, localport)
 
