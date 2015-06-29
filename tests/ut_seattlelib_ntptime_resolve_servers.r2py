@@ -1,0 +1,17 @@
+"""
+This unit test tries to resolve all time server hostnames in ntp_time.r2py 
+to IP addresses, and reports any errors.
+"""
+
+#pragma repy restrictions.default dylink.r2py
+
+ntp_time = dy_import_module("ntp_time.r2py")
+
+
+for server_name in ntp_time.timeservers:
+  try:
+    server_ip = gethostbyname(server_name)
+  except Exception, e:
+    log("Error resolving NTP time server '" + server_name + "': " + 
+        repr(e) + "\n")
+
