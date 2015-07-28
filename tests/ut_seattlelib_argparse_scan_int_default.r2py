@@ -1,0 +1,16 @@
+"""
+Verify that argparse_scan_int returns the default value if it does not 
+find an int argument that is missing.
+"""
+#pragma repy restrictions.default dylink.r2py
+#pragma out
+argparse = dy_import_module("argparse.r2py")
+
+result = argparse.argparse_scan_int(["It", "is", "11", "PM"], 
+   "again", None)
+if result is None:
+  log("Didn't find arg that isn't there, got default value instead, all good!!\n")
+else:
+  raise RepyException("Did not get expected default value! Got '" + 
+      str(result) + "' instead.")
+

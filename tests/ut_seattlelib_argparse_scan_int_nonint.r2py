@@ -1,0 +1,14 @@
+"""
+Verify that argparse_scan_int finds an int argument by name.
+"""
+#pragma repy restrictions.default dylink.r2py
+#pragma out
+argparse = dy_import_module("argparse.r2py")
+
+try:
+  result = argparse.argparse_scan_int(["It", "is", "eleven", "PM"], "is")
+  # It is an error if the program flow continues in this clause!
+  raise RepyException("Could parse non-int value of int argument!")
+except argparse.ArgparseError, e:
+  log("Correctly got exception '" + repr(e) + "'\n")
+

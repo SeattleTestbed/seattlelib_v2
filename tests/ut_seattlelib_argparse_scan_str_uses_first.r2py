@@ -1,0 +1,14 @@
+"""
+Verify that argparse_scan_str uses the last instance of a str argument 
+that occurs multiple times.
+"""
+#pragma repy restrictions.default dylink.r2py
+#pragma out
+argparse = dy_import_module("argparse.r2py")
+
+result = argparse.argparse_scan_str(["a", "first", "a", "second", "a", "third"], "a")
+if result == "first":
+  log("Using first occurrence of option! Good!\n")
+else:
+  raise RepyException("Did not use first instance of named argument, but " + 
+      str(result))

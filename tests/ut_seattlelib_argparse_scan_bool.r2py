@@ -1,0 +1,11 @@
+"""
+Verify that argparse_scan_bool finds a bool argument by name.
+"""
+#pragma repy restrictions.default dylink.r2py
+#pragma out
+argparse = dy_import_module("argparse.r2py")
+
+if argparse.argparse_scan_bool(["It", "is", "--here", "indeed"], "--here"):
+  log("Named arg found correctly!\n")
+else:
+  raise RepyException("Did not find named argument.")
