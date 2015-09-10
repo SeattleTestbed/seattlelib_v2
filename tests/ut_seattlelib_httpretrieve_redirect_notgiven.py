@@ -4,7 +4,8 @@
 # prints failed error msg if httpretrieve failes the test and excutes without printing
 # if the test passes
 
-
+from repyportability import *
+add_dy_support(locals())
 
 dy_import_module_symbols('httpretrieve.r2py')
 
