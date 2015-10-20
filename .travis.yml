@@ -1,5 +1,6 @@
 # This file describes the combination of the different build configurations for seattle testbed
 # We create a matrix of machines with software configurations
+
 matrix:
   include:
   # Here we are using objective-c as currently there is no MAC + PYTHON combination available
@@ -42,7 +43,9 @@ matrix:
           fi
  # The below are configurations for Linux instances
  # Python 2.5 on Linux
-    - language: perl
+    - sudo: false # updates the infrastructure to container based
+      sudo: -i    # sets user to root to install packages
+      language: perl
       python: '2.5'
       os: linux
       install:
@@ -55,13 +58,21 @@ matrix:
         - sudo ln -sf /usr/bin/pydoc2.5 /usr/bin/pydoc
         - sudo ln -sf /usr/bin/pygettext2.5 /usr/bin/pygettext
  # Python 2.6 on Linux
-    - language: python
+    - sudo: false # updates the infrastructure to container based
+      sudo: -i    # sets user to root to install packages
+      language: python
       python: '2.6'
       os: linux
+      install:
+        - sudo apt-get update
  # Python 2.7 on Linux
-    - language: python
+    - sudo: false # updates the infrastructure to container based
+      sudo: -i    # sets user to root to install packages
+      language: python
       python: '2.7'
       os: linux
+      install:
+        - sudo apt-get update 
 
 script:
   - python --version
