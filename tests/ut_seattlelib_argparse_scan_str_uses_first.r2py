@@ -1,5 +1,5 @@
 """
-Verify that argparse_scan_str uses the last instance of a str argument 
+Verify that argparse_scan_str uses the first instance of a str argument 
 that occurs multiple times.
 """
 #pragma repy restrictions.default dylink.r2py
