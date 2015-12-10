@@ -1,0 +1,12 @@
+"""
+Verify that argparse_scan_int does not find an int argument that is missing.
+"""
+#pragma repy restrictions.default dylink.r2py
+#pragma out
+argparse = dy_import_module("argparse.r2py")
+
+if argparse.argparse_scan_int(["It", "is", "11", "PM"], "again"):
+  raise RepyException("Found argument that shouldn't be there.")
+else:
+  log("Didn't find arg that isn't there, all good!!\n")
+
