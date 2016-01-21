@@ -27,5 +27,4 @@ test_script:
 
 
 skip_commits:
-  message: /Created.*\.(png|jpg|jpeg|bmp|gif)/
-  message: /Update README.md/
+  message: /(Update README*|Created.*\.(png|jpg|jpeg|bmp|gif))/
