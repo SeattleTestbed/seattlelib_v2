@@ -61,3 +61,30 @@ def math_log(X, base=math_e, epsilon=1e-16):
     X *= X                    # We perform the squaring again
   return (integer + decimal)
 
+def math_cot(x):
+  if math_sin(x) == 0:
+    raise ValueError, "cot function domain error"
+  return round(math_cos(x)/math_sin(x), 15)
+
+def math_csc(x):
+  if math_sin(x) == 0:
+    raise ValueError, "csc function domain error"
+  return round(1/math_sin(x), 15)
+
+def math_sec(x):
+  if math_cos(x) == 0:
+    raise ValueError, "sec function domain error"
+  return round(1/math_cos(x), 15)
+
+def math_tan(x):
+  if math_cos(x) == 0:
+    raise ValueError, "tan function domain error"
+  return round(math_sin(x)/math_cos(x), 15)
+
+def math_sin(x):
+  value = ((math_e**(complex(0,x)) - math_e**(complex(0,-x)))/complex(0,2))
+  return round(value.real, 15)
+
+def math_cos(x):
+  value = ((math_e**(complex(0,x)) + math_e**(complex(0,-x)))/2)
+  return round(value.real, 15)
