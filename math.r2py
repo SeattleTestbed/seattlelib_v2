@@ -82,9 +82,11 @@ def math_tan(x):
   return round(math_sin(x)/math_cos(x), 15)
 
 def math_sin(x):
-  value = ((math_e**(complex(0,x)) - math_e**(complex(0,-x)))/complex(0,2))
+  x_rad = (x * math_pi)/180
+  value = ((math_e**(complex(0,x_rad)) - math_e**(complex(0,-x_rad)))/complex(0,2))
   return round(value.real, 15)
 
 def math_cos(x):
-  value = ((math_e**(complex(0,x)) + math_e**(complex(0,-x)))/2)
+  x_rad = (x * math_pi)/180
+  value = ((math_e**(complex(0,x_rad)) + math_e**(complex(0,-x_rad)))/2)
   return round(value.real, 15)
