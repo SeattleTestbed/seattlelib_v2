@@ -1,0 +1,15 @@
+#this unit test checks the functionality of the sin fuinction 
+
+
+#pragma repy restrictions.default math.r2py
+
+GRAPHSIN = [0,1,0,-1,0]
+
+# should go to +- 2 pi
+count = 0
+while(count != 4):
+	if(math_sin((math_pi*count) / 2) != GRAPHSIN[count]):
+		log("graphing sin was a failure")
+	if(math_sin((-math_pi*count) / 2) != -GRAPHSIN[count]):
+		log("graphing sin was a failure")
+  count += 1

@@ -1,0 +1,16 @@
+#this unit test checks the functionality of the sin fuinction 
+
+
+#pragma repy restrictions.default math.r2py
+
+GRAPHTAN = [-1.63312393532e+16, 0, 1.63312393532e+16]
+ 
+# Checks values form 0 to +- 2 pi
+count = 0
+while(count != 4):
+	if(math_tan((math_pi*count) / 2) != GRAPHSIN[count]):
+		log("graphing sin was a failure")
+	if(math_tan((-math_pi*count) / 2) != GRAPHSIN[count]):
+		log("graphing sin was a failure")
+  count += 1
+
