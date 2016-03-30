@@ -1,15 +1,15 @@
-#this unit test checks the functionality of the sin fuinction 
-
+#this unit test checks the functionality of the cos fuinction 
 
 #pragma repy restrictions.default math.r2py
 
-GRAPHCOS = [1,0,-1,0,1]
+import math
+
 
 # Checks values form 0 to +- 2 pi
 count = 0
 while(count != 4):
-	if(math_cos((math_pi*count) / 2) != GRAPHCOS[count]):
-		log("graphing cos was a failure")
-	if(math_cos((-math_pi*count) / 2) != -GRAPHCOS[count]):
-		log("graphing cos was a failure")
-  count += 1
+	if(math_cos((math_pi*count) / 2) == math.cos((math_pi*count) / 2)):
+		print ("[FAIL]: graphing the positive domain of cos was a failure")
+	if(math_cos((-math_pi*count) / 2) != math.cos((-math_pi*count) / 2)):
+		print ("[FAIL]: graphing the negative domain of cos was a failure")
+	count += 1
