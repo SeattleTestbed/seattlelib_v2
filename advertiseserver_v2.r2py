@@ -13,8 +13,15 @@
   create requests from clients using the same protocol as the original.
 """
 
+# Override RepyV2's `log` to automatically timestamp all messages
+original_log = log
 
+def timestamped_log(*args):
+  original_log(getruntime())
+  for arg in args:
+    original_log(arg)
 
+log = timestamped_log
 
 dy_import_module_symbols("session.r2py")
 dy_import_module_symbols("serialize.r2py")
@@ -61,7 +68,7 @@ mycontext['connection_sleep'] = 0.004
 mycontext['handle_sleep'] = 0.004
 
 # Network interface to use.
-mycontext['local_ip'] = '192.168.0.49'
+mycontext['local_ip'] = getmyip()
 
 # Port to listen on for non-legacy connections.
 mycontext['connect_port'] = 10102
@@ -123,7 +130,14 @@ def _purge_expired_items():
 
     # Iterate through all of the entries in the current key.
     for i in range(len(mycontext['data_table'][keys[key_index]])):
-      entry = mycontext['data_table'][keys[key_index]][i]
+      # XXX Work around read-past-end bug.
+      # XXX We should really iterate over the list properly, not using indexes!
+      try:
+        entry = mycontext['data_table'][keys[key_index]][i]
+      except IndexError:
+        continue
+      # XXX End workaround
+
       # If we've reached our quota for this lock, refresh to unblock
       # query operations and the like.
       if tally == mycontext['batch_size']:
@@ -140,9 +154,11 @@ def _purge_expired_items():
         state_changed = True
         # if mycontext['verbose']:
         #   log("::DEBUG:: ITEM EXPIRED: " + str(keys[key_index]) + " : " + str(entry) + "\n")
-
-        del mycontext['data_table'][keys[key_index]][i]
-        # mycontext['data_table'][keys[key_index]].remove(entry)
+        try:
+          del mycontext['data_table'][keys[key_index]][i]
+          # mycontext['data_table'][keys[key_index]].remove(entry)
+        except Exception, e:
+          log("**** Ooops, item", entry, "disappeared just as I was going to remove it. Error:", repr(e), "\n")
 
       tally += 1
     
@@ -327,7 +343,7 @@ def listen_for_connections():
       # Expand it for the sake of readability.
       remote_ip, remote_port, sockobj = data_tuple
       if mycontext['verbose']:
-        log("::NOTICE: Connection recieved!\n")
+        log("::NOTICE: Connection recieved! Backlog:", len(mycontext['received_connections']), "connections\n")
         log(" > Connection acquisition took " + str(time_temp) + "s\n")
         log(" > HOSTNAME: " + str(remote_ip) + "\n")
         log(" > HOSTPORT: " + str(remote_port) + "\n")
@@ -359,18 +375,24 @@ def _handle_pending_connections():
       start_time = getruntime()
       
       connection_lock.acquire(True)
-      remote_ip, remote_port, sockobj = mycontext['received_connections'].pop()
+      remote_ip, remote_port, sockobj = mycontext['received_connections'].pop(0)
       connection_lock.release()
 
-      log("BEGIN HANDLE REQUEST\n")
-      handle_request(remote_ip, remote_port, sockobj)
-      log("HANDLE REQUEST DONE START CLOSING SOCKET\n")
-      sockobj.close()
-      log("SOCKET CLOSED.\n")
+      log("BEGIN spawn HANDLE REQUEST thread Backlog:", len(mycontext['received_connections']), "connections\n")
 
-      total_time = getruntime() - start_time
+      def request_handler():
+        return handle_request(remote_ip, remote_port, sockobj, start_time)
 
-      log(" > Handle Pending Connection took " + str(total_time) + "s\n")
+      try:
+        createthread(request_handler)
+        log("spawn HANDLE REQUEST thread DONE\n")
+      except ResourceExhaustedError:
+        log("Resources exhausted. Couldn't spawn new thread.", 
+            "Dropping connection", remote_ip, remote_port, "\n")
+        try:
+          sockobj.close()
+        except:
+          pass
       
     else:
       sleep(mycontext['handle_sleep'])
@@ -411,7 +433,7 @@ def _blocking_recv(sockobj):
 
 
 
-def handle_request(remote_ip, remote_port, sockobj):
+def handle_request(remote_ip, remote_port, sockobj, start_time):
   """
   <Purpose>
     Handles non-legacy connections.
@@ -548,7 +570,13 @@ def handle_request(remote_ip, remote_port, sockobj):
   except Exception,e:
     log(" > ERROR: While handling request, received: " + str(e) + "\n")
 
-  return
+  finally:
+    try:
+      sockobj.close()
+    except:
+      pass
+    total_time = getruntime() - start_time
+    log(" > Handle Pending Connection took " + str(total_time) + "s\n")
 
 
 
@@ -578,3 +606,4 @@ if callfunc == 'initialize':
 
   if mycontext['verbose']:
     log("::NOTICE: Verbose mode requested.\n")
+
