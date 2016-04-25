@@ -14,7 +14,7 @@
 
   Where server_address is the ip address of a remote GeoIP XMl-RPC server.
 """
-
+import socket
 xmlrpc_client = dy_import_module('xmlrpc_client.r2py')
 
 
@@ -68,7 +68,10 @@ def geoip_record_by_addr(addr, timeout=5):
   <Returns>
     Dictionary of location data of provided IP address.
   """
-
+  try:
+    socket.inet_aton(addr)
+  except socket.error:
+    log("The IP address entered is not valid/n")
   return geoip_clientlist[0].send_request("record_by_addr", (addr,), timeout)
 
 
