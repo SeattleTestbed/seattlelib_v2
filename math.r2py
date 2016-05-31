@@ -61,6 +61,10 @@ def math_log(X, base=math_e, epsilon=1e-16):
     X *= X                    # We perform the squaring again
   return (integer + decimal)
 
+
+#Testing Done
+
+#Trigonometric functions via Euler's formula
 def math_tan(x):
   if math_cos(x) == 0:
     raise ValueError, "tan function domain error"
@@ -73,3 +77,81 @@ def math_sin(x):
 def math_cos(x):
   value = ((math_e**(complex(0,x)) + math_e**(complex(0,-x)))/2)
   return value.real
+
+
+#Hyperbolic functions via standard analytic expressions
+def math_tanh(x):
+  if x == 0:
+    raise ValueError, "tan function domain error, Hyperbolic cotangent: x != 0 "
+  return math_sinh(x)/math_cosh(x)
+
+def math_sinh(x):
+  value = ((math_e ** x) - (math_e ** -x))/2
+  return value
+
+def math_cosh(x):
+  value = ((math_e ** x) + (math_e ** -x))/2
+  return value
+
+#Area functions via logarithms
+
+def math_atanh(x):
+  if(math_fabs(x) < 1):
+    return math_log((1 + x)/(1 - x))/2
+  else:
+    raise ValueError, "math domain error, |'x'| cannot be >= 1 for math_artanh"
+
+def math_asinh(x):
+  return math_log((x + math_sqrt((x*x) + 1)))
+
+
+
+
+#need more testing!
+
+#Arcus functions via complex complex logarithms
+def math_atan(x):
+  value = complex(0,math_log((1 - complex(0,-x).imag)) - math_log((1 + complex(0,x).imag)))/2
+  return value.real
+
+def math_asin(x):
+  value = complex(0,-math_log(complex(0,x).imag + math_sqrt(1 - (x * x))))
+  return value.real
+
+def math_acos(x):
+  value = complex(0,-math_log(x + math_sqrt((x * x) - 1)))
+  return value.real
+
+
+
+def math_acosh(x):
+  if(x >= 1):
+    return math_log((x + math_sqrt((x*x) - 1)))
+  else:
+    raise ValueError, "math domain error, 'x' cannot be < 1 for math_arcosh"
+
+# square root function using the Newton-Raphson method
+def math_sqrt(x):
+  # log("begining of function")
+  # log(x)
+
+  k = 1.0
+  while((k*k - x) > 0.0000000001 or (x - k * k) > 0.0000000001):
+    # log("att 1\n")
+    # log(k)
+    # log("\n")
+    # log(x)
+    k = (k + x / k) / 2
+    # log("att 2\n")
+    # log(k)
+    # log("\n")
+    # log(x)
+
+  return k
+
+#basic absolute value function
+def math_fabs(x):
+  if(x < 0):
+    return -x
+  else: 
+    return x
