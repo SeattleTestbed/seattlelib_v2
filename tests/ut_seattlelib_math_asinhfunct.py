@@ -1,4 +1,4 @@
-#this unit test checks the functionality of the arsinh fuinction 
+#this unit test checks the functionality of the asinh function 
 
 
 from repyportability import *

@@ -1,4 +1,4 @@
-#this unit test checks the functionality of the sin fuinction 
+#this unit test checks the functionality of the sin function 
 
 
 from repyportability import *

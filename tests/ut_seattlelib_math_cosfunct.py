@@ -1,4 +1,4 @@
-#this unit test checks the functionality of the cos fuinction 
+#this unit test checks the functionality of the cos function 
 
 from repyportability import *
 add_dy_support(locals())

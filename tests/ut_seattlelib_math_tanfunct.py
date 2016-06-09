@@ -1,4 +1,4 @@
-#this unit test checks the functionality of the tan fuinction 
+#this unit test checks the functionality of the tan function 
 
 
 from repyportability import *
