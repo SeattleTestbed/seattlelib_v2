@@ -1,0 +1,59 @@
+#this unit test checks the functionality of the tcp server traced object
+
+from repyportability import *
+add_dy_support(locals())
+dy_import_module_symbols("strace.r2py")
+
+
+#create a file using the traced call
+# wrapped_openconnection("127.0.0.1", 12345, getmyip(),63100, 10)
+
+
+
+
+tcpserverobj = wrapped_listenforconnection(getmyip(), 12345)
+
+#open traced file
+fileobjtrace = openfile(tracefile, True)
+tracedCall = fileobjtrace.readat(None, 0)
+fileobjtrace.close()
+
+#Check apicall to traced call
+if("listenforconnection" not in tracedCall):
+	print "Trace api call failed to trace correct function, openfile"
+if("('192.168.183.128', 12345)" not in tracedCall):
+	print "Trace api call failed to trace correct function with correct parameters, openfile('../hi.txt', True)"
+if("emulcomm.TCPServerSocket"not in tracedCall):
+	print "Failed to trace trace correct function as correct object"
+
+
+tcpserverobj.getconnection()
+
+#open traced file
+fileobjtrace = openfile(tracefile, True)
+tracedCall = fileobjtrace.readat(None, 0)
+fileobjtrace.close()
+
+#Check apicall to traced call
+if("TCPServerSocket.getconnection" not in tracedCall):
+	print "Trace api call failed to trace correct function, openfile"
+if("emulcomm.TCPServerSocket"not in tracedCall):
+	print "Failed to trace trace correct function as correct object"
+
+
+tcpserverobj.close()
+
+#open traced file
+fileobjtrace = openfile(tracefile, True)
+tracedCall = fileobjtrace.readat(None, 0)
+fileobjtrace.close()
+
+#Check apicall to traced call
+if("TCPServerSocket.close" not in tracedCall):
+	print "Trace api call failed to trace correct function, openfile"
+if("emulcomm.TCPServerSocket"not in tracedCall):
+	print "Failed to trace trace correct function as correct object"
+
+
+# wrapped_openconnection("127.0.0.1", 12345, getmyip(),63100, 10)
+
