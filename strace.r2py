@@ -5,8 +5,8 @@ Description:
   with similar api calls that is used as an intermediary logging namespace to
   log calls of the Repy API functions. 
 
-  The output is as follows:
-    time_for_api_call_compleation api_function [api_paramaters] location_in_memory [api_paramaters]
+  Header:
+    Call-time function [instance] [args] [ = result ]
 """
 
 #file to log a single trace call
@@ -61,18 +61,10 @@ def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print
 
   # Print if there is no return
   if no_return:
-    # PRINT_LOCK.acquire(True)
-    # log(call_string)
-    # PRINT_LOCK.release()
+    PRINT_LOCK.acquire(True)
+    log(call_string)
+    PRINT_LOCK.release()
 
-    #remove previvous trace file if exists
-    if tracefile in listfiles():
-      removefile(tracefile)
-
-    #write to file
-    fileobj = openfile(tracefile, True)
-    fileobj.writeat(call_string, 0)
-    fileobj.close()
 
   # Get the result
   try:
@@ -80,18 +72,10 @@ def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print
 
   # On an exception, print the call at least
   except Exception, e:
-    # PRINT_LOCK.acquire(True)
-    # log(call_string,"->",str(type(e))+" "+str(e))
-    # PRINT_LOCK.release()
+    PRINT_LOCK.acquire(True)
+    log(call_string,"->",str(type(e))+" "+str(e))
+    PRINT_LOCK.release()
 
-    #remove previvous trace file if exists
-    if tracefile in listfiles():
-      removefile(tracefile)
-
-    #write to file
-    fileobj = openfile(tracefile, True)
-    fileobj.writeat(call_string, 0)
-    fileobj.close()
     raise
 
   # Return if there is no result
@@ -105,18 +89,11 @@ def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print
       str_result = str_result[:MAX_PRINT_VALS] + "..."
     call_string += " = " + str_result
 
-  # PRINT_LOCK.acquire(True)
-  # log(call_string)
-  # PRINT_LOCK.release()
+  PRINT_LOCK.acquire(True)
+  log(call_string)
+  PRINT_LOCK.release()
 
-  #remove previvous trace file if exists
-  if tracefile in listfiles():
-    removefile(tracefile)
 
-  #write to file
-  fileobj = openfile(tracefile, True)
-  fileobj.writeat(call_string, 0)
-  fileobj.close()
   return result
 
 
@@ -181,6 +158,7 @@ class FileObj():
     return traced_call(self.fileo,"file.writeat",self.fileo.writeat,args,kwargs,True)
 
 
+# This class is used for VNObjects
 class VNObj():
   # Store the virt object
   def __init__(self,virt):
@@ -244,7 +222,6 @@ def wrapped_listenforconnection(*args, **kwargs):
   # Return the socket object
   return TCPServerObj(sock)
 
-
 # Wrap the call to createlock
 def wrapped_createlock(*args,**kwargs):
   # Trace the call to get the lock
@@ -260,7 +237,6 @@ def wrapped_openfile(*args,**kwargs):
 
   # Return the wrapped object
   return FileObj(fileo)
-
 
 # Wrap the call to createvirtualnamespace
 def wrapped_virtual_namespace(*args,**kwargs):
@@ -291,13 +267,5 @@ def wrap_all():
 wrap_all()
 
 
-
-# Print the header
-# log("Call-time function [instance] [args] [ = result ]")
-
-
-
 # Dispatch the next module
-# dy_dispatch_module()
-
-
+dy_dispatch_module()
