@@ -1,0 +1,21 @@
+TYPE="type"
+ARGS="args"
+RETURN="return"
+EXCP="exceptions"
+TARGET="target"
+FUNC="func"
+OBJC="objc"
+
+
+# OLD_SLEEP = CHILD_CONTEXT_DEF["log"]
+
+# dy_import_module_symbols("oldlog.r2py")
+
+
+
+
+# Mapping our function to sleep() 
+# CHILD_CONTEXT_DEF["log"] = OLD_SLEEP
+
+# Dispatch
+secure_dispatch_module()
