@@ -1,0 +1,33 @@
+TYPE="type"
+ARGS="args"
+RETURN="return"
+EXCP="exceptions"
+TARGET="target"
+FUNC="func"
+OBJC="objc"
+
+
+# dy_import_module_symbols("oldlog.r2py")
+
+OLD_SLEEP = CHILD_CONTEXT_DEF["log"]
+
+#no idea how to pipe into anohter module.....
+def log_between_moules(args):
+  myfile = openfile("tracer.txt", True)
+  myfile.writeat(args, 0)
+  myfile.close()
+
+
+
+
+# Mapping our function to log() 
+CHILD_CONTEXT_DEF["log"] = {TYPE:FUNC,ARGS:((str),),EXCP:None,RETURN:None,TARGET:log_between_moules}
+
+
+
+#no idea how to restore old log for UT only!
+CHILD_CONTEXT_DEF["log"]  = OLD_SLEEP
+
+
+# Dispatch
+secure_dispatch_module()
