@@ -6,7 +6,7 @@
 
 # import subprocess
 
-#pragma repy restrictions.default dylink.r2py encasementlib.r2py securitylayer.r2py strace.r2py
+#pragma repy restrictions.default dylink.r2py encasementlib.r2py securitylayer.r2py strace.r2py seclayer.r2py
 
 fielobj = openfile("hi.txt", True)
 # log("hi")
