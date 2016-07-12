@@ -7,11 +7,14 @@ FUNC="func"
 OBJC="objc"
 
 
-# dy_import_module_symbols("oldlog.r2py")
+#an attempt at loding a module into security layer
+# libfile = dy_import_module("librepyfile.r2py")
+# librepyfile = libfile.open("tracer.txt")
+# librepyfile.write("hi")
+# librepyfile.close()
 
-OLD_SLEEP = CHILD_CONTEXT_DEF["log"]
+OLD_LOG = CHILD_CONTEXT_DEF["log"]
 
-#no idea how to pipe into anohter module.....
 def log_between_moules(args):
   myfile = openfile("tracer.txt", True)
   myfile.writeat(args, 0)
@@ -23,10 +26,8 @@ def log_between_moules(args):
 # Mapping our function to log() 
 CHILD_CONTEXT_DEF["log"] = {TYPE:FUNC,ARGS:((str),),EXCP:None,RETURN:None,TARGET:log_between_moules}
 
-
-
-#no idea how to restore old log for UT only!
-CHILD_CONTEXT_DEF["log"]  = OLD_SLEEP
+#restoring log, giving it a new name
+CHILD_CONTEXT_DEF["the_original_log_function"] = OLD_LOG
 
 
 # Dispatch

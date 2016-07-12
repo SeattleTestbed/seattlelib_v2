@@ -4,12 +4,21 @@
 # add_dy_support(locals())
 # dy_import_module_symbols("strace.r2py")
 
-# import subprocess
 
-#pragma repy restrictions.default dylink.r2py encasementlib.r2py securitylayer.r2py strace.r2py seclayer.r2py
+#pragma repy restrictions.default dylink.r2py encasementlib.r2py securitylayer.r2py strace.r2py
 
+#this gets traced 
+dy_import_module_symbols("librepyfile.r2py")
+librepyfile = open("tracer.txt")
+
+#want to read this traced output... but exception
 fielobj = openfile("hi.txt", True)
-# log("hi")
+
+#this gets traced also
+value = librepyfile.readline()
+the_original_log_function(value)
+
+
 
 # process = subprocess.Popen('', stderr=subprocess.PIPE, stdout=subprocess.PIPE)
 # output = process.stdout.readlines()
