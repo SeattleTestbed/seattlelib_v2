@@ -1,0 +1,46 @@
+#this unit test checks the functionality of the lock traced object
+
+
+#pragma repy restrictions.default dylink.r2py encasementlib.r2py log_between_modules.r2py strace.r2py
+
+# First dylink import gives: 
+#  0.510231971741 Fatal Error: Function 'the_original_log_function' tried to raise exception of type: '<type 'exceptions.AttributeError'>' which is forbidden.
+dy_import_module_symbols("librepyfile.r2py")
+librepyfile = open("tracer.txt")
+
+#create a lock
+LOCK = createlock()
+
+tracedcall = librepyfile.readline()
+
+#Check apicall to traced call
+if("createlock" not in tracedcall):
+	the_original_log_function("Trace api call failed to trace correct function, createlock")
+if("emulmisc.emulated_lock object"not in tracedcall):
+	the_original_log_function("Failed to trace trace correct function as correct object")
+
+LOCK.acquire(True)
+
+tracedcall = librepyfile.readline()
+
+#Check apicall to traced call
+if("lock.acquire" not in tracedcall):
+	the_original_log_function("Trace api call failed to trace correct function, lock.acquire")
+if("(True,)" not in tracedcall):
+	the_original_log_function("Trace api call failed to trace correct function with correct paramaters, lock.acquire(True)")
+if("emulmisc.emulated_lock object"not in tracedcall):
+	the_original_log_function("Failed to trace trace correct function as correct object")
+
+
+LOCK.release()
+
+tracedcall = librepyfile.readline()
+
+#Check apicall to traced call
+if("lock.release" not in tracedcall):
+	the_original_log_function("Trace api call failed to trace correct function, createlock")
+if("emulmisc.emulated_lock object"not in tracedcall):
+	the_original_log_function("Failed to trace trace correct function as correct object")
+
+
+librepyfile.close()

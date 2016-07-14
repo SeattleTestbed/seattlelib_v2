@@ -1,0 +1,28 @@
+TYPE="type"
+ARGS="args"
+RETURN="return"
+EXCP="exceptions"
+TARGET="target"
+FUNC="func"
+OBJC="objc"
+
+
+OLD_LOG = CHILD_CONTEXT_DEF["log"]
+
+def log_between_modules(args):
+  libfile = dy_import_module("librepyfile.r2py")
+  librepyfile = libfile.open("tracer.txt")
+  librepyfile.write(args)
+  librepyfile.close()
+
+
+
+# Mapping our function to log() 
+CHILD_CONTEXT_DEF["log"] = {TYPE:FUNC,ARGS:((str),),EXCP:None,RETURN:None,TARGET:log_between_modules}
+
+#restoring log, giving it a new name
+CHILD_CONTEXT_DEF["the_original_log_function"] = OLD_LOG
+
+
+# Dispatch
+secure_dispatch_module()

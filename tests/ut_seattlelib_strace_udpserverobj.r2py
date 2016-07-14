@@ -1,0 +1,50 @@
+#this unit test checks the functionality of the udp server traced object 
+
+
+#pragma repy restrictions.default dylink.r2py encasementlib.r2py log_between_modules.r2py strace.r2py
+
+# First dylink import gives: 
+#  0.510231971741 Fatal Error: Function 'the_original_log_function' tried to raise exception of type: '<type 'exceptions.AttributeError'>' which is forbidden.
+dy_import_module_symbols("librepyfile.r2py")
+librepyfile = open("tracer.txt")
+
+udpserverobj = wrapped_listenformessage(getmyip(), 12345)
+
+tracedcall = librepyfile.readline()
+
+
+#Check apicall to traced call
+if("listenformessage" not in tracedcall):
+	the_original_log_function("Trace api call failed to trace correct function, openfile")
+if("('192.168.183.128', 12345)" not in tracedcall):
+	the_original_log_function("Trace api call failed to trace correct function with correct parameters, openfile('../hi.txt', True)")
+if("emulcomm.UDPServerSocket"not in tracedcall):
+	the_original_log_function("Failed to trace trace correct function as correct object")
+
+try:
+	udpserverobj.getmessage()
+except SocketWouldBlockError:
+	#expected
+	pass
+
+tracedcall = librepyfile.readline()
+
+
+#Check apicall to traced call
+if("UDPServerSocket.getmessage" not in tracedcall):
+	the_original_log_function("Trace api call failed to trace correct function, openfile")
+if("emulcomm.UDPServerSocket"not in tracedcall):
+	the_original_log_function("Failed to trace trace correct function as correct object")
+
+
+udpserverobj.close()
+
+tracedcall = librepyfile.readline()
+
+#Check apicall to traced call
+if("UDPServerSocket.close" not in tracedcall):
+	the_original_log_function("Trace api call failed to trace correct function, openfile")
+if("emulcomm.UDPServerSocket"not in tracedcall):
+	the_original_log_function("Failed to trace trace correct function as correct object")
+
+librepyfile.close()

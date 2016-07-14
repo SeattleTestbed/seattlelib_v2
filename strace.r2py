@@ -9,10 +9,6 @@ Description:
     Call-time function [instance] [args] [ = result ]
 """
 
-#file to log a single trace call
-tracefile = "traced.txt"
-
-
 # These API functions do _not_ return an object, and can be handled uniformly.
 NON_OBJ_API_CALLS = ["gethostbyname","getmyip","sendmessage","listfiles","removefile",
                      "exitall","getruntime","randombytes","createthread","sleep","getthreadname",
@@ -43,6 +39,9 @@ def getruntime():
   return round(_orig_getruntime(), 5)
 
 
+
+
+
 # Do a traced function call
 def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print_result=True):
   # Store the time, function call and arguments
@@ -65,7 +64,6 @@ def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print
     log(call_string)
     PRINT_LOCK.release()
 
-
   # Get the result
   try:
     result = func(*args,**kwargs)
@@ -75,7 +73,6 @@ def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print
     PRINT_LOCK.acquire(True)
     log(call_string,"->",str(type(e))+" "+str(e))
     PRINT_LOCK.release()
-
     raise
 
   # Return if there is no result
@@ -92,8 +89,6 @@ def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print
   PRINT_LOCK.acquire(True)
   log(call_string)
   PRINT_LOCK.release()
-
-
   return result
 
 
@@ -261,6 +256,8 @@ def wrap_all():
   CHILD_CONTEXT["openfile"] = wrapped_openfile
   # Wrap createvirtualnamespace
   CHILD_CONTEXT["createvirtualnamespace"] = wrapped_virtual_namespace
+
+
 
 
 # # Wrap all the functions

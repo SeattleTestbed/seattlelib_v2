@@ -1,0 +1,53 @@
+#this unit test checks the functionality of the strace virtual namespace object 
+
+#pragma repy restrictions.default dylink.r2py encasementlib.r2py log_between_modules.r2py strace.r2py
+
+
+# First dylink import gives: 
+#  0.510231971741 Fatal Error: Function 'the_original_log_function' tried to raise exception of type: '<type 'exceptions.AttributeError'>' which is forbidden.
+dy_import_module_symbols("librepyfile.r2py")
+librepyfile = open("tracer.txt")
+
+# Small code snippet, safe
+safe_code = "meaning_of_life = 42\n"
+
+# Try to make the safe virtual namespace
+safe_virt = wrapped_virtual_namespace(safe_code, "Test VN")
+
+
+tracedcall = librepyfile.readline()
+
+#Check apicall to traced call
+if("VirtualNamespace(...)" not in tracedcall):
+	the_original_log_function("Trace api call failed to trace correct function, VirtualNamespace(...)")
+if("virtual_namespace.VirtualNamespace " not in tracedcall):
+	the_original_log_function("Failed to trace trace correct function as correct object")
+
+
+
+# Create a execution context
+context = SafeDict()
+
+# Evaluate
+context_2 = safe_virt.evaluate(context)
+
+tracedcall = librepyfile.readline()
+
+#Check apicall to traced call
+if("VirtualNamespace.evaluate" not in tracedcall):
+	the_original_log_function("Trace api call failed to trace correct function, evaluate")
+if("virtual_namespace.VirtualNamespace " not in tracedcall):
+	the_original_log_function("Failed to trace trace correct function as correct object")
+
+
+# Check that the context is the same
+if context is not context_2:
+  the_original_log_function("Error! Context mis-match!",'\n')
+
+# Check for the meaning of life
+if "meaning_of_life" not in context:
+  the_original_log_function("Meaning of life is undefined! Existential error!",'\n')
+
+
+
+librepyfile.close()
