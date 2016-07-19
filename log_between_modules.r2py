@@ -9,16 +9,33 @@ OBJC="objc"
 
 OLD_LOG = CHILD_CONTEXT_DEF["log"]
 
-def log_between_modules(args):
-  libfile = dy_import_module("librepyfile.r2py")
-  librepyfile = libfile.open("tracer.txt")
-  librepyfile.write(args)
-  librepyfile.close()
 
+class LogToFile():
+  def __init__(self, arg, filename):
+    self.argument = arg
+    self.filename = filename
+
+
+  def writetofile(self):
+    libfile = dy_import_module("librepyfile.r2py")
+    librepyfile = libfile.open(self.filename)
+    librepyfile.write(self.argument)
+    librepyfile.close()
+
+log_file_def = {"obj-type":LogToFile,
+                "name":"LogToFile",
+                "writetofile":{TYPE:FUNC,ARGS:None, EXCP:Exception,RETURN:None,TARGET:LogToFile.writetofile}
+               }
+
+
+
+def log_between_modules(arg):
+  logObj = LogToFile(arg, "tracer.txt")
+  logObj.writetofile()
 
 
 # Mapping our function to log() 
-CHILD_CONTEXT_DEF["log"] = {TYPE:FUNC,ARGS:((str),),EXCP:None,RETURN:None,TARGET:log_between_modules}
+CHILD_CONTEXT_DEF["log"] = {TYPE:FUNC,ARGS:((str),),EXCP:Exception,RETURN:None,TARGET:log_between_modules}
 
 #restoring log, giving it a new name
 CHILD_CONTEXT_DEF["the_original_log_function"] = OLD_LOG
