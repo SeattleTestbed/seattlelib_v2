@@ -32,7 +32,7 @@ NAT_ADVERTISE_STATE = {"enable":False,"run":False}
 def nat_forwarder_advertise(ip, serverport, clientport):
   # Generate the value to advertise
   value = ip+"*"+str(serverport)+"*"+str(clientport)
-  
+
   # Add to the advertising pool
   NAT_ADVERTISE_POOL[NAT_FORWARDER_ADVERTISE_KEY] = value
 
@@ -64,18 +64,18 @@ def nat_forwarder_lookup():
   # Safety check..
   if len(forwarders) <= 1 and forwarders[0] == '':
     raise Exception, "No forwarders could be found!"
-  
+
   # Grab a random forwarder
   index = int(randomfloat() * (len(forwarders)-1))
 
   # Get the info
   forwarderInfo = forwarders[index]
-  
+
   try:
     (ip,server_port,client_port) = forwarderInfo.split('*')
   except ValueError:
     raise Exception, 'Forwarder lookup returned unexpected value'
-  
+
 
 
 # Lookup a forwarder so that we can connect
@@ -93,14 +93,14 @@ def nat_forwarder_list_lookup():
 
     # Get the info
     forwarderInfo = forwarders[index]
-  
+
     try:
       (ip,server_port,client_port) = forwarderInfo.split('*')
     except ValueError:
       raise Exception, 'Forwarder lookup returned unexpected value'
     else:
       list.append((ip,server_port,client_port))
-   
+
 
   # Return a tuple containing the IP and port for server and client
   return list
@@ -114,7 +114,7 @@ def nat_server_lookup(key):
   # Fetch all the keys
   lst = advertise_lookup(key, NAT_MAX_LOOKUP)
   num = len(lst)
-  
+
   # Safety check...
   if num == 0 or (num == 1 and lst[0] == ''):
     raise Exception, "Host could not be found!"
@@ -142,21 +142,21 @@ def nat_server_list_lookup(key):
   # Safety check...
   if num == 0 or (num == 1 and servers[0] == ''):
     raise Exception, "Host could not be found!"
-  
+
 
   list = []
   for index in range(num):
 
     # Get the info
     info = servers[index]
-  
+
     try:
       (forwarder_ip,clt_port) = info.split('*')
     except ValueError:
       raise Exception, 'lookup returned unexpected value'
     else:
       list.append((forwarder_ip,clt_port))
-   
+
 
   # Return a tuple containing the IP and port for server and client
   return list
@@ -168,14 +168,14 @@ def nat_server_list_lookup(key):
 # threadRun: allows/starts or stops the advertisement thread
 def nat_toggle_advertisement(enabled, threadRun=True): 
   NAT_ADVERTISE_STATE["enable"] = enabled
-  
+
   # Start the advertisement thread if necessary
   if not NAT_ADVERTISE_STATE["run"] and threadRun:
     settimer(.1, _nat_advertise_thread, ())
-  
+
   NAT_ADVERTISE_STATE["run"] = threadRun
 
-  
+
 # Launch this thread with settimer to handle the advertisement  
 def _nat_advertise_thread():
   while True:
@@ -187,10 +187,10 @@ def _nat_advertise_thread():
           advertise_announce(key, val, NAT_ADVERTISE_TTL)
         except:
           pass
-    
+
     # Sleep for a while
     sleep(NAT_ADVERTISE_INTERVAL)
-              
+     
     # Check if we should terminate
     if not NAT_ADVERTISE_STATE["run"]:
       break
