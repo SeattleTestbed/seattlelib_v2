@@ -1,0 +1,8 @@
+"""
+Verify that `dylink`'s `dy_import_module` makes names with an underscore 
+prefix accessible.
+"""
+#pragma repy restrictions.test dylink.r2py
+examplelib = dy_import_module("examplelib.py")
+
+examplelib._foo
