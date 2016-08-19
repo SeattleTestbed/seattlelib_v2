@@ -1,6 +1,7 @@
 # Travis integration file.
-# Seattle supports Python 2.5 through 2.7, per
-#   seattle.poly.edu/wiki/ProgrammersPage
+# Seattle supports Python 2.6 through 2.7, per
+# github.com/SeattleTestbed/docs/blob/master/Contributing/BuildInstructions.md
+# Python 2.5 is included for testing because this is what PlanetLab runs
 #
 # Travis provides OS X and Linux (specifically Ubuntu) OS instances.
 # The result of this configuration will be five separate builds on
@@ -65,7 +66,7 @@ matrix:
     # recipe.
     - language: generic
       os: osx
-      env: Python='2.6.9' PythonBin="/Users/travis/.pyenv/versions/2.6.9/bin/python"
+      env: Python='2.6.9' PythonBin="/Users/travis/.pyenv/versions/2.6.9/bin/python" TERM='linux'
       install:
         #brew update;
         #brew install python26; # This is no longer available.
@@ -83,3 +84,4 @@ script:
   - $PythonBin build.py -t;
   - cd ../RUNNABLE;
   - $PythonBin utf.py -a;
+
