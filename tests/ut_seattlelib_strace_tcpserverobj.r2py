@@ -1,51 +1,130 @@
-#this unit test checks the functionality of the tcp server traced object
+"""
+<Purpose>
+  this unit test checks the functionality of the tcp server traced object 
+  Function Tested:
+  listenforconnection(localip, localport)
+  tcpserversocket.getconnection()
+  tcpserversocket.close()
+"""
 
 #pragma repy restrictions.default dylink.r2py encasementlib.r2py log_between_modules.r2py strace.r2py
 
+#librepy is used for 2 files handles
+#one file handle is for the ut (reading)
+#the other is for the security module (writing)
+#data is passed between security module and unit test 
+libfile = dy_import_module("librepy.r2py")
 
-# First dylink import gives: 
-#  0.510231971741 Fatal Error: Function 'the_original_log_function' tried to raise exception of type: '<type 'exceptions.AttributeError'>' which is forbidden.
-dy_import_module_symbols("librepyfile.r2py")
-librepyfile = open("tracer.txt")
+myip = getmyip()
+msg_to_send = "Hello World"
+server_port = 63100
+client_port = 63102
+timeout = 10
 
-listenforconnection(getmyip(), 12347)
 
+tcpserverobj = listenforconnection(myip, server_port)
+
+#open traced file
+librepyfile = libfile.open("tracer.txt")
 tracedcall = librepyfile.readline()
+librepyfile.close()
 
+param = "('" + str(myip) + "', " + str(server_port) +")"
+
+"""
+<Expected return example>
+#1.33392 listenforconnection ('192.168.183.129', 63100) = 
+<Namespace wrapped socket: <emulcomm.TCPServerSocket object 
+at 0x7fedd14053f8>>n was refused! 
+"""
 
 #Check apicall to traced call
 if("listenforconnection" not in tracedcall):
-	the_original_log_function("Trace api call failed to trace correct function, openfile")
-if("('192.168.183.128', 12345)" not in tracedcall):
-	the_original_log_function("Trace api call failed to trace correct function with correct parameters, openfile('../hi.txt', True)")
+    the_original_log_function("Trace api call failed to trace \
+      correct function, openfile")
+    
+if(param not in tracedcall):
+    the_original_log_function("Trace api call failed to trace\
+     correct function with correct parameters")
+
 if("emulcomm.TCPServerSocket"not in tracedcall):
-	the_original_log_function("Failed to trace trace correct function as correct object")
+    the_original_log_function("Failed to trace trace correct \
+      function as correct object")
 
-try:
-	tcpserverobj.getconnection()
-except SocketWouldBlockError:
-	#expected
-	pass
-	
+
+def client():
+  client_sock = openconnection(myip, server_port, myip, client_port, timeout)
+  #so the client can wait for the servers message to be sent back before rasing an error
+  sleep(5)
+  client_sock.close()
+  exitall()
+
+
+# Launch the client
+createthread(client)
+
+#wait for a TCP connection
+while True:
+  try:
+    rip, rport, mysock = tcpserverobj.getconnection()
+    break
+  except SocketWouldBlockError:
+    sleep(0.01)
+
+
+#open traced file
+librepyfile = libfile.open("tracer.txt")
 tracedcall = librepyfile.readline()
+librepyfile.close()
 
+"""
+<Expected return example>
+#1.33578 TCPServerSocket.getconnection <Namespace wrapped 
+socket: <emulcomm.TCPServerSocket object at 0x7fedd14053f8>>->
+<class 'exception_hierarchy.SocketWouldBlockError'> 
+No connections currently available! 
+
+or
+
+#1.30136 TCPServerSocket.getconnection <Namespace wrapped socket:
+ <emulcomm.TCPServerSocket object at 0x7f2465a42440>> = 
+ ('192.168.183.129', 63102, <Namespace wrapped socket: 
+  <emulcomm.EmulatedSocket instance at 0x7f2465a42a28>>)
+"""
 
 #Check apicall to traced call
 if("TCPServerSocket.getconnection" not in tracedcall):
-	the_original_log_function("Trace api call failed to trace correct function, openfile")
+    the_original_log_function("Trace api call failed to trace \
+      correct function, openfile")
+
 if("emulcomm.TCPServerSocket"not in tracedcall):
-	the_original_log_function("Failed to trace trace correct function as correct object")
+    the_original_log_function("Failed to trace trace correct \
+      function as correct object")
 
 
 tcpserverobj.close()
 
+#open traced file
+librepyfile = libfile.open("tracer.txt") 
 tracedcall = librepyfile.readline()
+librepyfile.close()
+
+"""
+<Expected return example>
+#1.33758 TCPServerSocket.lose <Namespace wrapped socket: 
+<emulcomm.TCPServerSocket object at 0x7fedd14053f8>>4053f8>>->
+<class 'exception_hierarchy.SocketWouldBlockError'> 
+No connections currently available!
+"""
 
 #Check apicall to traced call
 if("TCPServerSocket.close" not in tracedcall):
-	the_original_log_function("Trace api call failed to trace correct function, openfile")
+    the_original_log_function("Trace api call failed to trace\
+     correct function, openfile")
+
 if("emulcomm.TCPServerSocket"not in tracedcall):
-	the_original_log_function("Failed to trace trace correct function as correct object")
+    the_original_log_function("Failed to trace trace correct\
+     function as correct object")
 
 
-librepyfile.close()
+

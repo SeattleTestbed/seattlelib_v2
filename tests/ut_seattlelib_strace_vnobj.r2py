@@ -1,27 +1,44 @@
-#this unit test checks the functionality of the strace virtual namespace object 
-
+"""
+<Purpose>
+  this unit test checks the functionality of the strace virtual namespace object 
+  Function Tested:
+  createvirtualnamespace(code, name)
+  virtualnamespace.evaluate(context)
+"""
 #pragma repy restrictions.default dylink.r2py encasementlib.r2py log_between_modules.r2py strace.r2py
 
+#librepy is used for 2 files handles
+#one file handle is for the ut (reading)
+#the other is for the security module (writing)
+#data is passed between security module and unit test 
+libfile = dy_import_module("librepy.r2py")
 
-# First dylink import gives: 
-#  0.510231971741 Fatal Error: Function 'the_original_log_function' tried to raise exception of type: '<type 'exceptions.AttributeError'>' which is forbidden.
-dy_import_module_symbols("librepyfile.r2py")
-librepyfile = open("tracer.txt")
 
 # Small code snippet, safe
 safe_code = "meaning_of_life = 42\n"
 
 # Try to make the safe virtual namespace
-safe_virt = wrapped_virtual_namespace(safe_code, "Test VN")
+safe_virt = createvirtualnamespace(safe_code, "Test VN")
 
 
+#open traced file
+librepyfile = libfile.open("tracer.txt")
 tracedcall = librepyfile.readline()
+librepyfile.close()
 
+"""
+<Expected return example>
+# 1.22645 VirtualNamespace(...) = <.DylinkNamespace object at 
+0x7fa20d4d1110>t at 0x7fa20d571a98>> (True,) = True) 
+"""
 #Check apicall to traced call
 if("VirtualNamespace(...)" not in tracedcall):
-	the_original_log_function("Trace api call failed to trace correct function, VirtualNamespace(...)")
-if("virtual_namespace.VirtualNamespace " not in tracedcall):
-	the_original_log_function("Failed to trace trace correct function as correct object")
+  the_original_log_function("Trace api call failed to trace\
+   correct function, VirtualNamespace(...)")
+if(".DylinkNamespace object" not in tracedcall):
+  the_original_log_function("Failed to trace trace correct \
+    function as correct object")
+
 
 
 
@@ -31,13 +48,24 @@ context = SafeDict()
 # Evaluate
 context_2 = safe_virt.evaluate(context)
 
+#open traced file
+librepyfile = libfile.open("tracer.txt")
 tracedcall = librepyfile.readline()
+librepyfile.close()
+
+"""
+<Expected return example>
+# 1.29208 VirtualNamespace.evaluate <.DylinkNamespace 
+object at 0x7fa20d4d1110>at 0x7fa20d571a98>> (True,) = True) 
+"""
 
 #Check apicall to traced call
 if("VirtualNamespace.evaluate" not in tracedcall):
-	the_original_log_function("Trace api call failed to trace correct function, evaluate")
-if("virtual_namespace.VirtualNamespace " not in tracedcall):
-	the_original_log_function("Failed to trace trace correct function as correct object")
+  the_original_log_function("Trace api call failed to trace\
+   correct function, evaluate")
+if(".DylinkNamespace object" not in tracedcall):
+  the_original_log_function("Failed to trace trace correct \
+    function as correct object")
 
 
 # Check that the context is the same
@@ -46,8 +74,6 @@ if context is not context_2:
 
 # Check for the meaning of life
 if "meaning_of_life" not in context:
-  the_original_log_function("Meaning of life is undefined! Existential error!",'\n')
+  the_original_log_function("Meaning of life is undefined! \
+    Existential error!",'\n')
 
-
-
-librepyfile.close()

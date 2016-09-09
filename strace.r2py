@@ -71,7 +71,7 @@ def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print
   # On an exception, print the call at least
   except Exception, e:
     PRINT_LOCK.acquire(True)
-    log(call_string,"->",str(type(e))+" "+str(e))
+    log(call_string + "->" + str(type(e)) + " " + str(e))
     PRINT_LOCK.release()
     raise
 

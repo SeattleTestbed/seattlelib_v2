@@ -1,0 +1,257 @@
+"""
+<Purpose>
+  this unit test checks the functionality of the udp server traced object 
+  Function Tested:
+    gethostbyname(name)
+    getmyip()
+    listfiles()
+    removefile(filename)
+    getruntime()
+    randombytes()
+    sleep(seconds)
+    createthread(function)
+    getthreadname()
+    getresources()
+    getlasterror()
+    sendmessage(destip, destport, message, localip, localport)
+    exitall()
+"""
+#pragma repy restrictions.default dylink.r2py encasementlib.r2py log_between_modules.r2py strace.r2py
+
+#librepy is used for 2 files handles
+#one file handle is for the ut (reading)
+#the other is for the security module (writing)
+#data is passed between security module and unit test 
+libfile = dy_import_module("librepy.r2py")
+
+"""
+<Expected return example>
+0.33592 gethostbyname ('google.com',) = 74.125.29.101
+"""
+
+gethostbyname("google.com")
+
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+if("gethostbyname ('google.com',)" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace correct \
+    function, gethostbyname ('google.com',)")
+
+
+"""
+<Expected return example>
+0.35959 getmyip = 192.168.183.129 
+"""
+
+myip = getmyip()
+
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+if("getmyip = " + str(myip) not in tracedcall):
+  the_original_log_function("Trace api call failed to trace correct \
+    function, "+ "getmyip = " + str(myip))
+
+
+"""
+<Expected return example>
+0.36067 listfiles = ['dylink_r2py.py', 'utfutil.pyc', 'testuniqueid.r2py', 
+'safe_check.py', 'natlayer_rpc.r2py', 'tracebackrepy.py', 'xmlparse.r2py', 
+'ut_seattlelib_strace_udpserverobj.r2py', 'testserialize_tuple.r2py', ... 
+"""
+
+listfiles()
+
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+if("listfiles" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace correct \
+    function, listfiles")
+
+"""
+<Expected return example>
+#0.3628 removefile ('traced.txt',) = None 
+"""
+
+filemy = openfile("traced.txt", True)
+filemy.close()
+removefile("traced.txt")
+
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+if("removefile ('traced.txt',)" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace correct \
+    function, removefile('traced.txt')")
+
+"""
+<Expected return example>
+#0.36357 getruntime = 0.36361 
+"""
+
+getruntime()
+
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+if("getruntime" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace \
+    correct function, getruntime")
+
+"""
+<Expected return example>
+#0.36399 randombytes = ™òk;9´ÓšP¤ì¢  é®Ô}¹¸Z>Ô3=ó3Ó»ðóÒN7È»
+MèÙÀ«üÆÂ„ªÏh1ÁsÃËXz\Ë†W„0~F™©Ãk¯àÖ-L¢`aQÊg—¤gV
+S6–ß30žõýàY
+"""
+
+randombytes()
+
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+if("randombytes" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace correct \
+    function, randombytes")
+
+"""
+<Expected return example>
+#0.36458 sleep (5,) = None 
+"""
+
+sleep(5)
+
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+if("sleep (5,)" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace correct\
+   function, sleep(5)")
+
+"""
+<Expected return example>
+0.31708 createthread (<function doNothing at 0x7fa13626a050>,) = None 
+"""
+
+def doNothing():
+    exitall()
+
+createthread(doNothing)
+
+if("createthread" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace \
+    correct function, createthread()")
+  
+
+"""
+<Expected return example>
+#5.37007 getthreadname = MainThread 
+"""
+getthreadname()
+
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+if("getthreadname" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace \
+    correct function, getthreadname()")
+
+
+"""
+<Expected return example>
+#5.37049 getresources = ({'loopsend': 10000000.0, 'netrecv': 
+300000000.0, 'random': 100000.0, 'insockets': 500, 'fileread': 
+10000000.0, 'netsend': 300000000.0, 'connport': set([63100, 63101,
+63102, 63103, 63104, 63105, 63106... 
+"""
+
+getresources()
+
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+if("getresources" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace \
+    correct function, getresources()")
+
+
+"""
+<Expected return example>
+#5.37116 getlasterror = None 
+"""
+
+value = getlasterror()
+
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+if("getlasterror" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace \
+    correct function, getlasterror()")
+
+"""
+<Expected return example>
+5.31396 sendmessage ('192.168.183.129', 63100, 'Hello World', 
+'192.168.183.129', 63102) = 11ance at 0x7fea51f57638>>-><class 
+'exception_hierarchy.SocketWouldBlockError'> No messages 
+currently available!
+"""
+
+server_port = 63100
+msg_to_send = "Hello World"
+client_port = 63102
+
+# Create a server that receives and verifies the message
+# sent from the client.
+def server():
+  # If we get any exception, then the test fails, so we
+  # don't bother catching them.
+  server_sock = listenformessage(myip, server_port)
+  # recieved = server_sock.recv(11)
+  # server_sock.send(recieved)
+  while True:
+    try:
+      msg_received = server_sock.getmessage()
+      break
+    except SocketWouldBlockError:
+      sleep(0.01)
+  # Receive the message using the session library then
+  # confirm that the message matches what was sent.
+
+  assert(msg_received == msg_to_send)
+
+  #so socket dosent close on remote end!
+  exitall()
+
+# Launch the server and wait a few seconds for it to start.
+createthread(server)
+sleep(2)
+
+sendmessage(myip, server_port, msg_to_send, myip, client_port)
+
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+param = "('" + str(myip) + "', " + str(server_port) + ", '" + str(myip) \
+  + "', '" + msg_to_send + "', '" + str(myip) + "', " + str(client_port) + ")"
+
+if("sendmessage " + param not in tracedcall):
+  the_original_log_function("Trace api call failed to trace \
+    correct function, sendmessage " + param)
+
+
+#has no strace call no point in checking....
+exitall()
