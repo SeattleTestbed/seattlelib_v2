@@ -53,9 +53,8 @@ if("emulcomm.TCPServerSocket"not in tracedcall):
 
 
 def client():
-  client_sock = openconnection(myip, server_port, myip, client_port, timeout)
-  #so the client can wait for the servers message to be sent back before rasing an error
   sleep(5)
+  client_sock = openconnection(myip, server_port, myip, client_port, timeout)
   client_sock.close()
   exitall()
 

@@ -53,8 +53,8 @@ if("emulcomm.UDPServerSocket"not in tracedcall):
 
 def client():
   sendmessage(myip, server_port, msg_to_send, myip, client_port)
-  sleep(2)
   #so socket dosent close on remote end!
+  sleep(2)
   exitall()
 
 

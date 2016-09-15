@@ -41,7 +41,12 @@ def server():
 
   # Receive the message using the session library then
   # confirm that the message matches what was sent.
-  msg_received = mysock.recv(11)
+  while True:
+    try:
+      msg_received = mysock.recv(11)
+      break
+    except SocketWouldBlockError:
+      sleep(0.01)
   mysock.send(msg_received)
 
 
@@ -74,15 +79,15 @@ param = "('" + str(myip) + "', " + str(server_port) + ", '" + str(myip) + \
 
 #Check apicall to traced call
 if("openconnection" not in tracedcall):
-	the_original_log_function("Trace api call failed to trace correct function,\
+  the_original_log_function("Trace api call failed to trace correct function,\
    openconnection")
 
 if(param not in tracedcall):
-	the_original_log_function("Trace api call failed to trace correct function \
+  the_original_log_function("Trace api call failed to trace correct function \
     with correct parameters, openconnection('" + param)
 
 if("emulcomm.EmulatedSocket" not in tracedcall):
-	the_original_log_function("Failed to trace trace correct function as \
+  the_original_log_function("Failed to trace trace correct function as \
     correct object")
 
 
@@ -102,15 +107,15 @@ librepyfile.close()
 
 #Check apicall to traced call
 if("socket.send" not in tracedcall):
-	the_original_log_function("Trace api call failed to trace correct \
+  the_original_log_function("Trace api call failed to trace correct \
     function, socket.send")
 
 if("('" + msg_to_send + "',)" not in tracedcall and "21" not in tracedcall):
-	the_original_log_function("Trace api call failed to trace correct \
-    function with correct parameters, send('Hi from repy program!',)")
+  the_original_log_function("Trace api call failed to trace correct \
+    function with correct parameters, ('" + msg_to_send + "',)")
 
 if("emulcomm.EmulatedSocket" not in tracedcall):
-	the_original_log_function("Failed to trace trace correct function \
+  the_original_log_function("Failed to trace trace correct function \
     as correct object")
 
 #so the client can wait for the servers message to be sent back before rasing an error
@@ -135,15 +140,15 @@ instance at 0x7f625d4d3b48>> (11,) = Hello World11192.168.183.129', 63102,
 
 #Check apicall to traced call
 if("socket.recv" not in tracedcall):
-	the_original_log_function("Trace api call failed to trace correct \
+  the_original_log_function("Trace api call failed to trace correct \
     function, socket.send")
 
 if("(11,) = " + msg_received not in tracedcall):
-	the_original_log_function("Trace api call failed to trace correct\
+  the_original_log_function("Trace api call failed to trace correct\
    function with correct parameters, recv('" + msg_received +"',)")
 
 if("emulcomm.EmulatedSocket" not in tracedcall):
-	the_original_log_function("Failed to trace trace correct function\
+  the_original_log_function("Failed to trace trace correct function\
    as correct object")
 
 
@@ -165,10 +170,10 @@ No connections currently available!
 
 #Check apicall to traced call
 if("socket.close" not in tracedcall):
-	the_original_log_function("Trace api call failed to trace \
+  the_original_log_function("Trace api call failed to trace \
     correct function, socket.send")
 
 if("emulcomm.EmulatedSocket" not in tracedcall):
-	the_original_log_function("Failed to trace trace correct \
+  the_original_log_function("Failed to trace trace correct \
     function as correct object")
 
