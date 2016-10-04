@@ -54,7 +54,12 @@ if("emulcomm.TCPServerSocket"not in tracedcall):
 
 def client():
   sleep(5)
-  client_sock = openconnection(myip, server_port, myip, client_port, timeout)
+  while True:
+    try:
+      client_sock = openconnection(myip, server_port, myip, client_port, timeout)
+      break
+    except CleanupInProgressError:
+      sleep(0.01)
   client_sock.close()
   exitall()
 
