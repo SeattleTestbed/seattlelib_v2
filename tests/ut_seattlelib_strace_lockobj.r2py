@@ -9,11 +9,14 @@
 
 #pragma repy restrictions.default dylink.r2py encasementlib.r2py log_between_modules.r2py strace.r2py
 
-#librepy is used for 2 files handles
+#sleep is because there is threading issue between namespace initilization and start of UT
+sleep(5)  
+
+#librepyfile is used for 2 files handles
 #one file handle is for the ut (reading)
 #the other is for the security module (writing)
 #data is passed between security module and unit test 
-libfile = dy_import_module("librepy.r2py")
+libfile = dy_import_module("librepyfile.r2py")
 
 
 #create a lock
