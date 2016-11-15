@@ -9,7 +9,7 @@ dy_import_module_symbols("math.r2py")
 import math
 
 
-# Checks values form 0 to +- 2 pi in intervals of pi/4
+# Checks values from 0 to +- 2 pi in intervals of pi/4
 count = 0
 while(count != 9):
   if(math_sin((math_pi*count) / 4) != math.sin((math_pi*count) / 4)):

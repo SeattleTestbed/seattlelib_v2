@@ -7,7 +7,7 @@ dy_import_module_symbols("math.r2py")
 
 import math
 
-# Checks values form -10 to 10 in intervals of 1
+# Checks values from -10 to 10 in intervals of 1
 count = 0
 while(count != 10):
   if(math.fabs(count) != math_fabs(count)):

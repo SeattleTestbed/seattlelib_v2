@@ -1,4 +1,4 @@
-#this unit test checks the functionality of the cos function 
+#this unit test checks the functionality of the arc cos function 
 
 from repyportability import *
 add_dy_support(locals())
@@ -10,10 +10,10 @@ import math
 
 
 # Checks values from 0 to +- 2 pi in intervals of pi/4
-count = 0
-while(count != 9):
-  if(math_cos((math_pi*count) / 4) != math.cos((math_pi*count) / 4)):
+count = 0.0
+while(str(count) != str(1.0)):
+  if(str(math_acos(count)) != str(math.acos(count))):
     print ("[FAIL]: graphing the positive domain of cos was a failure")
-  if(math_cos((-math_pi*count) / 4) != math.cos((-math_pi*count) / 4)):
+  if(str(math_acos(-count)) != str(math.acos(-count))):
     print ("[FAIL]: graphing the negative domain of cos was a failure")
-  count += 1
+  count += 0.1
