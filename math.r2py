@@ -107,12 +107,67 @@ def math_acosh(x):
   else:
     raise ValueError, "math domain error, 'x' cannot be < 1 for math_arcosh"
 
+#Arcus functions via Taylor/Maclaurin Series 
+def math_atan(x):
+  # arc tan 1 <= x
+  if(x >= 1):
+    value = math_pi/2
+    count = 1
+    for y in range(1,300,2):
+      if(count % 2 == 1):
+        value -= (float(1)/float(((x ** y)*y)))
+      else:
+        value += (float(1)/float(((x ** y)*y)))
+      count += 1
+    return value
+  # arc tan -1 >= x
+  elif(x <= -1):
+    value = -math_pi/2
+    count = 1
+    for y in range(1,300,2):
+      if(count % 2 == 1):
+        value -= (float(1)/float(((x ** y)*y)))
+      else:
+        value += (float(1)/float(((x ** y)*y)))
+      count += 1
+    return value
+  # arc tan -1 < x < 1
+  else:
+    value = x
+    count = 1
+    for y in range(3,300,2):
+      if(count % 2 == 1):
+        value -= (x ** y)/y
+      else:
+        value += (x ** y)/y
+      count += 1
+    return value
+
+def math_asin(x):
+  if(x < 1 and x > -1):
+    value = x
+    numerator = 1
+    denominator = 2
+    for y in range(3,300,2):
+      value += (float(numerator)/float(denominator)) * ((x ** y) /float(y))
+      numerator *= y
+      denominator *= (y + 1)
+    return value
+  else:
+    raise ValueError, "math domain error, 'x' cannot be >= 1 and 'x' cannot be <= -1 for math_asin"
+
+def math_acos(x):
+  if(x < 1 and x > -1):
+    return math_pi/2 - math_asin(x)
+  else:
+    raise ValueError, "math domain error, 'x' cannot be >= 1 and 'x' cannot be <= -1 for math_acos"
+
 # square root function using the Newton-Raphson method
 def math_sqrt(x):
   if(x == 0):
     return x
   if(x < 0):
-    x = -x
+    raise ValueError, "math domain error, 'x' cannot be < 1 for math_sqrt"
   k = 1.0
   while((k*k - x) > 0.00000000001 or (x - k * k) > 0.00000000001):
     k = (k + x / k) / 2
