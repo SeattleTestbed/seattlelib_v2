@@ -94,9 +94,6 @@ class _sshkey_paramiko_BER(object):
   def __init__(self, content=''):
       self.content = content
       self.idx = 0
-
-  # def decode(self):
-  #     return self.decode_next()
   
   def decode_next(self):
     if self.idx >= len(self.content):
