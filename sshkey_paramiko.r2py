@@ -83,7 +83,7 @@ class _sshkey_paramiko_BER(object):
     
   <Example Use>
     ber_obj _sshkey_paramiko_BER(data)
-    list = ber_obj.decode()
+    list = ber_obj.decode_next()
     
   """
 
@@ -95,8 +95,8 @@ class _sshkey_paramiko_BER(object):
       self.content = content
       self.idx = 0
 
-  def decode(self):
-      return self.decode_next()
+  # def decode(self):
+  #     return self.decode_next()
   
   def decode_next(self):
     if self.idx >= len(self.content):
@@ -373,7 +373,7 @@ def _sshkey_paramiko_read_private_key(tag, openfile, password=None):
   # private key file contains:                                                                                          
   # keylist = { version = 0, n, e, d, p, q, d mod p-1, d mod q-1, q**-1 mod p }                                   
   try:
-    keylist = _sshkey_paramiko_BER(keydata).decode()
+    keylist = _sshkey_paramiko_BER(keydata).decode_next()
   except sshkey_paramiko_BERException:
     raise sshkey_paramiko_SSHException('Unable to parse key file')
   
