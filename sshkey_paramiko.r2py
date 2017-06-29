@@ -95,7 +95,7 @@ class _sshkey_paramiko_BER(object):
       self.content = content
       self.idx = 0
   
-  # June 27, 2017: removed decode function, as it is not allowed by safe.py 
+  # Removed decode function, as it is not allowed by safe.py 
   
   def decode_next(self):
     if self.idx >= len(self.content):
