@@ -27,7 +27,7 @@ def session_recvmessage(socketobj):
     while True:
       try:
         currentbyte = socketobj.recv(1)
-	break
+        break
       except SocketWouldBlockError:
         sleep(0.01)
 
