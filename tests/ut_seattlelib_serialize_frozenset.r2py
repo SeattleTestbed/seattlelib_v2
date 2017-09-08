@@ -1,3 +1,4 @@
+#pragma repy restrictions.default dylink.r2py
 dy_import_module_symbols('serialize.r2py')
 
 if callfunc == 'initialize':
@@ -5,4 +6,4 @@ if callfunc == 'initialize':
     serdata = serialize_serializedata(stuff)
     newstuff = serialize_deserializedata(serdata)
     if newstuff != stuff:
-      print "BAD STUFF:",stuff
+      log("BAD STUFF:", stuff, newstuff, "\n")
