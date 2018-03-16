@@ -39,6 +39,12 @@ def math_log(X, base=math_e, epsilon=1e-16):
   if X <= 0:
     raise ValueError, "log function domain error"
 
+  # log to the base 1 is undefined for X != 1, and has infinitely
+  # many results for X == 1. Emulate Python's math.log's behavior,
+  # though peculiar.
+  if base == 1:
+    raise ZeroDivisionError("float division by zero")
+
   # log is logarithm function with the default base of e
   integer = 0
   if X < 1 and base < 1:

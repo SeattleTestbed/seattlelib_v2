@@ -1,0 +1,12 @@
+"""
+Verify that Repy's `math.log` raises an error for a base of 1.
+"""
+#pragma repy restrictions.default dylink.r2py
+
+math = dy_import_module("math.r2py")
+
+try:
+  math.math_log(123, 1)
+except ZeroDivisionError:
+  pass
+
