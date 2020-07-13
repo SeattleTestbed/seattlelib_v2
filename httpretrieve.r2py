@@ -62,9 +62,13 @@ def httpretrieve_open(url, querydata=None, postdata=None,\
            both postdata and querydata are omitted, there is no query
            string sent in the request.
 
-           For both querydata and postdata, strings are sent *unmodified*.
-           This means you probably should encode them first, with
-           urllib_quote().
+           Per default, we use
+               `Content-Encoding: application/x-www-form-urlencoded`
+           for querydata and postdata. However, we do not MIME-encode the 
+           data; the caller must take care of that (using `urllib_quote`).
+           If you encode querydata/postdata differently, also supply a 
+           `httpheaders` dict, with the key `Content-Encoding` mapping to 
+           the MIME type you use.
     httpheaders (optional):
            A dictionary of supplemental HTTP request headers to add to the
            request.
@@ -504,21 +508,27 @@ def _httpretrieve_build_request(host, port, path, querydata, postdata, \
   # Sanity checks:
   if path == "":
     raise ValueError("Invalid path -- empty string.")
-  if postdata is not None and type(postdata) not in (str, dict):
-    raise TypeError("Postdata should be a dict of form-data or a string")
-  if querydata is not None and type(querydata) not in (str, dict):
-    raise TypeError("Querydata should be a dict of form-data or a string")
-  if httpheaders is not None and type(httpheaders) is not dict:
-    raise TypeError("Expected HTTP headers as a dictionary.")
+  if postdata is not None and type(postdata) is not str:
+    raise TypeError("postdata should be a MIME-encoded string")
 
-  # Type-conversions:
-  if type(querydata) is dict:
-    querydata = urllib.urllib_quote_parameters(querydata)
-  elif querydata is None:
-    querydata = ""
+  # Initialize querydata if not given, ...
+  querydata = querydata or ""
 
-  if type(postdata) is dict:
-    postdata = urllib.urllib_quote_parameters(postdata)
+  # ... and ensure it is a str
+  if type(querydata) is not str:
+    raise TypeError("querydata should be a MIME-encoded string")
+
+  # Initialize the HTTP headers dict if not given, ...
+  httpheaders = httpheaders or {}
+
+  # ... and ensure it is a dict
+  if type(httpheaders) is not dict:
+    raise TypeError("httpheaders must be a dict")
+
+  # If we have query or post data, set a default encoding if not given
+  if querydata or postdata and "Content-Type" not in httpheaders:
+    httpheaders['Content-Type'] = 'application/x-www-form-urlencoded'
+
 
   # Default to GET, unless the caller specifies a message body to send.
   methodstr = "GET"
@@ -538,24 +548,23 @@ def _httpretrieve_build_request(host, port, path, querydata, postdata, \
     # there is no proxy; send normal http request   
     requeststr = methodstr + ' ' + path + resourcestr + ' HTTP/1.0\r\n'
     
-  if httpheaders is not None:
-    # Most servers require a 'Host' header for normal functionality
-    # (especially in the case of multiple domains being hosted on a
-    # single server).
-    if "Host" not in httpheaders:
-      requeststr += "Host: " + host + ':' + str(port) + "\r\n"
+  # Most servers require a 'Host' header for normal functionality
+  # (especially in the case of multiple domains being hosted on a
+  # single server).
+  if "Host" not in httpheaders:
+    requeststr += "Host: " + host + ':' + str(port) + "\r\n"
 
-    for key, val in httpheaders.items():
-      requeststr += key + ": " + val + '\r\n'
+  for key, val in httpheaders.items():
+    requeststr += key + ": " + val + '\r\n'
 
-  # Affix post-data related headers and content:
+  # Add post-data related headers and content:
   if methodstr == "POST":
     requeststr += 'Content-Length: ' + str(len(postdata)) + '\r\n'
 
   # The empty line terminates HTTP headers.
   requeststr += '\r\n'
 
-  # If we're a POST request, affix any requested data to the message body.
+  # If we're a POST request, add any requested data to the message body.
   if methodstr == "POST":
     requeststr += postdata
 
