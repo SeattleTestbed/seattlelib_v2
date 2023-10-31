@@ -457,7 +457,11 @@ def _check_func_args(name, arg_definition, args):
       if "any" in expected_types:
         match = True
       else:
-        match = isinstance(args[index], expected_types)
+        # handling 'bool' seperately
+        if bool not in expected_types and isinstance(args[index], bool):
+          match = False
+        else:
+          match = isinstance(args[index], expected_types)
 
     # Only a single type
     else:
