@@ -1,0 +1,58 @@
+"""
+Verify that wrapper's _check_func_args handles bool properly
+"""
+#pragma repy restrictions.default dylink.r2py
+wrapper = dy_import_module("wrapper.r2py")
+
+def test_target(arg1):
+    return True
+
+TEST_FUNC_DEF = {
+    "test_func": {
+        "type": "func",
+        "exceptions": Exception, 
+        "return": (bool,), 
+        "target": test_target
+    }
+}
+
+# Case 1: Passing a bool as function argument fails when the args restriction is a list containing an int (and not bool)
+
+TEST_FUNC_DEF["test_func"]["args"] = ((int,),)
+wrapped_ref = wrapper.wrap_references(TEST_FUNC_DEF)
+
+try:
+    wrapped_ref["test_func"](True)
+except RepyArgumentError:
+    pass
+else:
+    log("Call should have raised a RepyArgumentError")
+
+# Case 2: Passing a bool as function argument fails when the args restriction is an int
+TEST_FUNC_DEF["test_func"]["args"] = (int,)
+wrapped_ref = wrapper.wrap_references(TEST_FUNC_DEF)
+
+try:
+    wrapped_ref["test_func"](True)
+except RepyArgumentError:
+    pass
+else:
+    log("Call should have raised a RepyArgumentError")
+
+# Case 3: Passing a bool works in both of the above cases when using a bool type
+TEST_FUNC_DEF["test_func"]["args"] = ((bool,),)
+wrapped_ref = wrapper.wrap_references(TEST_FUNC_DEF)
+wrapped_ref["test_func"](True)
+
+TEST_FUNC_DEF["test_func"]["args"] = (bool,)
+wrapped_ref = wrapper.wrap_references(TEST_FUNC_DEF)
+wrapped_ref["test_func"](True) 
+
+# Case 4: Passing an int behaves normally
+TEST_FUNC_DEF["test_func"]["args"] = ((int,),)
+wrapped_ref = wrapper.wrap_references(TEST_FUNC_DEF)
+wrapped_ref["test_func"](1)
+
+TEST_FUNC_DEF["test_func"]["args"] = (int,)
+wrapped_ref = wrapper.wrap_references(TEST_FUNC_DEF)
+wrapped_ref["test_func"](1) 

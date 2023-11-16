@@ -457,10 +457,17 @@ def _check_func_args(name, arg_definition, args):
       if "any" in expected_types:
         match = True
       else:
-        match = isinstance(args[index], expected_types)
+        # Since bool is a subtype of int in python, trying to restrict arguments passed to a function using int will also include bool, which can lead to unexpected results.
+        # This violates the principle of least astonishment, since users would not expect bool to be included when they restrict argument types with int.
+        # There is also a potential inconsistency in behaviour, as repy library functions use a different type check, that will catch erroneously passed bools.
+        if bool not in expected_types and isinstance(args[index], bool):
+          match = False
+        else:
+          match = isinstance(args[index], expected_types)
 
     # Only a single type
     else:
+      # the issue with bool being a subtype of int is not applicable here, since bool is int == False 
       match = arg_type is expected_types or expected_types == "any"
 
     # If there is no match, raise an exception
