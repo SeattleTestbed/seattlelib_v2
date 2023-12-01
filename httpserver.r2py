@@ -8,6 +8,12 @@
 <Author>
   Conrad Meyer
 
+<Updated>
+  Oct 22, 2014
+
+<Updateder>
+  Urvashi Soni
+
 <Purpose>
   This is a library that abstracts away the details of the HTTP protocol,
   instead calling a user-supplied function on each request. The return
@@ -18,17 +24,19 @@
 
 
 
-dy_import_module_symbols("librepy.r2py")
-dy_import_module_symbols("urllib.r2py")
-dy_import_module_symbols("urlparse.r2py")
-dy_import_module_symbols("uniqueid.r2py")
-dy_import_module_symbols("sockettimeout.r2py")
-dy_import_module_symbols("httpretrieve.r2py")
+librepy = dy_import_module("librepy.r2py")
+urllib = dy_import_module("urllib.r2py")
+urlparse = dy_import_module("urlparse.r2py")
+uniqueid = dy_import_module("uniqueid.r2py")
+sockettimeout = dy_import_module("sockettimeout.r2py")
+dy_import_module_symbols("httpretrieve.r2py")  
+# httprettrieve is left out intentionally because dylink.r2py needs some changes.
+# please refer to https://github.com/SeattleTestbed/seattlelib_v2/issues/153
 
 
 
 
-class _httpserver_ClientClosedSockEarly(Exception):
+class _httpserver_ClientClosedSockEarly(RepyException):
   # Raised internally when the client unexpectedly closes the socket. The
   # correct behavior in this instance is to clean up that handler and
   # continue.
@@ -37,14 +45,14 @@ class _httpserver_ClientClosedSockEarly(Exception):
 
 
 
-class _httpserver_BadRequest(Exception):
+class _httpserver_BadRequest(RepyException):
   # Raised internally when the client's request is malformed.
   pass
 
 
 
 
-class _httpserver_ServerError(Exception):
+class _httpserver_ServerError(RepyException):
   # Raised internally when the callback function unexpectedly raises an
   # exception.
   pass
@@ -52,7 +60,7 @@ class _httpserver_ServerError(Exception):
 
 
 
-class _httpserver_BadTransferCoding(Exception):
+class _httpserver_BadTransferCoding(RepyException):
   # Raised internally when the request's encoding is something we can't
   # handle (most everything at the time of writing).
   pass
@@ -130,25 +138,17 @@ def httpserver_registercallback(addresstuple, cbfunc):
   _httpserver_context['lock'].acquire(True)
 
   try:
-    newhttpdid = uniqueid_getid()
+    newhttpdid = uniqueid.uniqueid_getid()
 
     # Keep track of this server's id in a closure:
     def _httpserver_cbclosure(remoteip, remoteport, sock, ch, listench):
       # Do the actual processing on the request.
       _httpserver_socketcb(remoteip, remoteport, sock, ch, listench, \
           newhttpdid)
-
-      # Close the socket afterwards.
-      try:
-        sock.close()
-      except Exception, e:
-        if "socket" not in str(e).lower():
-          raise
-        pass    # Best effort.
-	
+      sock.close() 
 
     _httpserver_context['handles'][newhttpdid] = \
-        waitforconn(addresstuple[0], addresstuple[1], _httpserver_cbclosure)
+        librepy.waitforconn(addresstuple[0], addresstuple[1], _httpserver_cbclosure)
     _httpserver_context['cbfuncs'][newhttpdid] = cbfunc
 
     return newhttpdid
@@ -198,7 +198,7 @@ def _httpserver_socketcb(remoteip, remoteport, sock, ch, listench, httpdid):
       # There was some sort of flaw in the client's request.
       response = "HTTP/1.0 400 Bad Request\r\n" + \
           "Content-Type: text/plain\r\n\r\n" + str(br) + "\r\n"
-      _httpserver_sendAll(sock, response, besteffort=True)
+      _httpserver_send_all(sock, response, besteffort=True)
       break
     
     except _httpserver_ServerError, se:
@@ -206,7 +206,7 @@ def _httpserver_socketcb(remoteip, remoteport, sock, ch, listench, httpdid):
       # we didn't expect.
       response = "HTTP/1.0 500 Internal Server Error\r\n" + \
           "Content-Type: text/plain\r\n\r\n" + str(se) + "\r\n"
-      _httpserver_sendAll(sock, response, besteffort=True)
+      _httpserver_send_all(sock, response, besteffort=True)
       break
     
     except _httpserver_BadTransferCoding, bte:
@@ -216,22 +216,14 @@ def _httpserver_socketcb(remoteip, remoteport, sock, ch, listench, httpdid):
           ("Content-Length: %d\r\n" % (len(str(bte)) + 2)) + \
           "Connection: close\r\n" + \
           "Content-Type: text/plain\r\n\r\n" + str(bte) + "\r\n"
-      _httpserver_sendAll(sock, response, besteffort=True)
+      _httpserver_send_all(sock, response, besteffort=True)
       break
 
     except _httpserver_ClientClosedSockEarly:
       # Not much else we can do.
       break
     
-    except Exception, e:
-      if "Socket closed" in str(e):
-        break
-
-      # We shouldn't encounter these, other than 'Socket closed' ones. They
-      # represent a bug in our code somewhere. However, not raising the
-      # exception makes HTTP server software incredibly unintuitive to
-      # debug.
-      raise
+      
 
 
 
@@ -297,12 +289,12 @@ def _httpserver_parseHTTPheader(headerdatalist):
     infodict['querystr'] = None
 
   try:
-    infodict['headers'] = _httpretrieve_parse_responseheaders(otherheaderslist)
+    infodict['headers'] = _httpretrieve_parse_responseheaders(otherheaderslist) 
   except HttpBrokenServerError:
     raise _httpserver_BadRequest("Request headers are misformed.")
 
   try:
-    infodict['querydict'] = urllib_unquote_parameters(infodict['querystr'])
+    infodict['querydict'] = urllib.urllib_unquote_parameters(infodict['querystr'])
   except (ValueError, AttributeError, TypeError):
     infodict['querydict'] = None
 
@@ -312,41 +304,43 @@ def _httpserver_parseHTTPheader(headerdatalist):
 
 
 
-def _httpserver_sendAll(sock, datastr, besteffort=False):
-  # Sends all the data in datastr to sock. If besteffort is True,
-  # we don't care if it fails or not.
-  try:
-    while len(datastr) > 0:
-      datastr = datastr[sock.send(datastr):]
-  except Exception, e:
-    if "socket" not in str(e).lower():
-      raise
-
-    # If the caller didn't want this function to raise an exception for
-    # any reason, we don't, and instead return silently. If they are ok
-    # with exceptions, we re-raise.
-    if not besteffort:
-      raise
+def _httpserver_send_all(sock, datastr, besteffort=False):
+  
+  sent = 0
+  while sent < len(datastr):
+    try:
+      sent += sock.send(datastr[sent:])  
+    except SocketWouldBlockError:
+      # retry if response hasn't been sent yet
+      sleep(.05)
+      continue
+    except SocketClosedRemote:
+      log('client from',srcip,'aborted before response could be sent...\n')
+      return
+    
 
 
 
 
 def _httpserver_getline(sock, datastr):
   # Reads a line out of datastr (if possible), or failing that, gets more from
-  # the socket. Returns (line, extra).
-
-  try:
-    newdatastr = ""
-    while True:
-      endloc = datastr.find("\n", -len(newdatastr))
-      if endloc != -1:
-        return (datastr[:endloc], datastr[endloc+1:])
+  # the socket. Returns (line, extra)
+  newdatastr = ""
+  while True:
+    endloc = datastr.find("\n", -len(newdatastr))
+    if endloc != -1:
+      return (datastr[:endloc], datastr[endloc+1:])
+    try:
       newdatastr = sock.recv(4096)
-      datastr += newdatastr
-  except Exception, e:
-    if "Socket closed" in str(e) and len(datastr) != 0:
+    except SocketWouldBlockError:
+      # retry if they haven't completed sending the header
+      sleep(.05)
+      continue
+    except SocketClosedRemote:
+      log('socket is closed before operation completion...\n')
       return (datastr, "")
-    raise
+    datastr += newdatastr
+  
 
 
 
@@ -354,16 +348,20 @@ def _httpserver_getline(sock, datastr):
 def _httpserver_getblock(blocksize, sock, datastr):
   # Reads a block of size blocksize out of datastr (if possible), or failing
   # that, gets more from the socket. Returns (block, extra).
-
-  try:
-    while len(datastr) < blocksize:
+  
+  while len(datastr) < blocksize:
+    try:
       datastr += sock.recv(4096)
-
-    return (datastr[:blocksize], datastr[blocksize:])
-  except Exception, e:
-    if "Socket closed" in str(e) and len(datastr) != 0:
+    except SocketWouldBlockError:
+      # retry if they haven't completed sending the header
+      sleep(.05)
+      continue
+    except SocketClosedRemote:
+      log('socket is closed before operation completion...\n')
       return (datastr, "")
-    raise
+  return (datastr[:blocksize], datastr[blocksize:])
+  
+
 
 
 
@@ -765,7 +763,7 @@ def _httpserver_sendfile(sock, filelikeobj):
     chunk = filelikeobj.read(4096)
     if len(chunk) == 0:
       break
-    _httpserver_sendAll(sock, chunk, besteffort=True)
+    _httpserver_send_all(sock, chunk, besteffort=True)
 
 
 
@@ -781,12 +779,12 @@ def _httpserver_sendfile_chunked(sock, filelikeobj):
     # encode as HTTP/1.1 chunks:
     totallen += len(chunk)
     chunk = "%X\r\n%s\r\n" % (len(chunk), chunk)
-    _httpserver_sendAll(sock, chunk)
+    _httpserver_send_all(sock, chunk)
 
   lastchunk = "0\r\n"
   lastchunk += ("Content-Length: %d\r\n" % totallen)
   lastchunk += "\r\n"
-  _httpserver_sendAll(sock, lastchunk)
+  _httpserver_send_all(sock, lastchunk)
 
 
 
@@ -869,7 +867,7 @@ def _httpserver_process_single_request(sock, cbfunc, extradata, httpdid, \
     for key, val in headers.items():
       response += key + ": " + val + "\r\n"
     response += "\r\n"
-    _httpserver_sendAll(sock, response, besteffort=True)
+    _httpserver_send_all(sock, response, besteffort=True)
 
     # Send the response body:
     _httpserver_sendfile(sock, messagestream)
@@ -889,25 +887,18 @@ def _httpserver_process_single_request(sock, cbfunc, extradata, httpdid, \
         reqinfo['headers']["Connection"]):
       closeconn = True
 
-    try:
-      # Send response headers.
-      _httpserver_sendAll(sock, response)
+    
+    # Send response headers.
+    _httpserver_send_all(sock, response)
 
-      # Read chunks from the callback and efficiently send them to
-      # the client using HTTP/1.1 chunked encoding.
-      _httpserver_sendfile_chunked(sock, messagestream)
+    # Read chunks from the callback and efficiently send them to
+    # the client using HTTP/1.1 chunked encoding.
+    _httpserver_sendfile_chunked(sock, messagestream)
 
-    except Exception, e:
-      if "socket" not in str(e).lower():
-        raise
-
-      # The exception we're trying to catch here is anything sock.send()
-      # raises. However, it just raises plain exceptions.
-
-      # The reason we care about the data actually going through for HTTP/1.1
-      # is that we keep connections open. If there is an error, we shouldn't
-      # keep going, so we indicate that the socket should be closed.
-      closeconn = True
+    # The reason we care about the data actually going through for HTTP/1.1
+    # is that we keep connections open. If there is an error, we shouldn't
+    # keep going, so we indicate that the socket should be closed.
+    closeconn = True
 
   else:
     # If the cbfunc's response dictionary didn't specify 0.9, 1.0, or 1.1,

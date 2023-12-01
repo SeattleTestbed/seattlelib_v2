@@ -623,8 +623,8 @@ def waitforconn(localip, localport, func, thread_pool=None, check_intv=0.1, err_
   <Arguments>
     localport: The local port to listen on
 
-    func: The function to trigger when a connection comes in. This function should
-          take a single argument which is a RepySocket object connected to the remote peer
+    func: The function to trigger when a connection comes in. It should take five arguments: 
+    	   (remoteip, remoteport, socketlikeobj, thiscommhandle, listencommhandle)
 
     localip: A local ip to listen on. If None, then getmyip() will be used.
 

@@ -1,0 +1,34 @@
+dy_import_module_symbols("httpserver.r2py")
+
+# this method will work as callback function for httpserver_registercallback in httpserver.r2py 
+def test_normal_server(httprequest_dictionary):
+  # normal server just sends a message  
+  # store the http dictionary to check the content
+  mycontext['httprequest_dictionary'] = httprequest_dictionary
+  dict_toreturn = {
+          'version': '0.9',
+          'statuscode': 0,      #ideally the status code should be within 100-599 range.
+          'statusmsg': "valid",
+          'headers': { 'X-Header-Foo': 'Bar' },
+          'message': "this is original message"
+        }
+  return dict_toreturn
+   
+
+
+def client():
+  sockobj = openconnection(getmyip(), 12345,getmyip(),12346,25)
+  assert sockobj.send('') == len('')
+    
+if callfunc == 'initialize':
+  # used to store the httprequest_dictionary from server
+  mycontext['httprequest_dictionary'] = {}
+  
+  # register the callback server
+  try:
+    handle = httpserver_registercallback((getmyip(),12345), test_normal_server)
+  except Exception, e:
+    raise Exception('failed test: server raised an exception: ' + str(e))
+
+  
+  
