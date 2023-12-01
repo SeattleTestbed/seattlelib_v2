@@ -1,0 +1,55 @@
+#pragma out Invalid number of arguments
+#pragma out repypp.py infile outfile
+
+#pragma out preprocesses infile and includes content from the current directory.  Output is
+#pragma out written to outfile.   Outfile and infile must be distinct.
+
+"""
+repypp.py is a preprocessor for repy. It includes dependent files as 
+needed.This is used to help the programmer avoid the need to use 
+import. They can instead use "include X" which works somewhat like 
+"from X import *".
+
+This script tests if repypp.py check command line erroneous arguments
+(have multiple arguments).
+
+"""
+
+import os
+import subprocess
+import sys
+import test_repypp_library
+
+
+def main():
+    filecontent1 = '''def foo():
+  pass
+'''
+    filecontent2 = '''include testfile_repypp_example1.repy
+def bar():
+  pass
+'''
+    #create a temporary_file1 contains:
+    #def foo():
+    #  pass
+    test_repypp_library.createtempfile('testfile_repypp_example1.repy', filecontent1)
+
+    #create a temporary_file2 contains:
+    #include testfile_repypp_example1.repy
+    #def bar():
+    #  pass
+    test_repypp_library.createtempfile('testfile_repypp_example2.repy', filecontent2)
+    
+    try:
+        subprocess.call([sys.executable, 'repypp.py', 'testfile_repypp_example1.repy', 'testfile_repypp_example1_preprocessed.repy' , 'testfile_repypp_example2.repy'])   
+    except:
+        print 'Can not execute repypp.py'
+
+    if os.path.isfile('testfile_repypp_example1_preprocessed.repy'):
+        os.remove('testfile_repypp_example1_preprocessed.repy')
+        
+    os.remove('testfile_repypp_example1.repy')
+    os.remove('testfile_repypp_example2.repy')
+    
+if __name__ == "__main__":
+  main()
