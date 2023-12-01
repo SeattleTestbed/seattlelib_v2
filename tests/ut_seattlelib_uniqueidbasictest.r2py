@@ -1,0 +1,44 @@
+"""
+Check that uniqueid returns unique ids, also if imported multiple times,
+and across multiple threads.
+"""
+#pragma repy restrictions.default dylink.r2py
+
+uniqueid = dy_import_module("uniqueid.r2py")
+
+
+# Test 1: Get a couple of IDs and see if they are indeed unique.
+
+oldids = []
+
+for i in range(100):
+  newid = uniqueid.uniqueid_getid()
+  assert newid not in oldids, "Saw the same ID twice: " + str(oldid)
+  oldids.append(newid)
+
+
+
+# Test 2: "Reimport" the library. (Dylink should yield the existing instance.)
+
+uniqueid2 = dy_import_module("uniqueid.r2py")
+
+assert uniqueid2.uniqueid_getid() != uniqueid.uniqueid_getid(), "Got the same ID twice after pseudo-reimporting!"
+
+
+
+# Test 3: Get IDs in threads
+
+idlist = []
+
+def get_an_id():
+  idlist.append(uniqueid.uniqueid_getid())
+
+for i in range(10):
+  createthread(get_an_id)
+
+# Give the threads some time to spawn and finish
+sleep(5)
+
+for anid in idlist:
+  assert idlist.count(anid)==1, "Duplicate ID: " + str(anid)
+    
