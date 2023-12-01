@@ -100,8 +100,8 @@ def _dy_bind_code(module, context):
 
     # Check each key, and bind those we should...
     for attr in context:
-      # Skip attributes starting with _ or part of the stock API
-      if attr.startswith("_") or attr in STOCK_API:
+      # Skip attributes that are part of the stock API
+      if attr in STOCK_API:
         continue
 
       # Bind now
@@ -245,7 +245,8 @@ def dylink_import_global(module, module_context,new_callfunc="import"):
     # It is critical to avoid overwriting things like _context, callfunc,
     # and dy_import_module because these are specific to the containing 
     # module
-    if symbolname not in SYMBOLS_TO_IGNORE_WHEN_FROM_X_IMPORT:
+    if (symbolname not in SYMBOLS_TO_IGNORE_WHEN_FROM_X_IMPORT and 
+        not symbolname.startswith("_")):
       module_context[symbolname] = module_object._context[symbolname]
 
 

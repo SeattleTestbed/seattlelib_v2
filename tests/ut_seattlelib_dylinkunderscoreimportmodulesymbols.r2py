@@ -1,0 +1,15 @@
+"""
+Verify that `dylink`'s `dy_import_module_symbols` hides names with 
+an underscore prefix from the importer's namespace.
+"""
+#pragma repy restrictions.test dylink.r2py
+dy_import_module_symbols("examplelib.py")
+
+try:
+  _foo
+except NameError:
+  # The expected, correct exception.
+  pass
+else:
+  log("Error! Expected examplelib's `_foo` to be hidden, like in Python!\n")
+
