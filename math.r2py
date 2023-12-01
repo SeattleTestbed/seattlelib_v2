@@ -75,3 +75,121 @@ def math_log(X, base=math_e, epsilon=1e-16):
     X *= X                    # We perform the squaring again
   return (integer + decimal)
 
+
+#Trigonometric functions via Euler's formula
+def math_tan(x):
+  if math_cos(x) == 0:
+    raise ValueError, "tan function domain error"
+  return math_sin(x)/math_cos(x)
+
+def math_sin(x):
+  value = ((math_e**(complex(0,x)) - math_e**(complex(0,-x)))/complex(0,2))
+  return value.real
+
+def math_cos(x):
+  value = ((math_e**(complex(0,x)) + math_e**(complex(0,-x)))/2)
+  return value.real
+
+#Hyperbolic functions via standard analytic expressions
+def math_tanh(x):
+  if x == 0:
+    raise ValueError, "tan function domain error, Hyperbolic cotangent: x != 0 "
+  return math_sinh(x)/math_cosh(x)
+
+def math_sinh(x):
+  value = ((math_e ** x) - (math_e ** -x))/2
+  return value
+
+def math_cosh(x):
+  value = ((math_e ** x) + (math_e ** -x))/2
+  return value
+
+#Area functions via logarithms
+
+def math_atanh(x):
+  if(math_fabs(x) < 1):
+    return math_log((1 + x)/(1 - x))/2
+  else:
+    raise ValueError, "math domain error, |'x'| cannot be >= 1 for math_artanh"
+
+def math_asinh(x):
+  return math_log((x + math_sqrt((x*x) + 1)))
+
+def math_acosh(x):
+  if(x >= 1):
+    return math_log((x + math_sqrt((x*x) - 1)))
+  else:
+    raise ValueError, "math domain error, 'x' cannot be < 1 for math_arcosh"
+
+#Arcus functions via Taylor/Maclaurin Series 
+def math_atan(x):
+  # arc tan 1 <= x
+  if(x >= 1):
+    value = math_pi/2
+    count = 1
+    for y in range(1,300,2):
+      if(count % 2 == 1):
+        value -= (float(1)/float(((x ** y)*y)))
+      else:
+        value += (float(1)/float(((x ** y)*y)))
+      count += 1
+    return value
+  # arc tan -1 >= x
+  elif(x <= -1):
+    value = -math_pi/2
+    count = 1
+    for y in range(1,300,2):
+      if(count % 2 == 1):
+        value -= (float(1)/float(((x ** y)*y)))
+      else:
+        value += (float(1)/float(((x ** y)*y)))
+      count += 1
+    return value
+  # arc tan -1 < x < 1
+  else:
+    value = x
+    count = 1
+    for y in range(3,300,2):
+      if(count % 2 == 1):
+        value -= (x ** y)/y
+      else:
+        value += (x ** y)/y
+      count += 1
+    return value
+
+def math_asin(x):
+  if(x < 1 and x > -1):
+    value = x
+    numerator = 1
+    denominator = 2
+    for y in range(3,300,2):
+      value += (float(numerator)/float(denominator)) * ((x ** y) /float(y))
+      numerator *= y
+      denominator *= (y + 1)
+    return value
+  else:
+    raise ValueError, "math domain error, 'x' cannot be >= 1 and 'x' cannot be <= -1 for math_asin"
+
+def math_acos(x):
+  if(x < 1 and x > -1):
+    return math_pi/2 - math_asin(x)
+  else:
+    raise ValueError, "math domain error, 'x' cannot be >= 1 and 'x' cannot be <= -1 for math_acos"
+
+# square root function using the Newton-Raphson method
+def math_sqrt(x):
+  if(x == 0):
+    return x
+  if(x < 0):
+    raise ValueError, "math domain error, 'x' cannot be < 1 for math_sqrt"
+  k = 1.0
+  while((k*k - x) > 0.00000000001 or (x - k * k) > 0.00000000001):
+    k = (k + x / k) / 2
+  return k
+
+#basic absolute value function
+def math_fabs(x):
+  if(x < 0):
+    return -x
+  else: 
+    return x
