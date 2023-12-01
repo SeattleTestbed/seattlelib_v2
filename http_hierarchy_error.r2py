@@ -1,0 +1,206 @@
+"""
+<Program Name>
+  http_hierarchy_error.repy
+
+<Started>
+  Oct 05, 2009
+
+<Author>
+  Yafete Yemuru
+
+<Purpose>
+  provides a hierachy http error using status code including client and server errors
+  classes.  
+"""
+
+
+'''
+http hierarchy error exception classes
+
+-> HttpError
+   -> HttpRetrieveClientError
+      -> HttpUserInputError
+      -> HttpConnectionError
+
+   -> HttpServerError
+      -> HttpResponseError
+         -> HttpHeaderError
+            -> HttpHeaderReceivingError
+            -> HttpHeaderFormatError
+         -> HttpContentError
+            -> HttpContentReceivingError
+            -> HttpContentLengthError
+       
+   -> HttpStatuscodeError
+     -> HttpError1xx
+        -> followed by all http status code error number HttpError(number)
+        
+     -> HttpError2xx
+        -> followed by all http status code error number HttpError(number)
+        
+     -> HttpError3xx
+        -> followed by all http status code error number HttpError(number)
+
+     -> HttpError4xx
+        -> followed by all http status code error number HttpError(number)
+        
+     -> HttpError5xx
+        -> followed by all http status code error number HttpError(number)
+
+'''
+
+class HttpError(Exception):
+  pass
+
+# raises an exception for http client error 
+class HttpRetrieveClientError(HttpError):# extend HttpError 
+  pass
+class HttpUserInputError(HttpRetrieveClientError):
+  pass
+class HttpConnectionError(HttpRetrieveClientError):
+  pass
+
+
+# raises an exception for any http server failure  
+class HttpServerError(HttpError):# extend HttpError 
+  pass
+class HttpResponseError(HttpServerError):
+  pass
+class HttpHeaderError(HttpResponseError):
+  pass
+class HttpHeaderReceivingError(HttpHeaderError):
+  pass
+class HttpHeaderFormatError(HttpHeaderError):
+  pass
+class HttpContentError(HttpResponseError):
+  pass
+class HttpContentReceivingError(HttpContentError):
+  pass
+class HttpContentLengthError(HttpContentError):
+  pass
+
+
+class HttpStatusCodeError(HttpError):# extend HttpError
+  pass
+class HttpError1xx(HttpStatusCodeError):
+  pass
+class HttpError100(HttpError1xx):
+  pass
+class HttpError101(HttpError1xx): 
+  pass
+class HttpError102(HttpError1xx): 
+  pass
+
+
+class HttpError2xx(HttpStatusCodeError):
+  pass
+class HttpError201(HttpError2xx): 
+  pass
+class HttpError202(HttpError2xx):   
+  pass
+class HttpError203(HttpError2xx): 
+  pass
+class HttpError204(HttpError2xx): 
+  pass
+class HttpError205(HttpError2xx): 
+  pass
+class HttpError206(HttpError2xx): 
+  pass
+class HttpError207(HttpError2xx): 
+  pass
+class HttpError226(HttpError2xx): 
+  pass                 
+
+
+class HttpError3xx(HttpStatusCodeError):
+  pass
+class HttpError300(HttpError3xx): 
+  pass
+class HttpError301(HttpError3xx): 
+  pass
+class HttpError302(HttpError3xx): 
+  pass
+class HttpError303(HttpError3xx): 
+  pass
+class HttpError304(HttpError3xx):
+  pass
+class HttpError305(HttpError3xx): 
+  pass
+class HttpError306(HttpError3xx): 
+  pass
+class HttpError307(HttpError3xx): 
+  pass
+                    
+
+class HttpError4xx(HttpStatusCodeError):
+  pass
+class HttpError400(HttpError4xx):
+  pass  
+class HttpError401(HttpError4xx): 
+  pass
+class HttpError402(HttpError4xx): 
+  pass
+class HttpError403(HttpError4xx):
+  pass  
+class HttpError404(HttpError4xx): 
+  pass
+class HttpError405(HttpError4xx): 
+  pass
+class HttpError406(HttpError4xx): 
+  pass
+class HttpError407(HttpError4xx): 
+  pass
+class HttpError408(HttpError4xx): 
+  pass
+class HttpError409(HttpError4xx): 
+  pass
+class HttpError410(HttpError4xx): 
+  pass
+class HttpError411(HttpError4xx): 
+  pass
+class HttpError412(HttpError4xx): 
+  pass
+class HttpError413(HttpError4xx): 
+  pass
+class HttpError414(HttpError4xx): 
+  pass
+class HttpError415(HttpError4xx): 
+  pass
+class HttpError416(HttpError4xx): 
+  pass
+class HttpError417(HttpError4xx): 
+  pass
+class HttpError418(HttpError4xx): 
+  pass
+class HttpError422(HttpError4xx): 
+  pass
+class HttpError423(HttpError4xx): 
+  pass
+class HttpError424(HttpError4xx): 
+  pass
+class HttpError425(HttpError4xx): 
+  pass
+class HttpError426(HttpError4xx): 
+  pass
+
+
+class HttpError5xx(HttpStatusCodeError):
+  pass
+class HttpError500(HttpError5xx): 
+  pass
+class HttpError501(HttpError5xx): 
+  pass
+class HttpError502(HttpError5xx): 
+  pass
+class HttpError503(HttpError5xx): 
+  pass
+class HttpError504(HttpError5xx): 
+  pass
+class HttpError505(HttpError5xx): 
+  pass
+class HttpError506(HttpError5xx):
+  pass  
+class HttpError507(HttpError5xx):
+  pass  
+class HttpError510(HttpError5xx):
+  pass
