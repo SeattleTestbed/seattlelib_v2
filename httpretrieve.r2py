@@ -537,16 +537,18 @@ def _httpretrieve_build_request(host, port, path, querydata, postdata, \
   else:
     # there is no proxy; send normal http request   
     requeststr = methodstr + ' ' + path + resourcestr + ' HTTP/1.0\r\n'
-    
-  if httpheaders is not None:
-    # Most servers require a 'Host' header for normal functionality
-    # (especially in the case of multiple domains being hosted on a
-    # single server).
-    if "Host" not in httpheaders:
-      requeststr += "Host: " + host + ':' + str(port) + "\r\n"
 
-    for key, val in httpheaders.items():
-      requeststr += key + ": " + val + '\r\n'
+  # Make sure there is an httpheaders dict 
+  if httpheaders is None:
+    httpheaders = {}
+  # Most servers require a 'Host' header for normal functionality
+  # (especially in the case of multiple domains being hosted on a
+  # single server).
+  if "Host" not in httpheaders:
+    requeststr += "Host: " + host + ':' + str(port) + "\r\n"
+
+  for key, val in httpheaders.items():
+    requeststr += key + ": " + str(val) + '\r\n'
 
   # Affix post-data related headers and content:
   if methodstr == "POST":
