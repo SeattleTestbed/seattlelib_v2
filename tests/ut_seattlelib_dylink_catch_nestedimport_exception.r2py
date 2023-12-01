@@ -2,7 +2,7 @@
 Verify that we can catch an excpetion defined in an imported library 
 and raised in another.
 """
-#pragma repy restrictions.test dylink.r2py
+#pragma repy restrictions.default dylink.r2py
 #pragma out Successfully caught Lib1Error().
 
 # lib1 defines the exception

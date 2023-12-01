@@ -1,4 +1,4 @@
-#pragma repy restrictions.test dylink.r2py
+#pragma repy restrictions.default dylink.r2py
 #pragma out Complete!
 
 """

@@ -1,4 +1,4 @@
-#pragma repy restrictions.test dylink.r2py dytestmoduleexitall.r2py
+#pragma repy restrictions.default dylink.r2py dytestmoduleexitall.r2py
 
 """
 Basic dylink tests.   Nothing fancy.
