@@ -48,6 +48,10 @@ LIBREPY_EXPORTS.append("libthread")
 libsocket = dy_import_module("librepysocket.r2py")
 LIBREPY_EXPORTS.append("libsocket")
 
+#Import the sub-library, dnsquery
+libdnsquery = dy_import_module("dnsquery.r2py")
+LIBREPY_EXPORTS.append("libdnsquery")
+
 # Override the imported version of librunloop to use a unified run-loop
 libthread._context["librunloop"] = librunloop
 libsocket._context["librunloop"] = librunloop
@@ -118,6 +122,19 @@ LIBREPY_EXPORTS.append("recvmess")
 LIBREPY_EXPORTS.append("openconn")
 LIBREPY_EXPORTS.append("waitforconn")
 
+#Exports from dnsquery
+gethostbyname_ex = libdnsquery.gethostbyname_ex
+reverseLookup = libdnsquery.reverseLookup
+namingServer = libdnsquery.namingServer
+recordsMX = libdnsquery.recordsMX
+txtRecords = libdnsquery.txtRecords
+getAAAA = libdnsquery.getAAAA
+LIBREPY_EXPORTS.append("gethostbyname_ex")
+LIBREPY_EXPORTS.append("reverseLookup")
+LIBREPY_EXPORTS.append("namingServer")
+LIBREPY_EXPORTS.append("recordsMX")
+LIBREPY_EXPORTS.append("txtRecords")
+LIBREPY_EXPORTS.append("getAAAA")
 
 ##### Run-time
 
