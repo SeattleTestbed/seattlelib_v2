@@ -1,0 +1,14 @@
+#pragma repy restrictions.default dylink.r2py encasementlib.r2py log_between_modules.r2py
+
+
+log("This is a test")
+libfile = dy_import_module("librepyfile.r2py")
+
+#open traced file
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+if("This is a test" not in tracedcall):
+  the_original_log_function("Log between modules does not work openconnection")
+

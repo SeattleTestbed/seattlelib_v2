@@ -1,0 +1,182 @@
+"""
+<Purpose>
+  this unit test checks the functionality of the strace socket object
+  Function Tested:
+  openconnection(destip, destport, localip, localport, timeout)
+  socket.close()
+  socket.recv(numbytes)
+  socket.send(message)
+"""
+
+#pragma repy restrictions.default dylink.r2py encasementlib.r2py log_between_modules.r2py strace.r2py
+
+#sleep is because there is threading issue between namespace initilization and start of UT
+sleep(5)  
+
+#librepyfile is used for 2 files handles
+#one file handle is for the ut (reading)
+#the other is for the security module (writing)
+#data is passed between security module and unit test 
+libfile = dy_import_module("librepyfile.r2py")
+
+
+
+myip = getmyip()
+msg_to_send = "Hello World"
+server_port = 63100
+client_port = 63102
+timeout = 10
+
+# Create a server that receives and verifies the message
+# sent from the client.
+def server():
+  # If we get any exception, then the test fails, so we
+  # don't bother catching them.
+  server_sock = listenforconnection(myip, server_port)
+  # recieved = server_sock.recv(11)
+  # server_sock.send(recieved)
+  while True:
+    try:
+      rip, rport, mysock = server_sock.getconnection()
+      break
+    except SocketWouldBlockError:
+      sleep(0.01)
+
+  # Receive the message using the session library then
+  # confirm that the message matches what was sent.
+  while True:
+    try:
+      msg_received = mysock.recv(11)
+      break
+    except SocketWouldBlockError:
+      sleep(0.01)
+  mysock.send(msg_received)
+
+
+  assert(msg_received == msg_to_send)
+
+  #so socket dosent close on remote end!
+  sleep(4)
+  exitall()
+
+
+# Launch the server and wait a few seconds for it to start.
+createthread(server)
+sleep(2)
+
+client_sock = openconnection(myip, server_port, myip, client_port, timeout)
+
+#open traced file
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+"""
+<Expected return example>
+# 3.32584 openconnection ('192.168.183.129', 63100, '192.168.183.129', 63102, 10) = 
+<Namespace wrapped socket: <emulcomm.EmulatedSocket instance 
+at 0x7f219fa968c0>>Error'> No connections currently available!! 
+"""
+param = "('" + str(myip) + "', " + str(server_port) + ", '" + str(myip) + \
+  "', " + str(client_port) + ", " + str(timeout) + ")"
+
+#Check apicall to traced call
+if("openconnection" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace correct function,\
+   openconnection")
+
+if(param not in tracedcall):
+  the_original_log_function("Trace api call failed to trace correct function \
+    with correct parameters, openconnection('" + param)
+
+if("emulcomm.EmulatedSocket" not in tracedcall):
+  the_original_log_function("Failed to trace trace correct function as \
+    correct object")
+
+
+client_sock.send(msg_to_send)
+
+#open traced file
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+"""
+<Expected return example>
+# 3.32844 socket.send <Namespace wrapped socket: 
+<emulcomm.EmulatedSocket instance at 0x7f219fa968c0>> ('Hello World',) = 
+11latedSocket instance at 0x7f219fa968c0>>Error'> No connections currently available!!
+"""
+
+#Check apicall to traced call
+if("socket.send" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace correct \
+    function, socket.send")
+
+if("('" + msg_to_send + "',)" not in tracedcall and "21" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace correct \
+    function with correct parameters, ('" + msg_to_send + "',)")
+
+if("emulcomm.EmulatedSocket" not in tracedcall):
+  the_original_log_function("Failed to trace trace correct function \
+    as correct object")
+
+#so the client can wait for the servers message to be sent back before rasing an error
+sleep(3)
+
+msg_received = client_sock.recv(11)
+
+#open traced file
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+
+assert(msg_received == msg_to_send)
+
+"""
+<Expected return example>
+# 5.22834 socket.recv <Namespace wrapped socket: <emulcomm.EmulatedSocket 
+instance at 0x7f625d4d3b48>> (11,) = Hello World11192.168.183.129', 63102, 
+<Namespace wrapped socket: <emulcomm.EmulatedSocket instance at 0x7f625d4d3c20>>)
+"""
+
+#Check apicall to traced call
+if("socket.recv" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace correct \
+    function, socket.send")
+
+if("(11,) = " + msg_received not in tracedcall):
+  the_original_log_function("Trace api call failed to trace correct\
+   function with correct parameters, recv('" + msg_received +"',)")
+
+if("emulcomm.EmulatedSocket" not in tracedcall):
+  the_original_log_function("Failed to trace trace correct function\
+   as correct object")
+
+
+
+client_sock.close()
+
+#open traced file
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+"""
+<Expected return example>
+#3.47004 socket.close <Namespace wrapped socket: 
+<emulcomm.EmulatedSocket instance at 0x7f2411327950>> = True World',) 
+= 11latedSocket instance at 0x7f2411327950>>kError'> 
+No connections currently available!
+"""
+
+#Check apicall to traced call
+if("socket.close" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace \
+    correct function, socket.send")
+
+if("emulcomm.EmulatedSocket" not in tracedcall):
+  the_original_log_function("Failed to trace trace correct \
+    function as correct object")
+

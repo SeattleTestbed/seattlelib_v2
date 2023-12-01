@@ -1,8 +1,12 @@
 """
 Author: Armon Dadgar
 Description:
-  This namespace can be used as an intermediary logging namespace to
-  log calls to the Repy API functions.
+  strace.r2py is a diagnostic, debugging utility for for the repyV2 api 
+  with similar api calls that is used as an intermediary logging namespace to
+  log calls of the Repy API functions. 
+
+  Header:
+    Call-time function [instance] [args] [ = result ]
 """
 
 # These API functions do _not_ return an object, and can be handled uniformly.
@@ -35,6 +39,9 @@ def getruntime():
   return round(_orig_getruntime(), 5)
 
 
+
+
+
 # Do a traced function call
 def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print_result=True):
   # Store the time, function call and arguments
@@ -54,7 +61,7 @@ def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print
   # Print if there is no return
   if no_return:
     PRINT_LOCK.acquire(True)
-    print call_string
+    log(call_string)
     PRINT_LOCK.release()
 
   # Get the result
@@ -64,7 +71,7 @@ def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print
   # On an exception, print the call at least
   except Exception, e:
     PRINT_LOCK.acquire(True)
-    print call_string,"->",str(type(e))+" "+str(e)
+    log(call_string + "->" + str(type(e)) + " " + str(e))
     PRINT_LOCK.release()
     raise
 
@@ -80,9 +87,8 @@ def traced_call(self,name,func,args,kwargs,no_return=False,print_args=True,print
     call_string += " = " + str_result
 
   PRINT_LOCK.acquire(True)
-  print call_string
+  log(call_string)
   PRINT_LOCK.release()
-
   return result
 
 
@@ -147,6 +153,7 @@ class FileObj():
     return traced_call(self.fileo,"file.writeat",self.fileo.writeat,args,kwargs,True)
 
 
+# This class is used for VNObjects
 class VNObj():
   # Store the virt object
   def __init__(self,virt):
@@ -210,7 +217,6 @@ def wrapped_listenforconnection(*args, **kwargs):
   # Return the socket object
   return TCPServerObj(sock)
 
-
 # Wrap the call to createlock
 def wrapped_createlock(*args,**kwargs):
   # Trace the call to get the lock
@@ -227,7 +233,6 @@ def wrapped_openfile(*args,**kwargs):
   # Return the wrapped object
   return FileObj(fileo)
 
-
 # Wrap the call to createvirtualnamespace
 def wrapped_virtual_namespace(*args,**kwargs):
   # Trace the call to get the object
@@ -239,33 +244,25 @@ def wrap_all():
   # Handle the normal calls
   for call in NON_OBJ_API_CALLS:
     CHILD_CONTEXT[call] = NonObjAPICall(call).call
-
   # Wrap openconnection
   CHILD_CONTEXT["openconnection"] = wrapped_openconnection
-
   # Wrap listenformessage
   CHILD_CONTEXT["listenformessage"] = wrapped_listenformessage
-
   # Wrap listenforconnection
   CHILD_CONTEXT["listenforconnection"] = wrapped_listenforconnection
-
   # Wrap createlock
   CHILD_CONTEXT["createlock"] = wrapped_createlock
-
   # Wrap openfile
   CHILD_CONTEXT["openfile"] = wrapped_openfile
-
   # Wrap createvirtualnamespace
   CHILD_CONTEXT["createvirtualnamespace"] = wrapped_virtual_namespace
 
 
-# Wrap all the functions
+
+
+# # Wrap all the functions
 wrap_all()
 
-# Print the header
-print "Call-time function [instance] [args] [ = result ]"
 
 # Dispatch the next module
 dy_dispatch_module()
-
-

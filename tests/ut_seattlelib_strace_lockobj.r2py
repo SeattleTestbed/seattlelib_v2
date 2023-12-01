@@ -1,0 +1,93 @@
+"""
+<Purpose>
+  this unit test checks the functionality of the lock traced object
+  Function Tested:
+  createlock()
+  lock.acquire(blocking)
+  lock.release()
+"""
+
+#pragma repy restrictions.default dylink.r2py encasementlib.r2py log_between_modules.r2py strace.r2py
+
+#sleep is because there is threading issue between namespace initilization and start of UT
+sleep(5)  
+
+#librepyfile is used for 2 files handles
+#one file handle is for the ut (reading)
+#the other is for the security module (writing)
+#data is passed between security module and unit test 
+libfile = dy_import_module("librepyfile.r2py")
+
+
+#create a lock
+LOCK = createlock()
+
+#open traced file
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+"""
+<Expected return example>
+1.35753 createlock = <Namespace wrapped lock: 
+<emulmisc.emulated_lock object at 0x7f0a5f6d2bb0>>(0, 4) = 0940>>) 
+"""
+
+#Check apicall to traced call
+if("createlock" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace\
+   correct function, createlock")
+
+if("emulmisc.emulated_lock object"not in tracedcall):
+  the_original_log_function("Failed to trace trace correct \
+    function as correct object")
+
+LOCK.acquire(True)
+
+#open traced file
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+"""
+<Expected return example>
+# 1.35935 lock.acquire <Namespace wrapped lock: 
+<emulmisc.emulated_lock object at 0x7f0a5f6d2bb0>> (True,) = True) 
+"""
+
+#Check apicall to traced call
+if("lock.acquire" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace \
+    correct function, lock.acquire")
+
+if("(True,)" not in tracedcall):
+  the_original_log_function("Trace api call failed to trace \
+    correct function with correct paramaters, lock.acquire(True)")
+
+if("emulmisc.emulated_lock object"not in tracedcall):
+  the_original_log_function("Failed to trace trace correct\
+   function as correct object")
+
+
+LOCK.release()
+
+#open traced file
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+"""
+<Expected return example>
+# 1.36101 lock.release <Namespace wrapped lock: 
+<emulmisc.emulated_lock object at 0x7f0a5f6d2bb0>> (True,) = True)
+"""
+
+#Check apicall to traced call
+if("lock.release" not in tracedcall):
+  the_original_log_function("Trace api call failed to \
+    trace correct function, createlock")
+
+if("emulmisc.emulated_lock object"not in tracedcall):
+  the_original_log_function("Failed to trace trace \
+    correct function as correct object")
+

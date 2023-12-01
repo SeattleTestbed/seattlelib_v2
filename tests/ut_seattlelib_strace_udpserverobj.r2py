@@ -1,0 +1,129 @@
+"""
+<Purpose>
+  this unit test checks the functionality of the udp server traced object 
+  Function Tested:
+  listenformessage(localip, localport)
+  udpserversocket.getmessage()
+  udpserversocket.close()
+"""
+
+#pragma repy restrictions.default dylink.r2py encasementlib.r2py log_between_modules.r2py strace.r2py
+
+#sleep is because there is threading issue between namespace initilization and start of UT
+sleep(5)  
+
+#librepyfile is used for 2 files handles
+#one file handle is for the ut (reading)
+#the other is for the security module (writing)
+#data is passed between security module and unit test 
+libfile = dy_import_module("librepyfile.r2py")
+
+
+myip = getmyip()
+msg_to_send = "Hello World"
+server_port = 63100
+client_port = 63102
+
+udpserverobj = listenformessage(myip, server_port)
+
+#open traced file
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+param = "('" + str(myip) + "', " + str(server_port) + ")"
+
+"""
+<Expected return example>
+# 1.32405 listenformessage ('192.168.183.129', 63100) = <Namespace wrapped 
+socket: <emulcomm.UDPServerSocket instance at 
+0x7f8d635ef3b0>>n_hierarchy.SocketWouldBlockError'> No connections 
+currently available! 
+"""
+
+#Check apicall to traced call
+if("listenformessage" not in tracedcall):
+    the_original_log_function("Trace api call failed to trace \
+      correct function, openfile")
+    
+if(param not in tracedcall):
+    the_original_log_function("Trace api call failed to trace \
+      correct function with correct parameters")
+
+if("emulcomm.UDPServerSocket"not in tracedcall):
+    the_original_log_function("Failed to trace trace correct\
+     function as correct object")
+
+
+def client():
+  sendmessage(myip, server_port, msg_to_send, myip, client_port)
+  sleep(2)
+  #so socket dosent close on remote end!
+  exitall()
+
+
+# Launch the server and wait a few seconds for it to start.
+createthread(client)
+
+
+while True:
+  try:
+    msg_received = udpserverobj.getmessage()
+    break
+  except SocketWouldBlockError:
+    sleep(0.01)
+
+
+#open traced file
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+"""
+<Expected return example>
+1.32599 UDPServerSocket.getmessage <Namespace wrapped socket:
+ <emulcomm.UDPServerSocket instance at 0x7f8d635ef3b0>>-><class 
+ 'exception_hierarchy.SocketWouldBlockError'> 
+ No messages currently available!ble! 
+
+or
+
+1.34704 UDPServerSocket.getmessage <Namespace wrapped socket:
+ <emulcomm.UDPServerSocket instance at 0x7fd1ec8d13f8>> = 
+ ('192.168.183.129', 63102, 'Hello World')apped socket: 
+ <emulcomm.EmulatedSocket instance at 0x7f5de6a5ca28>>)
+"""
+
+#Check apicall to traced call
+if("UDPServerSocket.getmessage" not in tracedcall):
+    the_original_log_function("Trace api call failed to \
+      trace correct function, openfile")
+
+if("emulcomm.UDPServerSocket"not in tracedcall):
+    the_original_log_function("Failed to trace trace \
+      correct function as correct object")
+
+
+udpserverobj.close()
+#open traced file
+librepyfile = libfile.open("tracer.txt")
+tracedcall = librepyfile.readline()
+librepyfile.close()
+
+"""
+<Expected return example>
+# 1.3278 UDPServerSocket.close <Namespace wrapped socket:
+ <emulcomm.UDPServerSocket instance at 0x7f8d635ef3b0>>f3b0>>->
+ <class 'exception_hierarchy.SocketWouldBlockError'> 
+ No messages currently available!ble!
+"""
+
+#Check apicall to traced call
+if("UDPServerSocket.close" not in tracedcall):
+    the_original_log_function("Trace api call failed to trace \
+      correct function, openfile")
+
+if("emulcomm.UDPServerSocket"not in tracedcall):
+    the_original_log_function("Failed to trace trace correct \
+      function as correct object")
+
