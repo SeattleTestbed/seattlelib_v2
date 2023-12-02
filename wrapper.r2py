@@ -532,7 +532,12 @@ def _check_func_return(name, return_definition, retval):
 
   # If the return_definition is a single value, check for "any" or a match
   else:
-    error = ret_type is not return_definition and return_definition != "any" and not isinstance(retval, return_definition)
+    # Since bool is a subtype of int in python, isinstance() check will allow a return value with type bool even if it was 
+    # restricted to int which can lead to unexpected results.
+    if ret_type == bool and return_definition is int:
+      error = False
+    else:
+      error = ret_type is not return_definition and return_definition != "any" and not isinstance(retval, return_definition)
 
   # Abort if there is an error
   if error:
